@@ -1,0 +1,12 @@
+logger_name: wandb
+version: ${experiment}-${run_id}
+
+save_dir: wandb
+project: ${project}
+tags: null
+notes: null
+
+offline: false
+resume: false
+save_code: false
+log_model: false

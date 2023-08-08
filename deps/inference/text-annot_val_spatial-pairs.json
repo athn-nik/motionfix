@@ -1,0 +1,4930 @@
+[
+  [
+    "stand",
+    "fight stance"
+  ],
+  [
+    "run",
+    "turn"
+  ],
+  [
+    "walk",
+    "carry"
+  ],
+  [
+    "arms lift",
+    "walk"
+  ],
+  [
+    "shake head from side to side",
+    "hold on with hands"
+  ],
+  [
+    "stand",
+    "look around"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "spin",
+    "swing karate sticks"
+  ],
+  [
+    "swing karate sticks",
+    "backpedal"
+  ],
+  [
+    "hold with right hand",
+    "stand"
+  ],
+  [
+    "stand with hands at side",
+    "turn head slightly to the right"
+  ],
+  [
+    "stand with hands at side",
+    "turn head to the left"
+  ],
+  [
+    "stumble",
+    "rotate left angle"
+  ],
+  [
+    "roll upper body in circular motion from waist",
+    "stand"
+  ],
+  [
+    "stand",
+    "roll right ankle in front of body"
+  ],
+  [
+    "stand",
+    "make large counter clockwise circles with left leg in front of body"
+  ],
+  [
+    "dance ballet",
+    "jump"
+  ],
+  [
+    "dance ballet",
+    "sway arms"
+  ],
+  [
+    "dance ballet",
+    "sway arms"
+  ],
+  [
+    "sway arms",
+    "dance ballet"
+  ],
+  [
+    "dance ballet",
+    "sway arms"
+  ],
+  [
+    "dance ballet",
+    "sway arms"
+  ],
+  [
+    "dance ballet",
+    "sway arms"
+  ],
+  [
+    "dance ballet",
+    "sway arms"
+  ],
+  [
+    "walk",
+    "sway arms"
+  ],
+  [
+    "walk",
+    "turnaround"
+  ],
+  [
+    "dance ballet",
+    "sway arms"
+  ],
+  [
+    "dance ballet",
+    "turnaround"
+  ],
+  [
+    "turn around",
+    "walk"
+  ],
+  [
+    "bend down",
+    "take"
+  ],
+  [
+    "arms stretch out",
+    "rotate wrists"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "rise",
+    "turn around"
+  ],
+  [
+    "look left",
+    "stand in place"
+  ],
+  [
+    "look right",
+    "stand in place"
+  ],
+  [
+    "stand in place",
+    "look forward"
+  ],
+  [
+    "stand in place",
+    "look right"
+  ],
+  [
+    "stand in place",
+    "look down"
+  ],
+  [
+    "stand",
+    "head turn towards left shoulder"
+  ],
+  [
+    "catch object with both hands in front of torso",
+    "stand"
+  ],
+  [
+    "stand",
+    "throw object overhand with right arm"
+  ],
+  [
+    "catch object with both hands in front of torso",
+    "stand"
+  ],
+  [
+    "stand",
+    "throw object overhand with right arm"
+  ],
+  [
+    "stand",
+    "catch object with both hands in front of torso"
+  ],
+  [
+    "throw object overhand with right arm",
+    "stand"
+  ],
+  [
+    "stand",
+    "catch object with both hands in front of torso"
+  ],
+  [
+    "stand",
+    "throw object overhand with right arm"
+  ],
+  [
+    "stand",
+    "catch object with both hands in front of torso"
+  ],
+  [
+    "stand",
+    "throw object overhand with right arm"
+  ],
+  [
+    "catch object with both hands in front of torso",
+    "stand"
+  ],
+  [
+    "stand",
+    "bounces object off ground with right hand"
+  ],
+  [
+    "stand",
+    "catch object with both hands in front of torso"
+  ],
+  [
+    "grab object",
+    "bend over"
+  ],
+  [
+    "squat",
+    "grab object"
+  ],
+  [
+    "stand",
+    "knock"
+  ],
+  [
+    "touch face with left hand",
+    "walk forward"
+  ],
+  [
+    "look to left",
+    "touch neck"
+  ],
+  [
+    "make large counter clockwise circles with left leg in front of body",
+    "stand"
+  ],
+  [
+    "walk forwards in counter clockwise circle",
+    "stand"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn left"
+  ],
+  [
+    "walk",
+    "turn left"
+  ],
+  [
+    "walk",
+    "turn left"
+  ],
+  [
+    "walk in circles",
+    "pace in circles"
+  ],
+  [
+    "lift right leg back",
+    "touch ground"
+  ],
+  [
+    "touch ground",
+    "lift left leg back"
+  ],
+  [
+    "circle right arm backwards",
+    "circle left arm backwards"
+  ],
+  [
+    "circle right arm backwards",
+    "circle left arm backwards"
+  ],
+  [
+    "circle head counterclockwise",
+    "circle left arm backwards"
+  ],
+  [
+    "stand",
+    "catch"
+  ],
+  [
+    "stand",
+    "throw in the air"
+  ],
+  [
+    "catch",
+    "stand"
+  ],
+  [
+    "stand",
+    "throw in the air"
+  ],
+  [
+    "stand",
+    "catch"
+  ],
+  [
+    "stand",
+    "look to the right"
+  ],
+  [
+    "stand",
+    "catch object with both hands"
+  ],
+  [
+    "stand",
+    "throw object overhand with right hand"
+  ],
+  [
+    "catch object with both hands",
+    "stand"
+  ],
+  [
+    "stand",
+    "throw object overhand with right hand"
+  ],
+  [
+    "stand",
+    "catch object with both hands"
+  ],
+  [
+    "throw object overhand with right hand",
+    "stand"
+  ],
+  [
+    "stand",
+    "knock on door"
+  ],
+  [
+    "reach both hands down to floor",
+    "bends knees and down at waist"
+  ],
+  [
+    "move item up to knee level",
+    "bends knees and down at waist"
+  ],
+  [
+    "stand",
+    "turn head to right"
+  ],
+  [
+    "roll upper body from waist",
+    "lifts left hand towards face"
+  ],
+  [
+    "roll right ankle in front of body clockwise",
+    "lifts left hand towards face"
+  ],
+  [
+    "uplift object on surface",
+    "bend down"
+  ],
+  [
+    "sit on chair",
+    "adjust seat"
+  ],
+  [
+    "bends at waist with knees bent",
+    "reach to floor with both hands"
+  ],
+  [
+    "bends at waist with knees bent",
+    "move item up to knee high level from floor"
+  ],
+  [
+    "stand",
+    "look down"
+  ],
+  [
+    "walk forward",
+    "crouch"
+  ],
+  [
+    "swing left arm forwards in a circle",
+    "walk"
+  ],
+  [
+    "swing left arm forwards in a circle",
+    "walk"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "skip",
+    "turn left"
+  ],
+  [
+    "turn right",
+    "jog"
+  ],
+  [
+    "turn right",
+    "jog"
+  ],
+  [
+    "turn right",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "turn left",
+    "step back"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "walk laterally",
+    "turn around"
+  ],
+  [
+    "walk forward",
+    "stretch arms"
+  ],
+  [
+    "turn around",
+    "walk forward"
+  ],
+  [
+    "walk forward",
+    "stretch arms"
+  ],
+  [
+    "bend down at the knees",
+    "lift object with both hands"
+  ],
+  [
+    "straighten legs",
+    "lift object with both hands"
+  ],
+  [
+    "lean forward",
+    "put left leg forward"
+  ],
+  [
+    "grab object",
+    "squat with knees to the chest"
+  ],
+  [
+    "stand",
+    "tap with right hand"
+  ],
+  [
+    "look around",
+    "stand"
+  ],
+  [
+    "stand",
+    "watch ball"
+  ],
+  [
+    "walk",
+    "turn lefts"
+  ],
+  [
+    "turn lefts",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn lefts"
+  ],
+  [
+    "walk",
+    "turn lefts"
+  ],
+  [
+    "walk",
+    "turn lefts"
+  ],
+  [
+    "turn lefts",
+    "walk"
+  ],
+  [
+    "punts object with right leg out stretched",
+    "right arm jerk in front of torso and to the side"
+  ],
+  [
+    "stand",
+    "take step"
+  ],
+  [
+    "make door knock motion with right hand",
+    "stand"
+  ],
+  [
+    "wave arms",
+    "stand"
+  ],
+  [
+    "taps on door with knuckles on right hand",
+    "stand"
+  ],
+  [
+    "hands on head sway body from left to right",
+    "slightly crouch"
+  ],
+  [
+    "head look to the left",
+    "both arms down"
+  ],
+  [
+    "head look to the right",
+    "both arms down"
+  ],
+  [
+    "head look to the left",
+    "left hand touch mouth move arm up and down"
+  ],
+  [
+    "shuffle forward",
+    "look over right shoulder"
+  ],
+  [
+    "look over left shoulder",
+    "shuffle forward"
+  ],
+  [
+    "look over right shoulder",
+    "shuffle forward"
+  ],
+  [
+    "look over left shoulder",
+    "creep forward"
+  ],
+  [
+    "creep forward",
+    "look over right shoulder"
+  ],
+  [
+    "creep forward",
+    "look over left shoulder"
+  ],
+  [
+    "creep forward",
+    "look over right shoulder"
+  ],
+  [
+    "look over left shoulder",
+    "shuffle forward"
+  ],
+  [
+    "creep forward",
+    "look over right shoulder"
+  ],
+  [
+    "creep forward",
+    "look over right shoulder"
+  ],
+  [
+    "creep forward",
+    "look over right shoulder"
+  ],
+  [
+    "look right",
+    "hold arms straight in front"
+  ],
+  [
+    "look to right",
+    "stand"
+  ],
+  [
+    "juts hands out to front and back",
+    "turn left"
+  ],
+  [
+    "waves right arm left and right",
+    "hold nose"
+  ],
+  [
+    "turn left",
+    "dances"
+  ],
+  [
+    "stand",
+    "slow silly walk"
+  ],
+  [
+    "stand",
+    "fast silly walk"
+  ],
+  [
+    "touch face",
+    "normal walk"
+  ],
+  [
+    "walk",
+    "lean forward"
+  ],
+  [
+    "look to the left slightly",
+    "lean forward"
+  ],
+  [
+    "walk",
+    "lean forward"
+  ],
+  [
+    "walk",
+    "look to the left slightly"
+  ],
+  [
+    "walk",
+    "lean forward"
+  ],
+  [
+    "lean forward",
+    "walk"
+  ],
+  [
+    "lean forward",
+    "look to the left slightly"
+  ],
+  [
+    "stand",
+    "look back"
+  ],
+  [
+    "touch",
+    "low walk"
+  ],
+  [
+    "scratch head",
+    "low walk"
+  ],
+  [
+    "look back",
+    "low walk"
+  ],
+  [
+    "stand",
+    "look center right"
+  ],
+  [
+    "look down left",
+    "stand"
+  ],
+  [
+    "stand",
+    "look center right"
+  ],
+  [
+    "stand",
+    "look down left"
+  ],
+  [
+    "stand",
+    "look center right"
+  ],
+  [
+    "stand",
+    "look down left"
+  ],
+  [
+    "stand",
+    "look center right"
+  ],
+  [
+    "bend knees",
+    "run forward"
+  ],
+  [
+    "turn around",
+    "bend knees"
+  ],
+  [
+    "bend knees",
+    "run forward"
+  ],
+  [
+    "sit down",
+    "both arm cover head"
+  ],
+  [
+    "sit down",
+    "both arm cover head"
+  ],
+  [
+    "look around for something",
+    "crouch down"
+  ],
+  [
+    "raise arms",
+    "step forward"
+  ],
+  [
+    "raise arms",
+    "flap"
+  ],
+  [
+    "arms bring inward",
+    "crouch forward"
+  ],
+  [
+    "raise arms",
+    "crouch forward"
+  ],
+  [
+    "move upper body",
+    "raise arms"
+  ],
+  [
+    "arms bring inward",
+    "crouch forward"
+  ],
+  [
+    "raise arms",
+    "crouch forward"
+  ],
+  [
+    "raise arms",
+    "move upper body"
+  ],
+  [
+    "crouch forward",
+    "arms bring inward"
+  ],
+  [
+    "walk forward",
+    "swing arms out"
+  ],
+  [
+    "walk forward",
+    "hold hands together"
+  ],
+  [
+    "stand",
+    "hold hands together"
+  ],
+  [
+    "bend arms at chest",
+    "crouch"
+  ],
+  [
+    "bend arms at chest",
+    "crouch"
+  ],
+  [
+    "bend to right",
+    "crouch"
+  ],
+  [
+    "spin in circle",
+    "crouch"
+  ],
+  [
+    "spin in circle",
+    "bend arms at chest"
+  ],
+  [
+    "bend arms at chest",
+    "walk forward"
+  ],
+  [
+    "bend arms at chest",
+    "crouch"
+  ],
+  [
+    "crouch",
+    "walk forward"
+  ],
+  [
+    "walk forward",
+    "crouch"
+  ],
+  [
+    "bend arms at chest",
+    "crouch"
+  ],
+  [
+    "stand lean forward",
+    "lower upper body"
+  ],
+  [
+    "stand lean forward",
+    "raise upper body"
+  ],
+  [
+    "look around",
+    "stand lean forward"
+  ],
+  [
+    "look around",
+    "stand lean forward"
+  ],
+  [
+    "look around",
+    "stand lean forward"
+  ],
+  [
+    "turn upper body left",
+    "lower upper body"
+  ],
+  [
+    "stand lean forward",
+    "lower upper body"
+  ],
+  [
+    "walk forward",
+    "flap arms"
+  ],
+  [
+    "lean forward",
+    "flap arms"
+  ],
+  [
+    "lean backward",
+    "flap arms"
+  ],
+  [
+    "lean forward",
+    "flap arms"
+  ],
+  [
+    "flap arms",
+    "lean backward"
+  ],
+  [
+    "act like a rat",
+    "move in circles"
+  ],
+  [
+    "stand with arms at waist level",
+    "act like a rat"
+  ],
+  [
+    "stand stationary",
+    "lean forward"
+  ],
+  [
+    "stand stationary",
+    "bob head"
+  ],
+  [
+    "stand stationary",
+    "lean back"
+  ],
+  [
+    "stand stationary",
+    "bob head"
+  ],
+  [
+    "stand stationary",
+    "lean forward"
+  ],
+  [
+    "struggle",
+    "look backward"
+  ],
+  [
+    "dodge",
+    "lift up left leg"
+  ],
+  [
+    "dodge",
+    "bend forward"
+  ],
+  [
+    "scared movement",
+    "kick things"
+  ],
+  [
+    "scared movement",
+    "get down"
+  ],
+  [
+    "bring hands up to face",
+    "look around nervously"
+  ],
+  [
+    "look around nervously",
+    "cover face with hands"
+  ],
+  [
+    "squat down",
+    "cower in fear"
+  ],
+  [
+    "walk",
+    "look down"
+  ],
+  [
+    "walk up steps",
+    "look down"
+  ],
+  [
+    "wide side step to the right",
+    "look down"
+  ],
+  [
+    "stand",
+    "look down"
+  ],
+  [
+    "look down at feet",
+    "wide side step to the right"
+  ],
+  [
+    "mime tap something with right hand",
+    "look down"
+  ],
+  [
+    "mime put something in back pocket with left hand",
+    "lower hands to sides"
+  ],
+  [
+    "look around",
+    "scare"
+  ],
+  [
+    "look around",
+    "scare"
+  ],
+  [
+    "turn left",
+    "pick up"
+  ],
+  [
+    "hands on face",
+    "bend straighten knees"
+  ],
+  [
+    "bend straighten knees",
+    "rub hands together"
+  ],
+  [
+    "hands on chest",
+    "bend straighten knees"
+  ],
+  [
+    "bend straighten knees",
+    "rub hands on chest"
+  ],
+  [
+    "shake torso",
+    "rub hands on chest"
+  ],
+  [
+    "stand",
+    "play drum set"
+  ],
+  [
+    "lower arms",
+    "stand"
+  ],
+  [
+    "hunch over",
+    "shake head"
+  ],
+  [
+    "shake head",
+    "hunch over"
+  ],
+  [
+    "stand",
+    "kick right foot forward"
+  ],
+  [
+    "stand",
+    "hold arms above head"
+  ],
+  [
+    "stand",
+    "drop arms down"
+  ],
+  [
+    "stand",
+    "wave right arm in front of body"
+  ],
+  [
+    "stand",
+    "raise arms"
+  ],
+  [
+    "move hands around each other in a circular motion",
+    "stand"
+  ],
+  [
+    "stand",
+    "move both arms up and down repeatedly"
+  ],
+  [
+    "wave right arm to the side of body",
+    "stand"
+  ],
+  [
+    "stand",
+    "put right arm down"
+  ],
+  [
+    "side steps",
+    "turn left"
+  ],
+  [
+    "side steps",
+    "turn right"
+  ],
+  [
+    "side steps",
+    "turn left"
+  ],
+  [
+    "turn left",
+    "side steps"
+  ],
+  [
+    "climb up",
+    "turn left"
+  ],
+  [
+    "about face left",
+    "steep down off of something"
+  ],
+  [
+    "walk down steps",
+    "walk forward"
+  ],
+  [
+    "turn left",
+    "duck head"
+  ],
+  [
+    "duck head",
+    "turn right"
+  ],
+  [
+    "turn left",
+    "duck head"
+  ],
+  [
+    "duck head",
+    "turn right"
+  ],
+  [
+    "turn left",
+    "duck head"
+  ],
+  [
+    "duck head",
+    "turn right"
+  ],
+  [
+    "grab right hamstring with right hand",
+    "grab right quad with left hand"
+  ],
+  [
+    "grab right hamstring with right hand",
+    "grab right quad with left hand"
+  ],
+  [
+    "move right foot",
+    "hunch shoulders"
+  ],
+  [
+    "look to the left",
+    "hunch shoulders"
+  ],
+  [
+    "move left foot",
+    "look straight forward"
+  ],
+  [
+    "look straight forward",
+    "twitch left elbow"
+  ],
+  [
+    "squat",
+    "look right"
+  ],
+  [
+    "both hands hold head",
+    "duck head"
+  ],
+  [
+    "look around",
+    "rise up"
+  ],
+  [
+    "duck head",
+    "both hands hold head"
+  ],
+  [
+    "rise up",
+    "look around"
+  ],
+  [
+    "move right hand on right ear",
+    "stand up"
+  ],
+  [
+    "stand up",
+    "move right hand down"
+  ],
+  [
+    "hands on back of neck",
+    "run forward"
+  ],
+  [
+    "look around",
+    "stand"
+  ],
+  [
+    "stand",
+    "look over towards right shoulder"
+  ],
+  [
+    "right low kick",
+    "fight stance"
+  ],
+  [
+    "stand",
+    "fight stance"
+  ],
+  [
+    "right high kick",
+    "fight stance"
+  ],
+  [
+    "stand",
+    "fight stance"
+  ],
+  [
+    "right high kick",
+    "fight stance"
+  ],
+  [
+    "stand",
+    "fight stance"
+  ],
+  [
+    "right low kick",
+    "fight stance"
+  ],
+  [
+    "stand",
+    "fight stance"
+  ],
+  [
+    "right low kick",
+    "fight stance"
+  ],
+  [
+    "fight stance",
+    "stand"
+  ],
+  [
+    "right high kick",
+    "fight stance"
+  ],
+  [
+    "fight stance",
+    "right high kick"
+  ],
+  [
+    "stand",
+    "fight stance"
+  ],
+  [
+    "right high kick",
+    "fight stance"
+  ],
+  [
+    "stand",
+    "fight stance"
+  ],
+  [
+    "right high kick",
+    "fight stance"
+  ],
+  [
+    "fight stance",
+    "stand"
+  ],
+  [
+    "right high kick",
+    "fight stance"
+  ],
+  [
+    "stand",
+    "fight stance"
+  ],
+  [
+    "right high kick",
+    "fight stance"
+  ],
+  [
+    "stand",
+    "fight stance"
+  ],
+  [
+    "right high kick",
+    "fight stance"
+  ],
+  [
+    "stand",
+    "fight stance"
+  ],
+  [
+    "lift right forearm in the air",
+    "curl left arm"
+  ],
+  [
+    "lift right forearm in the air",
+    "curl left arm"
+  ],
+  [
+    "bend right knee forward",
+    "curl left arm"
+  ],
+  [
+    "bend right knee forward",
+    "curl left arm"
+  ],
+  [
+    "curl left arm",
+    "lift right forearm in the air"
+  ],
+  [
+    "spin right arm downwards",
+    "curl left arm"
+  ],
+  [
+    "step forward",
+    "curl left arm"
+  ],
+  [
+    "curl left arm",
+    "bend right knee forward"
+  ],
+  [
+    "spin right arm downwards",
+    "curl left arm"
+  ],
+  [
+    "stand",
+    "look right"
+  ],
+  [
+    "bend torso right",
+    "place hands on hips"
+  ],
+  [
+    "bend torso left",
+    "place hands on hips"
+  ],
+  [
+    "stand",
+    "bends down"
+  ],
+  [
+    "stand",
+    "bends down"
+  ],
+  [
+    "stand",
+    "moves object from floor to above head"
+  ],
+  [
+    "stand",
+    "bends down"
+  ],
+  [
+    "stand",
+    "moves object from floor to above head"
+  ],
+  [
+    "stand",
+    "moves object from floor to above head"
+  ],
+  [
+    "stand",
+    "bends down"
+  ],
+  [
+    "moves object from floor to above head",
+    "stand"
+  ],
+  [
+    "stand",
+    "bends down"
+  ],
+  [
+    "moves object from floor to above head",
+    "stand"
+  ],
+  [
+    "stand",
+    "moves object from floor to above head"
+  ],
+  [
+    "stand",
+    "moves object from floor to above head"
+  ],
+  [
+    "bends down",
+    "stand"
+  ],
+  [
+    "stand",
+    "moves object from floor to above head"
+  ],
+  [
+    "stand",
+    "turn"
+  ],
+  [
+    "jump turn right",
+    "jump"
+  ],
+  [
+    "bend down",
+    "bend down take"
+  ],
+  [
+    "walk",
+    "bend down"
+  ],
+  [
+    "shifts legs to the right",
+    "run forward"
+  ],
+  [
+    "look to the left",
+    "stand"
+  ],
+  [
+    "look at the left",
+    "stand with arms down"
+  ],
+  [
+    "stand with arms down",
+    "look at the ground"
+  ],
+  [
+    "look right",
+    "stand"
+  ],
+  [
+    "turn around",
+    "look right"
+  ],
+  [
+    "look left",
+    "stand"
+  ],
+  [
+    "sway",
+    "duck"
+  ],
+  [
+    "look around",
+    "sway"
+  ],
+  [
+    "sway",
+    "duck"
+  ],
+  [
+    "sway",
+    "look around"
+  ],
+  [
+    "sway",
+    "duck"
+  ],
+  [
+    "step forward",
+    "sway"
+  ],
+  [
+    "sway",
+    "duck"
+  ],
+  [
+    "sway",
+    "look around"
+  ],
+  [
+    "sway",
+    "duck"
+  ],
+  [
+    "walk",
+    "turn"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "swat right hand",
+    "stand"
+  ],
+  [
+    "walk forward",
+    "step over"
+  ],
+  [
+    "stand",
+    "lift right hand up to face"
+  ],
+  [
+    "lowers right hand",
+    "stand"
+  ],
+  [
+    "stand",
+    "reach forward with left hand"
+  ],
+  [
+    "stand",
+    "left hand moves object to right hand"
+  ],
+  [
+    "stand",
+    "right hand lowers with object"
+  ],
+  [
+    "walk forward",
+    "rotate shoulders"
+  ],
+  [
+    "hold another object with left hand",
+    "make a chopping motion with right hand"
+  ],
+  [
+    "turn right",
+    "swim"
+  ],
+  [
+    "walk",
+    "hands on waist"
+  ],
+  [
+    "walk",
+    "extend arms down"
+  ],
+  [
+    "sit down",
+    "left leg on right knee"
+  ],
+  [
+    "sit down",
+    "right leg on left knee"
+  ],
+  [
+    "pace",
+    "hold hands on hips"
+  ],
+  [
+    "pace",
+    "gesture"
+  ],
+  [
+    "pace",
+    "gesture"
+  ],
+  [
+    "right hand dribble",
+    "sprint forward"
+  ],
+  [
+    "place hands on lap",
+    "sit"
+  ],
+  [
+    "place hands on lap",
+    "sit"
+  ],
+  [
+    "place hands on lap",
+    "sit"
+  ],
+  [
+    "hand together in front of belly",
+    "stand"
+  ],
+  [
+    "hold hands at armpits",
+    "lean from side to side"
+  ],
+  [
+    "look to left",
+    "hold hands at armpits"
+  ],
+  [
+    "look to left",
+    "hold hands at armpits"
+  ],
+  [
+    "hold hands at armpits",
+    "flap right arm at side"
+  ],
+  [
+    "hold hands at armpits",
+    "flap arms at sides"
+  ],
+  [
+    "hold hands at armpits",
+    "lean from side to side"
+  ],
+  [
+    "flap arms at sides",
+    "hold hands at armpits"
+  ],
+  [
+    "hold hands at armpits",
+    "flap arms at sides"
+  ],
+  [
+    "hold hands at armpits",
+    "lean from side to side"
+  ],
+  [
+    "hold hands at armpits",
+    "flap arms at sides"
+  ],
+  [
+    "look to left",
+    "hold hands at armpits"
+  ],
+  [
+    "look to left",
+    "hold hands at armpits"
+  ],
+  [
+    "look to left",
+    "hold hands at armpits"
+  ],
+  [
+    "look to left",
+    "hold hands at armpits"
+  ],
+  [
+    "look to left",
+    "hold hands at armpits"
+  ],
+  [
+    "look to left",
+    "hold hands at armpits"
+  ],
+  [
+    "look to left",
+    "hold hands at armpits"
+  ],
+  [
+    "lean from side to side",
+    "hold hands at armpits"
+  ],
+  [
+    "flap arms at sides",
+    "hold hands at armpits"
+  ],
+  [
+    "shake arms",
+    "look right"
+  ],
+  [
+    "look around",
+    "stand"
+  ],
+  [
+    "vacuum",
+    "stand"
+  ],
+  [
+    "argue",
+    "right hand movement"
+  ],
+  [
+    "argue",
+    "right hand movement"
+  ],
+  [
+    "argue",
+    "both hand movement"
+  ],
+  [
+    "argue",
+    "right hand movement"
+  ],
+  [
+    "argue",
+    "both hand movement"
+  ],
+  [
+    "argue",
+    "left hand movement"
+  ],
+  [
+    "argue",
+    "both hand movement"
+  ],
+  [
+    "right hand movement",
+    "stand"
+  ],
+  [
+    "stand",
+    "both hand movement"
+  ],
+  [
+    "answer phone",
+    "stand"
+  ],
+  [
+    "stand",
+    "hang up phone"
+  ],
+  [
+    "shower",
+    "stand"
+  ],
+  [
+    "look through object",
+    "right hand free"
+  ],
+  [
+    "look through object",
+    "adjust object"
+  ],
+  [
+    "stand",
+    "look to the left"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "look up",
+    "walk"
+  ],
+  [
+    "look up",
+    "walk back"
+  ],
+  [
+    "look up",
+    "right leg kick"
+  ],
+  [
+    "jump kick",
+    "jump kick right leg"
+  ],
+  [
+    "place hand over brow",
+    "look left to right"
+  ],
+  [
+    "look right to left",
+    "place hand over brow"
+  ],
+  [
+    "rock side to side",
+    "stretch arms out in front together"
+  ],
+  [
+    "bend knees",
+    "place hands on mouth"
+  ],
+  [
+    "look right to left",
+    "place hand over brow"
+  ],
+  [
+    "bend knees",
+    "hold hands up in front"
+  ],
+  [
+    "scratch with right hand",
+    "scratch with left hand"
+  ],
+  [
+    "scratch with right hand",
+    "bend knees"
+  ],
+  [
+    "bend knees",
+    "hold hands up in front"
+  ],
+  [
+    "hold hands up in front",
+    "bend knees"
+  ],
+  [
+    "bend knees",
+    "scratch with right hand"
+  ],
+  [
+    "bend knees",
+    "hold hands up in front"
+  ],
+  [
+    "scratch with right hand",
+    "hold hands up in front"
+  ],
+  [
+    "look left",
+    "hold hands up in front"
+  ],
+  [
+    "bend knees",
+    "scratch with left hand"
+  ],
+  [
+    "look up",
+    "right arm up"
+  ],
+  [
+    "right arm up",
+    "look straight"
+  ],
+  [
+    "hold item",
+    "stand"
+  ],
+  [
+    "turn around right",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn around left"
+  ],
+  [
+    "walk",
+    "bend forward"
+  ],
+  [
+    "walk",
+    "bend forward"
+  ],
+  [
+    "run forward lead with the right leg",
+    "bends forward with arms spread out"
+  ],
+  [
+    "bends forward with arms spread out",
+    "slow to a stop"
+  ],
+  [
+    "bend down",
+    "hold with hands"
+  ],
+  [
+    "right hand on back",
+    "left arm up with elbow bent"
+  ],
+  [
+    "lean sideways",
+    "right hand on back"
+  ],
+  [
+    "right hand on back",
+    "left arm up with elbow bent"
+  ],
+  [
+    "lean sideways",
+    "right hand on back"
+  ],
+  [
+    "turn back",
+    "jump with alternate legs"
+  ],
+  [
+    "turn back",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "walk forward",
+    "drink"
+  ],
+  [
+    "walk forward",
+    "turn around right"
+  ],
+  [
+    "turn around left",
+    "walk forward"
+  ],
+  [
+    "jump stumble",
+    "jump"
+  ],
+  [
+    "look around",
+    "just stand"
+  ],
+  [
+    "look around",
+    "shade eyes from right hand"
+  ],
+  [
+    "shade eyes from right hand",
+    "look around"
+  ],
+  [
+    "look around",
+    "right hand on nose"
+  ],
+  [
+    "move arms up",
+    "swing torso"
+  ],
+  [
+    "turn",
+    "play basketball"
+  ],
+  [
+    "walk",
+    "play basketball"
+  ],
+  [
+    "step backward",
+    "hands on hips"
+  ],
+  [
+    "throw right arm to the left in front of chest",
+    "steps forward"
+  ],
+  [
+    "turn to the right",
+    "throw left arm to the right in front of chest"
+  ],
+  [
+    "jump",
+    "throw hand out and back together over head"
+  ],
+  [
+    "bring hands down to waist",
+    "crouch forward"
+  ],
+  [
+    "move hands left and right in front of chest",
+    "crouch forward"
+  ],
+  [
+    "throw right arm to the left in front of chest",
+    "crouch forward"
+  ],
+  [
+    "throw right arm above head",
+    "crouch forward"
+  ],
+  [
+    "crouch forward",
+    "throw left arm above head"
+  ],
+  [
+    "stand",
+    "throw left arm above head"
+  ],
+  [
+    "walk",
+    "hunch over"
+  ],
+  [
+    "hold on with right hand",
+    "pull backwards"
+  ],
+  [
+    "hold on with right hand",
+    "pull backwards"
+  ],
+  [
+    "step forwards",
+    "hold on with right hand"
+  ],
+  [
+    "walk forward",
+    "arms near sides"
+  ],
+  [
+    "side steps to the right",
+    "arms near sides"
+  ],
+  [
+    "side steps to the left",
+    "arms near sides"
+  ],
+  [
+    "hand actions",
+    "body actions"
+  ],
+  [
+    "hand actions",
+    "body actions"
+  ],
+  [
+    "move head around",
+    "stick out arms"
+  ],
+  [
+    "flex arms",
+    "sweep to the right"
+  ],
+  [
+    "jog lightly",
+    "turn right"
+  ],
+  [
+    "turn left and right at waist",
+    "hold hands at face"
+  ],
+  [
+    "wave right hand",
+    "look around"
+  ],
+  [
+    "look down at left wrist",
+    "turn around"
+  ],
+  [
+    "stand",
+    "look down at feet"
+  ],
+  [
+    "keep both hands in front of face like a binocular",
+    "look to the right"
+  ],
+  [
+    "keep both hands in front of face like a binocular",
+    "look to the left"
+  ],
+  [
+    "reach toward toes",
+    "bend over"
+  ],
+  [
+    "bend over",
+    "reach toward left toes"
+  ],
+  [
+    "reach toward right toes",
+    "bend over"
+  ],
+  [
+    "dance",
+    "look down"
+  ],
+  [
+    "look up",
+    "dance"
+  ],
+  [
+    "sit down",
+    "stand"
+  ],
+  [
+    "sit down",
+    "answer phone with right hand"
+  ],
+  [
+    "cross arms",
+    "look down"
+  ],
+  [
+    "look at the ground",
+    "walk backwards"
+  ],
+  [
+    "turn left",
+    "stand up"
+  ],
+  [
+    "lean forward",
+    "turn right"
+  ],
+  [
+    "sit",
+    "cross left leg over right leg"
+  ],
+  [
+    "stand up",
+    "look at left arm"
+  ],
+  [
+    "squat down",
+    "cross legs"
+  ],
+  [
+    "cross legs",
+    "squat with arms spread"
+  ],
+  [
+    "stand up",
+    "cross legs"
+  ],
+  [
+    "look behind",
+    "step back toward chair"
+  ],
+  [
+    "feet sink while walk",
+    "walk forward hands at sides"
+  ],
+  [
+    "look up",
+    "stand"
+  ],
+  [
+    "walk up an incline or ramp",
+    "walk forward arms at side"
+  ],
+  [
+    "go down the stairs",
+    "walk backwards"
+  ],
+  [
+    "stumble forward on right foot",
+    "stand with arms at sides"
+  ],
+  [
+    "raise arms",
+    "stand"
+  ],
+  [
+    "lean to the right",
+    "walk"
+  ],
+  [
+    "lean right",
+    "walk"
+  ],
+  [
+    "walk",
+    "lean right"
+  ],
+  [
+    "walk",
+    "lean left"
+  ],
+  [
+    "stand",
+    "flap hands together in front of face palms towards each other"
+  ],
+  [
+    "bend over",
+    "shake"
+  ],
+  [
+    "lift up",
+    "shake"
+  ],
+  [
+    "wave",
+    "bend"
+  ],
+  [
+    "unknown",
+    "place hands to face"
+  ],
+  [
+    "step backward",
+    "place elbows behind his back"
+  ],
+  [
+    "walk backwards",
+    "look down"
+  ],
+  [
+    "look to the side",
+    "walk backwards"
+  ],
+  [
+    "walk backwards",
+    "look to the side"
+  ],
+  [
+    "look to the side",
+    "walk backwards"
+  ],
+  [
+    "walk backwards",
+    "look down"
+  ],
+  [
+    "look down",
+    "walk backwards"
+  ],
+  [
+    "limp backwards",
+    "look to the side"
+  ],
+  [
+    "clutch midsection",
+    "staggering backwards"
+  ],
+  [
+    "step backwards",
+    "look back to the left"
+  ],
+  [
+    "duck down",
+    "touch forehead with left hand"
+  ],
+  [
+    "move dizzy",
+    "look around"
+  ],
+  [
+    "nod his head",
+    "walk"
+  ],
+  [
+    "sit",
+    "right leg cross over left leg"
+  ],
+  [
+    "left leg cross over right leg",
+    "sit"
+  ],
+  [
+    "sit",
+    "right leg cross over left leg"
+  ],
+  [
+    "sit",
+    "left leg cross over right leg"
+  ],
+  [
+    "turn around",
+    "walk"
+  ],
+  [
+    "walk slowly in circles",
+    "drop head"
+  ],
+  [
+    "step back",
+    "drop head"
+  ],
+  [
+    "drop head",
+    "lean down"
+  ],
+  [
+    "clasp hands together",
+    "drop head"
+  ],
+  [
+    "walk",
+    "arms go down"
+  ],
+  [
+    "stand with legs spread",
+    "prepare serve"
+  ],
+  [
+    "serve volley ball",
+    "stand with legs spread"
+  ],
+  [
+    "stand with legs spread",
+    "back up"
+  ],
+  [
+    "stand with legs spread",
+    "prepare serve"
+  ],
+  [
+    "walk in circles",
+    "hold left hand to shoulder"
+  ],
+  [
+    "place hands and head into position",
+    "walk in pattern"
+  ],
+  [
+    "both hand extended outward slightly apart",
+    "both hand extend outward slightly apart"
+  ],
+  [
+    "step backward",
+    "make a throwing motion"
+  ],
+  [
+    "stand",
+    "intoxicated swaying"
+  ],
+  [
+    "place right hand on object",
+    "place left hand on object"
+  ],
+  [
+    "press forward",
+    "place right hand on object"
+  ],
+  [
+    "place right hand on object",
+    "rear back"
+  ],
+  [
+    "place left hand on object",
+    "place right hand on object"
+  ],
+  [
+    "place left hand on object",
+    "bow head"
+  ],
+  [
+    "place left hand on object",
+    "bow head"
+  ],
+  [
+    "bow head",
+    "place right hand on object"
+  ],
+  [
+    "place right hand on object",
+    "place left hand on object"
+  ],
+  [
+    "place right hand on object",
+    "place left hand on object"
+  ],
+  [
+    "place right hand on object",
+    "place left hand on object"
+  ],
+  [
+    "place right hand on object",
+    "place left hand on object"
+  ],
+  [
+    "walk clockwise",
+    "hit with right hand"
+  ],
+  [
+    "walk clockwise",
+    "hit with right hand"
+  ],
+  [
+    "hit with right hand",
+    "walk clockwise"
+  ],
+  [
+    "walk clockwise",
+    "hit with right hand"
+  ],
+  [
+    "walk clockwise",
+    "hit with right hand"
+  ],
+  [
+    "walk clockwise",
+    "hit with right hand"
+  ],
+  [
+    "hit with right hand",
+    "walk clockwise"
+  ],
+  [
+    "hold microphone with left hand",
+    "face left"
+  ],
+  [
+    "hold microphone with left hand",
+    "wave with right hand"
+  ],
+  [
+    "bow",
+    "wave with right hand"
+  ],
+  [
+    "bow",
+    "wave with right hand"
+  ],
+  [
+    "hold microphone with left hand",
+    "shake hand with right hand"
+  ],
+  [
+    "hold microphone with left hand",
+    "wave with right hand"
+  ],
+  [
+    "hold microphone with left hand",
+    "wave with right hand"
+  ],
+  [
+    "hold microphone with left hand",
+    "face left"
+  ],
+  [
+    "hold microphone with left hand",
+    "wave with right hand"
+  ],
+  [
+    "wave right hand",
+    "stand"
+  ],
+  [
+    "low hand",
+    "stand"
+  ],
+  [
+    "stand",
+    "wave hands in the air"
+  ],
+  [
+    "stand",
+    "wave right hand"
+  ],
+  [
+    "stand",
+    "low hand"
+  ],
+  [
+    "stand",
+    "wave right hand lower"
+  ],
+  [
+    "stand",
+    "wave left hand"
+  ],
+  [
+    "hold arms out at sides",
+    "spin clockwise"
+  ],
+  [
+    "spin counterclockwise",
+    "hold arms out at sides"
+  ],
+  [
+    "walk",
+    "right arm elevate"
+  ],
+  [
+    "body turn",
+    "right arm elevate"
+  ],
+  [
+    "walk",
+    "right arm elevate"
+  ],
+  [
+    "body turn",
+    "right arm elevate"
+  ],
+  [
+    "walk",
+    "right arm elevate"
+  ],
+  [
+    "body turn",
+    "right arm elevate"
+  ],
+  [
+    "right arm elevate",
+    "walk"
+  ],
+  [
+    "body turn",
+    "right arm elevate"
+  ],
+  [
+    "walk",
+    "right arm elevate"
+  ],
+  [
+    "step back",
+    "right arm elevate"
+  ],
+  [
+    "stumbles",
+    "walk forwards"
+  ],
+  [
+    "stumbles",
+    "walk forwards"
+  ],
+  [
+    "walk forwards",
+    "turn body and head around 180 degrees"
+  ],
+  [
+    "walk forwards",
+    "stumbles"
+  ],
+  [
+    "stumbles",
+    "walk forwards"
+  ],
+  [
+    "wave right arm",
+    "place left hand at mouth"
+  ],
+  [
+    "shake hands",
+    "place left hand at mouth"
+  ],
+  [
+    "wave right arm",
+    "place left hand at mouth"
+  ],
+  [
+    "shake hands",
+    "place left hand at mouth"
+  ],
+  [
+    "look up",
+    "put right hand over mouth"
+  ],
+  [
+    "put right hand over mouth",
+    "nod head down"
+  ],
+  [
+    "turn left",
+    "carry with both hands"
+  ],
+  [
+    "turn left",
+    "carry with left hand"
+  ],
+  [
+    "turn left",
+    "carry with both hands"
+  ],
+  [
+    "carry with both hands",
+    "turn left"
+  ],
+  [
+    "whole body shake",
+    "walk around"
+  ],
+  [
+    "turn around",
+    "walk backwards"
+  ],
+  [
+    "walk backwards",
+    "turn around"
+  ],
+  [
+    "sit on feet position",
+    "place hands on knees"
+  ],
+  [
+    "run back",
+    "turn around"
+  ],
+  [
+    "run forward",
+    "turn around"
+  ],
+  [
+    "run back",
+    "turn around"
+  ],
+  [
+    "run forward",
+    "turn around"
+  ],
+  [
+    "turn around",
+    "run back"
+  ],
+  [
+    "turn around",
+    "run forward"
+  ],
+  [
+    "left leg cross over right leg",
+    "sit"
+  ],
+  [
+    "right leg cross over right leg",
+    "sit"
+  ],
+  [
+    "left leg cross over right leg",
+    "lay back"
+  ],
+  [
+    "stand",
+    "move hands in wind motion"
+  ],
+  [
+    "stand",
+    "low hands"
+  ],
+  [
+    "move hands in wind motion",
+    "stand"
+  ],
+  [
+    "raise right hand to mouth",
+    "eat food"
+  ],
+  [
+    "eat food",
+    "raise right hand to mouth"
+  ],
+  [
+    "eat food",
+    "raise right hand to mouth"
+  ],
+  [
+    "eat food",
+    "raise right hand to mouth"
+  ],
+  [
+    "eat food",
+    "raise right hand to mouth"
+  ],
+  [
+    "eat food",
+    "raise right hand to mouth"
+  ],
+  [
+    "eat food",
+    "raise both hands to mouth"
+  ],
+  [
+    "stand",
+    "move both hands to face"
+  ],
+  [
+    "stand",
+    "touch face with right hand"
+  ],
+  [
+    "stand",
+    "touch face with right hand"
+  ],
+  [
+    "move both hands to face",
+    "stand"
+  ],
+  [
+    "walk",
+    "head down"
+  ],
+  [
+    "look up",
+    "turn around"
+  ],
+  [
+    "head down",
+    "walk"
+  ],
+  [
+    "reach out and shake right hand",
+    "stand"
+  ],
+  [
+    "stand",
+    "reach out and shake left hand"
+  ],
+  [
+    "reach out with both hands",
+    "stand"
+  ],
+  [
+    "pivots body 45 degrees to the left",
+    "stand"
+  ],
+  [
+    "stand",
+    "reach out and shake right hand"
+  ],
+  [
+    "stand",
+    "reach out and shake left hand"
+  ],
+  [
+    "high jump",
+    "right hand full high"
+  ],
+  [
+    "right hand full high",
+    "high jump"
+  ],
+  [
+    "right hand full high",
+    "high jump"
+  ],
+  [
+    "high jump",
+    "right hand full high"
+  ],
+  [
+    "high jump",
+    "right hand full high"
+  ],
+  [
+    "high jump",
+    "right hand full high"
+  ],
+  [
+    "move head around",
+    "clasp hands together"
+  ],
+  [
+    "style hair with right hand",
+    "hold mirror in front of face"
+  ],
+  [
+    "style hair with right hand",
+    "move mirror slightly to left"
+  ],
+  [
+    "move mirror slightly right",
+    "style hair with right hand"
+  ],
+  [
+    "style hair with right hand",
+    "move mirror far right"
+  ],
+  [
+    "style hair with right hand",
+    "move mirror far left"
+  ],
+  [
+    "turn left",
+    "face rear"
+  ],
+  [
+    "turn left",
+    "walk backwards"
+  ],
+  [
+    "turn left",
+    "walk backwards"
+  ],
+  [
+    "turn left",
+    "walk backwards"
+  ],
+  [
+    "turn left",
+    "walk backwards"
+  ],
+  [
+    "turn left",
+    "walk backwards"
+  ],
+  [
+    "pick up object",
+    "walk forward"
+  ],
+  [
+    "step on object",
+    "walk forward"
+  ],
+  [
+    "walk forward",
+    "turn around"
+  ],
+  [
+    "hold object",
+    "hit object"
+  ],
+  [
+    "stand",
+    "check wall surface"
+  ],
+  [
+    "walk forward",
+    "stand"
+  ],
+  [
+    "walk forward",
+    "lose balance"
+  ],
+  [
+    "walk forward",
+    "lose balance"
+  ],
+  [
+    "lose balance",
+    "walk forward"
+  ],
+  [
+    "turn around",
+    "hands on hips"
+  ],
+  [
+    "walk in circles",
+    "lower hands"
+  ],
+  [
+    "reach right hand up",
+    "dodge"
+  ],
+  [
+    "dodge",
+    "reach right hand up"
+  ],
+  [
+    "nod head",
+    "run"
+  ],
+  [
+    "hold right hand on chin",
+    "pace back and forth"
+  ],
+  [
+    "pace back and forth",
+    "hold right hand on chin"
+  ],
+  [
+    "walk across a plank",
+    "raise both arms"
+  ],
+  [
+    "walk across a plank",
+    "hold both arms straight up"
+  ],
+  [
+    "walk",
+    "look down"
+  ],
+  [
+    "walk forward",
+    "turn 90 degrees right"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "walk",
+    "turnaround"
+  ],
+  [
+    "step forward",
+    "stand"
+  ],
+  [
+    "grab item",
+    "stand"
+  ],
+  [
+    "stand",
+    "pour drink"
+  ],
+  [
+    "stand",
+    "set item down"
+  ],
+  [
+    "step back",
+    "stand"
+  ],
+  [
+    "wipes with left hand",
+    "wipes with right hand"
+  ],
+  [
+    "reach to the down left with right hand",
+    "steps to the left"
+  ],
+  [
+    "wipes with right hand",
+    "wipes with left hand"
+  ],
+  [
+    "steps to the left",
+    "reach to the down left with right hand"
+  ],
+  [
+    "extend right arm",
+    "bend"
+  ],
+  [
+    "extend right arm",
+    "bend"
+  ],
+  [
+    "wipe",
+    "hold"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "stand still",
+    "turn head to the right"
+  ],
+  [
+    "step forward carefully",
+    "walk forward carefully"
+  ],
+  [
+    "look to the left",
+    "sit"
+  ],
+  [
+    "sit",
+    "scratch back of head with both hands"
+  ],
+  [
+    "touch back of head with right hand",
+    "sit"
+  ],
+  [
+    "sit",
+    "upward swirl motion with right hand"
+  ],
+  [
+    "sit",
+    "scratch back of head with both hands"
+  ],
+  [
+    "sit",
+    "shake motion by face with right hand"
+  ],
+  [
+    "sit",
+    "shake both hands palm in by chest"
+  ],
+  [
+    "sit",
+    "touch face with right hand"
+  ],
+  [
+    "sit",
+    "raise both hands near chest shakes with palms out"
+  ],
+  [
+    "sit",
+    "touch back of head with right hand"
+  ],
+  [
+    "stand",
+    "extend right arm"
+  ],
+  [
+    "scratch face",
+    "sit"
+  ],
+  [
+    "sit",
+    "lift both arms"
+  ],
+  [
+    "scratch back",
+    "sit"
+  ],
+  [
+    "scratch back",
+    "sit"
+  ],
+  [
+    "sit",
+    "wave right arm in circle"
+  ],
+  [
+    "sit",
+    "scratch back"
+  ],
+  [
+    "sit",
+    "lift right arm"
+  ],
+  [
+    "sit",
+    "lift both arms"
+  ],
+  [
+    "sit",
+    "lift left arm"
+  ],
+  [
+    "sit",
+    "wave both arms side to side"
+  ],
+  [
+    "sit",
+    "lift both arms"
+  ],
+  [
+    "walk forward",
+    "arm out wide"
+  ],
+  [
+    "turn object vertically",
+    "move object to the right"
+  ],
+  [
+    "rearrange",
+    "stand"
+  ],
+  [
+    "rotate object vertically",
+    "move object to the right"
+  ],
+  [
+    "look down to left",
+    "stand"
+  ],
+  [
+    "stand",
+    "arms out at sides"
+  ],
+  [
+    "stand",
+    "look right"
+  ],
+  [
+    "walk",
+    "turnaround"
+  ],
+  [
+    "walk",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "sit",
+    "shake right hand"
+  ],
+  [
+    "raise left hand",
+    "sit"
+  ],
+  [
+    "clap",
+    "sit"
+  ],
+  [
+    "shake right hand",
+    "sit"
+  ],
+  [
+    "touch left hand with right",
+    "sit"
+  ],
+  [
+    "sit",
+    "raise left hand"
+  ],
+  [
+    "sit",
+    "raise right hand"
+  ],
+  [
+    "sit",
+    "sweep hands side to side"
+  ],
+  [
+    "raise both hands",
+    "sit"
+  ],
+  [
+    "stretch out right arm",
+    "sit"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "lean over front",
+    "both hand on rail"
+  ],
+  [
+    "sit down",
+    "place right hand on something"
+  ],
+  [
+    "stand up",
+    "place right hand on something"
+  ],
+  [
+    "walk forward",
+    "push air backwards"
+  ],
+  [
+    "lean",
+    "look at foot"
+  ],
+  [
+    "raise arms",
+    "walk in straight line"
+  ],
+  [
+    "stand",
+    "wave"
+  ],
+  [
+    "walk",
+    "quickly turn around"
+  ],
+  [
+    "reach with right hand",
+    "lean forward"
+  ],
+  [
+    "squat",
+    "hold"
+  ],
+  [
+    "reach onto shelf",
+    "walk"
+  ],
+  [
+    "reach onto shelf",
+    "walk"
+  ],
+  [
+    "kneel",
+    "right knee on floor"
+  ],
+  [
+    "kneel",
+    "right knee on floor"
+  ],
+  [
+    "kneel",
+    "left knee on floor"
+  ],
+  [
+    "sit up straight",
+    "kneel"
+  ],
+  [
+    "stretch leg",
+    "hold"
+  ],
+  [
+    "go up stair",
+    "right hand on rail"
+  ],
+  [
+    "left hand on rail",
+    "turn back"
+  ],
+  [
+    "left hand on rail",
+    "walk down stair"
+  ],
+  [
+    "walk",
+    "hold rail with left hand"
+  ],
+  [
+    "wave arms",
+    "stand"
+  ],
+  [
+    "lower arms",
+    "stand"
+  ],
+  [
+    "sit",
+    "shake right hand"
+  ],
+  [
+    "sit",
+    "slide over to the left"
+  ],
+  [
+    "sit",
+    "raise right hand"
+  ],
+  [
+    "clap",
+    "sit"
+  ],
+  [
+    "sit",
+    "wind right hand"
+  ],
+  [
+    "gesture with both hands",
+    "sit"
+  ],
+  [
+    "sit",
+    "raise right hand"
+  ],
+  [
+    "sit",
+    "sweep hands side to side"
+  ],
+  [
+    "shake right hand",
+    "sit"
+  ],
+  [
+    "raise both hands",
+    "sit"
+  ],
+  [
+    "stretch out right arm",
+    "sit"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "look at foot",
+    "rest left hand on bench"
+  ],
+  [
+    "low foot",
+    "rest left hand on bench"
+  ],
+  [
+    "place left hand down on ground",
+    "kneel on both knees"
+  ],
+  [
+    "sit down",
+    "head shake"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "sit down",
+    "right hand up"
+  ],
+  [
+    "sit down",
+    "both arm movement"
+  ],
+  [
+    "sit down",
+    "both arm touch shoulders"
+  ],
+  [
+    "both arm movement",
+    "sit down"
+  ],
+  [
+    "sit",
+    "point with right hand"
+  ],
+  [
+    "sit",
+    "stretch"
+  ],
+  [
+    "scratch shoulder",
+    "sit"
+  ],
+  [
+    "rub hands",
+    "sit"
+  ],
+  [
+    "sit",
+    "tap shoulder"
+  ],
+  [
+    "sit",
+    "draw circle"
+  ],
+  [
+    "tap shoulder",
+    "sit"
+  ],
+  [
+    "sit",
+    "signal high then low"
+  ],
+  [
+    "sit",
+    "shake head"
+  ],
+  [
+    "hand signal",
+    "sit"
+  ],
+  [
+    "sit",
+    "hand signal"
+  ],
+  [
+    "wave hands",
+    "sit"
+  ],
+  [
+    "sit",
+    "tap shoulder"
+  ],
+  [
+    "sit",
+    "hand signal"
+  ],
+  [
+    "press left",
+    "stand"
+  ],
+  [
+    "press right",
+    "stand"
+  ],
+  [
+    "stand",
+    "press up"
+  ],
+  [
+    "stand",
+    "press center"
+  ],
+  [
+    "press right",
+    "stand"
+  ],
+  [
+    "stand",
+    "press left"
+  ],
+  [
+    "press up",
+    "stand"
+  ],
+  [
+    "stand",
+    "press center"
+  ],
+  [
+    "swipe right",
+    "stand"
+  ],
+  [
+    "swipe down",
+    "stand"
+  ],
+  [
+    "press center",
+    "stand"
+  ],
+  [
+    "swipe left",
+    "stand"
+  ],
+  [
+    "stand",
+    "swipe down"
+  ],
+  [
+    "stand",
+    "press center"
+  ],
+  [
+    "stand",
+    "spread hands apart"
+  ],
+  [
+    "stand",
+    "connect diagonally"
+  ],
+  [
+    "stand",
+    "move hands in circular motion"
+  ],
+  [
+    "stand",
+    "move hands in circular motion"
+  ],
+  [
+    "grab item on left",
+    "stand"
+  ],
+  [
+    "move item to right",
+    "stand"
+  ],
+  [
+    "grab item with right hand",
+    "stand"
+  ],
+  [
+    "move item to the left",
+    "stand"
+  ],
+  [
+    "lift both hands",
+    "stand"
+  ],
+  [
+    "stand",
+    "stretch out arms forward"
+  ],
+  [
+    "stand",
+    "lift arms out to sides"
+  ],
+  [
+    "stand",
+    "bend elbow upward"
+  ],
+  [
+    "stand",
+    "lift both hands"
+  ],
+  [
+    "stand",
+    "stretch out arms forward"
+  ],
+  [
+    "lift arms out to sides",
+    "stand"
+  ],
+  [
+    "stand",
+    "bend elbow upward"
+  ],
+  [
+    "stand",
+    "press left"
+  ],
+  [
+    "press up",
+    "stand"
+  ],
+  [
+    "stand",
+    "press center"
+  ],
+  [
+    "stand",
+    "spread hands apart"
+  ],
+  [
+    "move right hand in circle",
+    "stand"
+  ],
+  [
+    "stand",
+    "press center"
+  ],
+  [
+    "press right",
+    "stand"
+  ],
+  [
+    "sit on chair",
+    "raise both arms laterally"
+  ],
+  [
+    "sit on chair",
+    "bring down arms"
+  ],
+  [
+    "sit on chair",
+    "rest hands on thighs"
+  ],
+  [
+    "sit on chair",
+    "raise both arms laterally"
+  ],
+  [
+    "sit on chair",
+    "bring down arms"
+  ],
+  [
+    "rearrange",
+    "stand"
+  ],
+  [
+    "look to the left",
+    "grab object with right hand"
+  ],
+  [
+    "stand",
+    "look to the right"
+  ],
+  [
+    "walk",
+    "turn"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "right hand on stair rail",
+    "walk up stairs"
+  ],
+  [
+    "walk",
+    "raise both arms up"
+  ],
+  [
+    "climb down stairs",
+    "hold rail with left hand"
+  ],
+  [
+    "hold stair rail with left hand",
+    "walk down stairs"
+  ],
+  [
+    "ascend",
+    "hold"
+  ],
+  [
+    "sit",
+    "rest right arm"
+  ],
+  [
+    "sit",
+    "rest right arm"
+  ],
+  [
+    "sit",
+    "rest right arm"
+  ],
+  [
+    "raise left arm",
+    "sit"
+  ],
+  [
+    "sit down",
+    "hold right arm up"
+  ],
+  [
+    "walk on balance beam",
+    "raise arms in the air"
+  ],
+  [
+    "step down",
+    "raise arms in the air"
+  ],
+  [
+    "stand",
+    "look right"
+  ],
+  [
+    "stand",
+    "look right"
+  ],
+  [
+    "stand",
+    "nod head"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "grab hold of partner",
+    "step forward"
+  ],
+  [
+    "grab hold of partner",
+    "step to the side"
+  ],
+  [
+    "step back",
+    "grab hold of partner"
+  ],
+  [
+    "step to the side",
+    "grab hold of partner"
+  ],
+  [
+    "grab hold of partner",
+    "step forward"
+  ],
+  [
+    "step to the side",
+    "grab hold of partner"
+  ],
+  [
+    "step back",
+    "grab hold of partner"
+  ],
+  [
+    "grab hold of partner",
+    "step to the side"
+  ],
+  [
+    "step forward",
+    "grab hold of partner"
+  ],
+  [
+    "grab hold of partner",
+    "step to the side"
+  ],
+  [
+    "grab hold of partner",
+    "step back"
+  ],
+  [
+    "step to the side",
+    "grab hold of partner"
+  ],
+  [
+    "step forward",
+    "grab hold of partner"
+  ],
+  [
+    "step to the side",
+    "grab hold of partner"
+  ],
+  [
+    "grab hold of partner",
+    "step back"
+  ],
+  [
+    "grab hold of partner",
+    "step to the side"
+  ],
+  [
+    "grab hold of partner",
+    "step forward"
+  ],
+  [
+    "grab hold of partner",
+    "step to the side"
+  ],
+  [
+    "grab hold of partner",
+    "step back"
+  ],
+  [
+    "grab hold of partner",
+    "step to the side"
+  ],
+  [
+    "steps forward with left leg",
+    "swings left arm"
+  ],
+  [
+    "hold both arms up to dance",
+    "steps forward with right leg"
+  ],
+  [
+    "hold both arms up to dance",
+    "steps forward with right leg"
+  ],
+  [
+    "hold both arms up to dance",
+    "steps forward with right leg"
+  ],
+  [
+    "hold both arms up to dance",
+    "steps forward with right leg"
+  ],
+  [
+    "steps right foot back",
+    "hold both arms up to dance"
+  ],
+  [
+    "hold both arms up to dance",
+    "steps forward with right leg"
+  ],
+  [
+    "hold both arms up to dance",
+    "steps forward with right leg"
+  ],
+  [
+    "steps left foot back",
+    "hold both arms up to dance"
+  ],
+  [
+    "hold both arms up to dance",
+    "steps forward with right leg"
+  ],
+  [
+    "steps left foot to right foot",
+    "hold both arms up to dance"
+  ],
+  [
+    "hold both arms up to dance",
+    "steps forward with right leg"
+  ],
+  [
+    "steps forward with left leg",
+    "hold both arms up to dance"
+  ],
+  [
+    "hold both arms up to dance",
+    "steps forward with right leg"
+  ],
+  [
+    "hold both arms up to dance",
+    "steps forward with right leg"
+  ],
+  [
+    "hold both arms up to dance",
+    "steps forward with right leg"
+  ],
+  [
+    "steps forward with left leg",
+    "hold both arms up to dance"
+  ],
+  [
+    "hold both arms up to dance",
+    "steps forward with right leg"
+  ],
+  [
+    "hold both arms up to dance",
+    "steps forward with right leg"
+  ],
+  [
+    "hold both arms up to dance",
+    "steps forward with right leg"
+  ],
+  [
+    "right step forward",
+    "hold arms as in waltz"
+  ],
+  [
+    "hold arms as in waltz",
+    "left step left"
+  ],
+  [
+    "left step back",
+    "hold arms as in waltz"
+  ],
+  [
+    "right step across",
+    "hold arms as in waltz"
+  ],
+  [
+    "hold arms as in waltz",
+    "left step right"
+  ],
+  [
+    "right step forward",
+    "hold arms as in waltz"
+  ],
+  [
+    "left step across",
+    "hold arms as in waltz"
+  ],
+  [
+    "dance",
+    "steps forward with right leg"
+  ],
+  [
+    "dance",
+    "arms out stretched"
+  ],
+  [
+    "step back with left leg",
+    "dance"
+  ],
+  [
+    "dance",
+    "step back with right leg"
+  ],
+  [
+    "steps to the right",
+    "dance"
+  ],
+  [
+    "steps forward with right leg",
+    "dance"
+  ],
+  [
+    "dance",
+    "steps forward with left leg"
+  ],
+  [
+    "dance",
+    "arms out stretched"
+  ],
+  [
+    "dance",
+    "step back with left leg"
+  ],
+  [
+    "dance",
+    "steps to the right"
+  ],
+  [
+    "steps forward with right leg",
+    "dance"
+  ],
+  [
+    "steps forward with left leg",
+    "dance"
+  ],
+  [
+    "dance",
+    "arms out stretched"
+  ],
+  [
+    "dance",
+    "step back with left leg"
+  ],
+  [
+    "dance",
+    "arms out stretched"
+  ],
+  [
+    "dance",
+    "steps forward with right leg"
+  ],
+  [
+    "steps forward with left leg",
+    "dance"
+  ],
+  [
+    "steps to the left",
+    "dance"
+  ],
+  [
+    "step back with left leg",
+    "dance"
+  ],
+  [
+    "dance",
+    "step back with right leg"
+  ],
+  [
+    "steps to the right",
+    "dance"
+  ],
+  [
+    "dance",
+    "arms out stretched"
+  ],
+  [
+    "dance",
+    "steps forward with left leg"
+  ],
+  [
+    "steps to the left",
+    "dance"
+  ],
+  [
+    "step back with left leg",
+    "dance"
+  ],
+  [
+    "dance",
+    "step back with right leg"
+  ],
+  [
+    "dance",
+    "steps to the right"
+  ],
+  [
+    "stand",
+    "play guitar"
+  ],
+  [
+    "lower arms",
+    "stand"
+  ],
+  [
+    "hold arms out to the left",
+    "step backward"
+  ],
+  [
+    "bring feet together",
+    "hold arms out to the left"
+  ],
+  [
+    "hold arms out to the left",
+    "step forward"
+  ],
+  [
+    "hold arms out to the left",
+    "step backward"
+  ],
+  [
+    "bring feet together",
+    "hold arms out to the left"
+  ],
+  [
+    "step forward",
+    "hold arms out to the left"
+  ],
+  [
+    "step backward",
+    "hold arms out to the left"
+  ],
+  [
+    "step forward",
+    "hold arms out to the left"
+  ],
+  [
+    "hold arms out to the left",
+    "step backward"
+  ],
+  [
+    "hold arms out to the left",
+    "step forward"
+  ],
+  [
+    "hold arms out to the left",
+    "step backward"
+  ],
+  [
+    "stand",
+    "look at floor"
+  ],
+  [
+    "stir right arm",
+    "stand"
+  ],
+  [
+    "lower right arm",
+    "stand"
+  ],
+  [
+    "stand still",
+    "arrange items in front with left hand"
+  ],
+  [
+    "pick up something with left hand",
+    "stand still"
+  ],
+  [
+    "stretch both arms",
+    "stand still"
+  ],
+  [
+    "both hand horizontal movement",
+    "stretch both arms"
+  ],
+  [
+    "arrange items in front with right hand",
+    "stretch both arms"
+  ],
+  [
+    "arrange items in front with right hand",
+    "right hand single stretch"
+  ],
+  [
+    "both arms point forward",
+    "stand"
+  ],
+  [
+    "stand",
+    "swim"
+  ],
+  [
+    "stand",
+    "wave"
+  ],
+  [
+    "rearrange",
+    "stand"
+  ],
+  [
+    "walk",
+    "turn"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "rearrange",
+    "stand"
+  ],
+  [
+    "move arms to the right",
+    "lift arms"
+  ],
+  [
+    "move arms to the right",
+    "extend arms"
+  ],
+  [
+    "rearrange",
+    "stand up"
+  ],
+  [
+    "raise left hand",
+    "sit"
+  ],
+  [
+    "sit",
+    "raise left hand"
+  ],
+  [
+    "sit",
+    "raise right hand"
+  ],
+  [
+    "sit",
+    "raise left hand"
+  ],
+  [
+    "sit",
+    "raise right hand"
+  ],
+  [
+    "raise right hand",
+    "sit"
+  ],
+  [
+    "raise both hands",
+    "sit"
+  ],
+  [
+    "raise both hands",
+    "sit"
+  ],
+  [
+    "sit",
+    "raise both hands"
+  ],
+  [
+    "sit",
+    "raise both hands"
+  ],
+  [
+    "sit",
+    "raise left hand"
+  ],
+  [
+    "wave right hand low",
+    "sit"
+  ],
+  [
+    "sit",
+    "raise left hand"
+  ],
+  [
+    "walk",
+    "use right hand for support"
+  ],
+  [
+    "pick up bottle with left hand",
+    "pick up bottle with right hand"
+  ],
+  [
+    "pour from bottle with left hand",
+    "pour from bottle with right hand"
+  ],
+  [
+    "put down bottle with left hand",
+    "put down bottle with right hand"
+  ],
+  [
+    "hold stirrer in drink",
+    "pick up bottle with left hand"
+  ],
+  [
+    "hold stirrer in drink",
+    "pour from bottle with left hand"
+  ],
+  [
+    "hold stirrer in drink",
+    "put down bottle with left hand"
+  ],
+  [
+    "put down bottle with left hand",
+    "step backwards"
+  ],
+  [
+    "stand",
+    "walk with support"
+  ],
+  [
+    "right arm reach",
+    "walk"
+  ],
+  [
+    "walk",
+    "left arm reach"
+  ],
+  [
+    "walk",
+    "use right hand for support"
+  ],
+  [
+    "walk",
+    "use right hand for support"
+  ],
+  [
+    "pick up something",
+    "bend down"
+  ],
+  [
+    "pick up something",
+    "make gesture with right hand"
+  ],
+  [
+    "pick up something",
+    "make gesture with right hand"
+  ],
+  [
+    "walk",
+    "make gesture with right hand"
+  ],
+  [
+    "bend down",
+    "walk"
+  ],
+  [
+    "bend down",
+    "make gesture with right hand"
+  ],
+  [
+    "pick up object",
+    "lean forward on right leg"
+  ],
+  [
+    "walk left",
+    "carry object"
+  ],
+  [
+    "carry object",
+    "walk to right"
+  ],
+  [
+    "grab item",
+    "stand"
+  ],
+  [
+    "stand",
+    "clean with right hand"
+  ],
+  [
+    "put item back",
+    "stand"
+  ],
+  [
+    "step back",
+    "stand"
+  ],
+  [
+    "hang on to rail",
+    "walk"
+  ],
+  [
+    "turn left",
+    "walk with support"
+  ],
+  [
+    "grab item with right hand",
+    "stand"
+  ],
+  [
+    "stand",
+    "hold right arm up"
+  ],
+  [
+    "stand",
+    "turn"
+  ],
+  [
+    "stand",
+    "clean"
+  ],
+  [
+    "stand",
+    "put item away"
+  ],
+  [
+    "walk",
+    "stand"
+  ],
+  [
+    "put item away",
+    "stand"
+  ],
+  [
+    "step back",
+    "stand"
+  ],
+  [
+    "walk",
+    "extend right hand toward rail"
+  ],
+  [
+    "extend left hand toward rail",
+    "walk"
+  ],
+  [
+    "walk",
+    "hold onto rail with both hands"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "place right hand on rail",
+    "walk"
+  ],
+  [
+    "turn around",
+    "walk"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "sit",
+    "sit t pose"
+  ],
+  [
+    "sit",
+    "sit with right hand arm extend out"
+  ],
+  [
+    "sit",
+    "sit with right hand arm extend out"
+  ],
+  [
+    "sit",
+    "hold"
+  ],
+  [
+    "hold",
+    "sit"
+  ],
+  [
+    "wipe",
+    "hold"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "turn around",
+    "walk"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "walk across a beam",
+    "raise hands above the head"
+  ],
+  [
+    "walk across a beam",
+    "hold up hands above the head with arms bent at the elbow"
+  ],
+  [
+    "sit down slightly right",
+    "right hand movement till neck"
+  ],
+  [
+    "sit down slightly right",
+    "right hand movement till chest"
+  ],
+  [
+    "sit down slightly right",
+    "right hand movement till neck"
+  ],
+  [
+    "sit down slightly right",
+    "right hand movement till chest"
+  ],
+  [
+    "sit down slightly right",
+    "right hand movement till neck"
+  ],
+  [
+    "clap",
+    "stand"
+  ],
+  [
+    "sit down",
+    "stretch"
+  ],
+  [
+    "right leg extend forward",
+    "sit down slightly to left"
+  ],
+  [
+    "right hand on right knee",
+    "right leg extend forward"
+  ],
+  [
+    "right hand to original position",
+    "right leg to original position"
+  ],
+  [
+    "sit down slightly to left",
+    "both arms on respected knees"
+  ],
+  [
+    "right leg extend forward",
+    "sit down slightly to left"
+  ],
+  [
+    "right leg extend forward",
+    "right hand on right knee"
+  ],
+  [
+    "right leg to original position",
+    "sit down slightly to left"
+  ],
+  [
+    "right leg to original position",
+    "right arm up"
+  ],
+  [
+    "right leg to original position",
+    "sit down slightly to left"
+  ],
+  [
+    "right leg extend forward",
+    "sit down slightly to left"
+  ],
+  [
+    "right leg to original position",
+    "sit down slightly to left"
+  ],
+  [
+    "right arm up",
+    "right leg to original position"
+  ],
+  [
+    "right leg to original position",
+    "right hand to original position"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "walk forward",
+    "rotate right"
+  ],
+  [
+    "walk",
+    "turn"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "lean forwards",
+    "walk forwards"
+  ],
+  [
+    "walk forwards",
+    "lean forwards"
+  ],
+  [
+    "lean forwards",
+    "walk forwards"
+  ],
+  [
+    "walk forwards",
+    "bend knees"
+  ],
+  [
+    "carry with right hand",
+    "turn right"
+  ],
+  [
+    "carry with right hand",
+    "walk forward"
+  ],
+  [
+    "turn left",
+    "carry with right hand"
+  ],
+  [
+    "walk forward",
+    "carry with right hand"
+  ],
+  [
+    "walk forward",
+    "carry with right hand"
+  ],
+  [
+    "walk",
+    "hold object in right hand"
+  ],
+  [
+    "turn left",
+    "hold object in right hand"
+  ],
+  [
+    "run",
+    "hold object in right hand"
+  ],
+  [
+    "turn right",
+    "hold object in right hand"
+  ],
+  [
+    "run",
+    "hold object in left hand"
+  ],
+  [
+    "turn left",
+    "hold object in left hand"
+  ],
+  [
+    "walk",
+    "hold object in left hand"
+  ],
+  [
+    "hold object in right hand",
+    "walk"
+  ],
+  [
+    "hold object in right hand",
+    "turn right"
+  ],
+  [
+    "hold object in right hand",
+    "run"
+  ],
+  [
+    "hold object in right hand",
+    "turn left"
+  ],
+  [
+    "run",
+    "hold object in left hand"
+  ],
+  [
+    "turn right",
+    "hold object in left hand"
+  ],
+  [
+    "hold object in left hand",
+    "walk"
+  ],
+  [
+    "kneel down on right knee",
+    "tie shoelace"
+  ],
+  [
+    "kneel down on right knee",
+    "tie shoelace"
+  ],
+  [
+    "look around",
+    "stand"
+  ],
+  [
+    "stand",
+    "lift right arm"
+  ],
+  [
+    "stand",
+    "look down"
+  ],
+  [
+    "stops and grabs object with right hand from ground",
+    "stops and bends down to ground at knees"
+  ],
+  [
+    "stops and grabs object with right hand from ground",
+    "stops and bends down to ground at knees"
+  ],
+  [
+    "circle left arm forward",
+    "circle right arm forward"
+  ],
+  [
+    "circle right arm backward",
+    "circle left arm backward"
+  ],
+  [
+    "walk forward",
+    "circle right arm forward"
+  ],
+  [
+    "circle right arm forward",
+    "circle left arm forward"
+  ],
+  [
+    "circle right arm backward",
+    "circle left arm backward"
+  ],
+  [
+    "walk forward",
+    "turn around left"
+  ],
+  [
+    "turn around right",
+    "walk forward"
+  ],
+  [
+    "jog",
+    "turn around left"
+  ],
+  [
+    "jog",
+    "turn around right"
+  ],
+  [
+    "lift both arms",
+    "lean back"
+  ],
+  [
+    "turn right",
+    "walk"
+  ],
+  [
+    "turn right",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "turn right",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "turn left",
+    "carry with right hand"
+  ],
+  [
+    "turn right",
+    "carry with right hand"
+  ],
+  [
+    "step forward",
+    "carry with right hand"
+  ],
+  [
+    "swing arms inside out",
+    "bend forward"
+  ],
+  [
+    "walk",
+    "spin both arms forwards"
+  ],
+  [
+    "walk",
+    "spin spin arms backwards"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn"
+  ],
+  [
+    "moves object upwards with right hand",
+    "stand"
+  ],
+  [
+    "moves object downwards with right hand",
+    "stand"
+  ],
+  [
+    "moves object downwards with right hand",
+    "stand"
+  ],
+  [
+    "moves object downwards with right hand",
+    "stand"
+  ],
+  [
+    "stand",
+    "moves object upwards with right hand"
+  ],
+  [
+    "stand",
+    "moves object upwards with right hand"
+  ],
+  [
+    "swing his torso around",
+    "hold face in hands"
+  ],
+  [
+    "stand",
+    "just stand"
+  ],
+  [
+    "stoop to one knee",
+    "tie his shoe"
+  ],
+  [
+    "stretch",
+    "grab foot"
+  ],
+  [
+    "stand",
+    "touch nose"
+  ],
+  [
+    "both hand on right leg",
+    "stand on left leg"
+  ],
+  [
+    "right leg stretch till head",
+    "both hand on right leg"
+  ],
+  [
+    "both hand on right leg",
+    "stand on left leg"
+  ],
+  [
+    "right leg stretch till head",
+    "both hand on right leg"
+  ],
+  [
+    "both hand on right leg",
+    "stand on left leg"
+  ],
+  [
+    "both hand on right leg",
+    "stand on left leg"
+  ],
+  [
+    "both hand on right leg",
+    "stand on left leg"
+  ],
+  [
+    "both hand on right leg",
+    "stand on left leg"
+  ],
+  [
+    "squat",
+    "football referee touchdown pose"
+  ],
+  [
+    "football referee touchdown pose",
+    "squat"
+  ],
+  [
+    "bend down on left knee",
+    "pick up sword"
+  ],
+  [
+    "pick up sword",
+    "rise up"
+  ],
+  [
+    "step forward",
+    "swing sword"
+  ],
+  [
+    "step back",
+    "swing sword"
+  ],
+  [
+    "step forward",
+    "swing sword"
+  ],
+  [
+    "step back",
+    "swing sword"
+  ],
+  [
+    "step forward",
+    "swing sword"
+  ],
+  [
+    "step back",
+    "swing sword"
+  ],
+  [
+    "step forward",
+    "swing sword"
+  ],
+  [
+    "step back",
+    "swing sword"
+  ],
+  [
+    "step forward",
+    "swing sword"
+  ],
+  [
+    "step back",
+    "swing sword"
+  ],
+  [
+    "step forward",
+    "swing sword"
+  ],
+  [
+    "step back",
+    "swing sword"
+  ],
+  [
+    "step forward",
+    "swing sword"
+  ],
+  [
+    "step back",
+    "swing sword"
+  ],
+  [
+    "step forward",
+    "swing sword"
+  ],
+  [
+    "step back",
+    "swing sword"
+  ],
+  [
+    "step forward",
+    "swing sword"
+  ],
+  [
+    "step back",
+    "swing sword"
+  ],
+  [
+    "step forward",
+    "swing sword"
+  ],
+  [
+    "step back",
+    "swing sword"
+  ],
+  [
+    "step forward",
+    "swing sword"
+  ],
+  [
+    "step back",
+    "swing sword"
+  ],
+  [
+    "step forward",
+    "swing sword"
+  ],
+  [
+    "step back",
+    "swing sword"
+  ],
+  [
+    "bob feet",
+    "swing sword"
+  ],
+  [
+    "draw an object closer",
+    "sit"
+  ],
+  [
+    "draw an object closer",
+    "sit"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "walk",
+    "hang head"
+  ],
+  [
+    "turn right",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "turn right",
+    "walk"
+  ],
+  [
+    "turn right",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "stand",
+    "shake hands"
+  ],
+  [
+    "stand",
+    "touch head"
+  ],
+  [
+    "squat",
+    "stand"
+  ],
+  [
+    "shake hands",
+    "stand"
+  ],
+  [
+    "point left",
+    "stand"
+  ],
+  [
+    "stand",
+    "point right"
+  ],
+  [
+    "stand",
+    "point both arms"
+  ],
+  [
+    "walk",
+    "turn"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn"
+  ],
+  [
+    "turn",
+    "walk"
+  ],
+  [
+    "step backwards",
+    "juggle"
+  ],
+  [
+    "walk",
+    "move left hand to chin"
+  ],
+  [
+    "walk",
+    "sprinkle with hand"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "turn left",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "turn right",
+    "walk"
+  ],
+  [
+    "turn right",
+    "walk"
+  ],
+  [
+    "turn right",
+    "walk"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "walk",
+    "turn right"
+  ],
+  [
+    "spin around",
+    "jump in place"
+  ],
+  [
+    "spin",
+    "jump in place"
+  ],
+  [
+    "walk",
+    "turn around"
+  ]
+]

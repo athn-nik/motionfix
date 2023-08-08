@@ -1,0 +1,30 @@
+indep-seg+seq/
+climb down stairs, hold rail with left hand
+spatial_pairs-1008-0.mp4
+
+wide side step to the right
+seg-10094-0.mp4
+
+walk up stairs
+seg-10090-2.mp4
+
+lift right arm
+seg-10072-19.mp4
+
+
+left step left, hold arms as in waltz
+spatial_pairs-9918-1.mp4
+
+
+high jump, right hand full high
+spatial_pairs-9854-6.mp4
+spatial_pairs-9854-5.mp4
+spatial_pairs-9854-3.mp4
+
+
+look down, walk
+spatial_pairs-10090-0.mp4
+
+
+spatial_pairs-5740-2 
+spatial_pairs-12301-0

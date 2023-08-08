@@ -1,0 +1,15 @@
+name: distilbert_linear_encoder
+_target_: sinc.model.textencoder.text_space.TextSpace
+
+latent_dim: ${model.latent_dim}
+vae: ${model.vae}
+
+ff_size: ${model.ff_size}
+num_layers: ${model.num_layers}
+num_head: ${model.num_head}
+droupout: ${model.droupout}
+activation: ${model.activation}
+
+finetune: false
+modelpath: ${path.deps}/distilbert-base-uncased
+separate_latents: ${model.separate_latents} # 1/2 latent vectors

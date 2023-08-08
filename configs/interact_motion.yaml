@@ -1,0 +1,47 @@
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+
+seed: 1234
+
+logger_level: INFO
+folder: ???
+
+text1: ???
+text2: ???
+len: ???
+
+gpt_path: ${path.deps}/gpt/gpt3-labels.json
+
+split: val
+mean: false
+number_of_samples: 1
+fact: 1
+ckpt_name: last
+last_ckpt_path: ${get_last_checkpoint:${folder},${ckpt_name}}
+
+set: pairs # or 'all' to evaluate the full set
+
+naive: false # for temos-indep compositions on rotations space
+
+# llocations + z axes + scaling of skeleton
+jointstype: 'vertices' # smplh /
+
+# Composing nested config with default
+defaults:
+  - data: null
+  - machine: null
+  - trainer: null
+  - sampler: all_conseq
+  - /path@path
+  - override hydra/job_logging: custom
+  - override hydra/hydra_logging: custom
+  - _self_
+
+data:
+  mode: 'inference'
+
+machine:
+  batch_size: 16
+  smpl_batch_size: 128

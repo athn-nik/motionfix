@@ -1,0 +1,4 @@
+modelname: dummy
+_target_: sinc.model.dummy.Dummy
+
+translation: true

@@ -1,0 +1,5427 @@
+{
+  "2307-2": [
+    "stand",
+    "fight stance",
+    28
+  ],
+  "1226-0": [
+    "run",
+    "turn",
+    20
+  ],
+  "12255-2": [
+    "walk",
+    "carry",
+    37
+  ],
+  "12405-3": [
+    "shake head from side to side",
+    "hold on with hands",
+    25
+  ],
+  "11933-0": [
+    "look around",
+    "stand",
+    26
+  ],
+  "11933-2": [
+    "turn right",
+    "walk",
+    18
+  ],
+  "8242-0": [
+    "swing karate sticks",
+    "spin",
+    19
+  ],
+  "8242-1": [
+    "swing karate sticks",
+    "backpedal",
+    62
+  ],
+  "5314-0": [
+    "stand",
+    "hold with right hand",
+    29
+  ],
+  "6551-2": [
+    "turn head slightly to the right",
+    "stand with hands at side",
+    66
+  ],
+  "6551-3": [
+    "stand with hands at side",
+    "turn head to the left",
+    72
+  ],
+  "1486-0": [
+    "stumble",
+    "rotate left angle",
+    30
+  ],
+  "973-7": [
+    "stand",
+    "roll upper body in circular motion from waist",
+    27
+  ],
+  "973-8": [
+    "stand",
+    "roll right ankle in front of body",
+    26
+  ],
+  "973-13": [
+    "make large counter clockwise circles with left leg in front of body",
+    "stand",
+    34
+  ],
+  "8980-2": [
+    "sway arms",
+    "dance ballet",
+    23
+  ],
+  "8980-3": [
+    "dance ballet",
+    "sway arms",
+    19
+  ],
+  "8980-4": [
+    "sway arms",
+    "dance ballet",
+    27
+  ],
+  "8980-5": [
+    "sway arms",
+    "dance ballet",
+    22
+  ],
+  "8980-6": [
+    "sway arms",
+    "dance ballet",
+    42
+  ],
+  "8980-8": [
+    "sway arms",
+    "dance ballet",
+    31
+  ],
+  "8980-11": [
+    "sway arms",
+    "walk",
+    21
+  ],
+  "8980-12": [
+    "turnaround",
+    "walk",
+    32
+  ],
+  "8980-14": [
+    "turnaround",
+    "dance ballet",
+    21
+  ],
+  "10277-0": [
+    "walk",
+    "turn around",
+    23
+  ],
+  "6167-0": [
+    "take",
+    "bend down",
+    28
+  ],
+  "7980-0": [
+    "rotate wrists",
+    "arms stretch out",
+    84
+  ],
+  "7980-1": [
+    "turn left",
+    "walk",
+    90
+  ],
+  "7980-2": [
+    "turn left",
+    "walk",
+    80
+  ],
+  "7980-3": [
+    "turn left",
+    "walk",
+    27
+  ],
+  "11913-0": [
+    "rise",
+    "turn around",
+    15
+  ],
+  "4538-0": [
+    "look left",
+    "stand in place",
+    28
+  ],
+  "4538-1": [
+    "look right",
+    "stand in place",
+    83
+  ],
+  "4538-2": [
+    "look forward",
+    "stand in place",
+    46
+  ],
+  "4538-3": [
+    "stand in place",
+    "look right",
+    23
+  ],
+  "4538-4": [
+    "stand in place",
+    "look down",
+    80
+  ],
+  "6379-0": [
+    "head turn towards left shoulder",
+    "stand",
+    84
+  ],
+  "6379-1": [
+    "stand",
+    "catch object with both hands in front of torso",
+    47
+  ],
+  "6379-2": [
+    "stand",
+    "throw object overhand with right arm",
+    42
+  ],
+  "6379-3": [
+    "stand",
+    "catch object with both hands in front of torso",
+    32
+  ],
+  "6379-4": [
+    "stand",
+    "throw object overhand with right arm",
+    50
+  ],
+  "6379-5": [
+    "stand",
+    "catch object with both hands in front of torso",
+    36
+  ],
+  "6379-6": [
+    "stand",
+    "throw object overhand with right arm",
+    41
+  ],
+  "6379-7": [
+    "stand",
+    "catch object with both hands in front of torso",
+    40
+  ],
+  "6379-8": [
+    "stand",
+    "throw object overhand with right arm",
+    36
+  ],
+  "6379-9": [
+    "stand",
+    "catch object with both hands in front of torso",
+    35
+  ],
+  "6379-10": [
+    "stand",
+    "throw object overhand with right arm",
+    43
+  ],
+  "6379-11": [
+    "stand",
+    "catch object with both hands in front of torso",
+    52
+  ],
+  "6379-12": [
+    "stand",
+    "bounces object off ground with right hand",
+    36
+  ],
+  "6379-13": [
+    "stand",
+    "catch object with both hands in front of torso",
+    24
+  ],
+  "8738-3": [
+    "bend over",
+    "grab object",
+    26
+  ],
+  "8132-0": [
+    "squat",
+    "grab object",
+    16
+  ],
+  "5913-0": [
+    "stand",
+    "knock",
+    16
+  ],
+  "5480-0": [
+    "walk forward",
+    "touch face with left hand",
+    31
+  ],
+  "8494-0": [
+    "touch neck",
+    "look to left",
+    34
+  ],
+  "8283-13": [
+    "make large counter clockwise circles with left leg in front of body",
+    "stand",
+    18
+  ],
+  "8283-14": [
+    "stand",
+    "walk forwards in counter clockwise circle",
+    16
+  ],
+  "13122-0": [
+    "turn left",
+    "walk",
+    20
+  ],
+  "13122-1": [
+    "turn left",
+    "walk",
+    20
+  ],
+  "13122-2": [
+    "turn left",
+    "walk",
+    22
+  ],
+  "13122-3": [
+    "turn left",
+    "walk",
+    38
+  ],
+  "13122-4": [
+    "turn left",
+    "walk",
+    20
+  ],
+  "13122-5": [
+    "turn left",
+    "walk",
+    25
+  ],
+  "70-0": [
+    "pace in circles",
+    "walk in circles",
+    30
+  ],
+  "5496-0": [
+    "touch ground",
+    "lift right leg back",
+    24
+  ],
+  "5496-1": [
+    "lift left leg back",
+    "touch ground",
+    27
+  ],
+  "5496-2": [
+    "circle right arm backwards",
+    "circle left arm backwards",
+    38
+  ],
+  "5496-3": [
+    "circle right arm backwards",
+    "circle left arm backwards",
+    23
+  ],
+  "5496-4": [
+    "circle head counterclockwise",
+    "circle left arm backwards",
+    26
+  ],
+  "10281-0": [
+    "stand",
+    "catch",
+    35
+  ],
+  "10281-1": [
+    "stand",
+    "throw in the air",
+    39
+  ],
+  "10281-2": [
+    "catch",
+    "stand",
+    38
+  ],
+  "10281-3": [
+    "stand",
+    "throw in the air",
+    25
+  ],
+  "10281-4": [
+    "stand",
+    "catch",
+    31
+  ],
+  "7767-0": [
+    "stand",
+    "look to the right",
+    24
+  ],
+  "7767-1": [
+    "stand",
+    "catch object with both hands",
+    51
+  ],
+  "7767-2": [
+    "throw object overhand with right hand",
+    "stand",
+    41
+  ],
+  "7767-3": [
+    "catch object with both hands",
+    "stand",
+    28
+  ],
+  "7767-4": [
+    "stand",
+    "throw object overhand with right hand",
+    36
+  ],
+  "7767-5": [
+    "stand",
+    "catch object with both hands",
+    38
+  ],
+  "7767-6": [
+    "stand",
+    "throw object overhand with right hand",
+    41
+  ],
+  "7282-2": [
+    "stand",
+    "knock on door",
+    18
+  ],
+  "4013-0": [
+    "bends knees and down at waist",
+    "reach both hands down to floor",
+    23
+  ],
+  "4013-1": [
+    "bends knees and down at waist",
+    "move item up to knee level",
+    33
+  ],
+  "5717-0": [
+    "turn head to right",
+    "stand",
+    37
+  ],
+  "6809-7": [
+    "roll upper body from waist",
+    "lifts left hand towards face",
+    30
+  ],
+  "6809-8": [
+    "roll right ankle in front of body clockwise",
+    "lifts left hand towards face",
+    66
+  ],
+  "8167-0": [
+    "uplift object on surface",
+    "bend down",
+    28
+  ],
+  "5443-2": [
+    "sit on chair",
+    "adjust seat",
+    27
+  ],
+  "10714-0": [
+    "reach to floor with both hands",
+    "bends at waist with knees bent",
+    35
+  ],
+  "10714-1": [
+    "move item up to knee high level from floor",
+    "bends at waist with knees bent",
+    49
+  ],
+  "13075-0": [
+    "look down",
+    "stand",
+    22
+  ],
+  "3265-0": [
+    "crouch",
+    "walk forward",
+    30
+  ],
+  "3908-0": [
+    "swing left arm forwards in a circle",
+    "walk",
+    32
+  ],
+  "3908-1": [
+    "turn left",
+    "walk",
+    36
+  ],
+  "3908-2": [
+    "skip",
+    "turn left",
+    33
+  ],
+  "3908-5": [
+    "turn right",
+    "jog",
+    35
+  ],
+  "3908-6": [
+    "turn right",
+    "jog",
+    15
+  ],
+  "3908-7": [
+    "turn right",
+    "walk",
+    41
+  ],
+  "3908-8": [
+    "turn right",
+    "walk",
+    59
+  ],
+  "3908-10": [
+    "turn left",
+    "step back",
+    37
+  ],
+  "3908-11": [
+    "turn left",
+    "walk",
+    18
+  ],
+  "7446-0": [
+    "walk laterally",
+    "turn around",
+    53
+  ],
+  "7446-1": [
+    "stretch arms",
+    "walk forward",
+    77
+  ],
+  "7446-2": [
+    "stretch arms",
+    "walk forward",
+    30
+  ],
+  "12301-0": [
+    "bend down at the knees",
+    "lift object with both hands",
+    24
+  ],
+  "12301-1": [
+    "lift object with both hands",
+    "straighten legs",
+    15
+  ],
+  "9960-0": [
+    "squat with knees to the chest",
+    "grab object",
+    16
+  ],
+  "3763-0": [
+    "tap with right hand",
+    "stand",
+    23
+  ],
+  "3763-1": [
+    "look around",
+    "stand",
+    52
+  ],
+  "9924-0": [
+    "stand",
+    "watch ball",
+    18
+  ],
+  "11500-0": [
+    "turn lefts",
+    "walk",
+    35
+  ],
+  "11500-1": [
+    "walk",
+    "turn lefts",
+    17
+  ],
+  "11500-2": [
+    "turn lefts",
+    "walk",
+    28
+  ],
+  "11500-3": [
+    "walk",
+    "turn lefts",
+    20
+  ],
+  "11500-4": [
+    "turn lefts",
+    "walk",
+    25
+  ],
+  "11500-5": [
+    "turn lefts",
+    "walk",
+    16
+  ],
+  "4776-2": [
+    "right arm jerk in front of torso and to the side",
+    "punts object with right leg out stretched",
+    30
+  ],
+  "4776-3": [
+    "stand",
+    "take step",
+    16
+  ],
+  "9860-0": [
+    "make door knock motion with right hand",
+    "stand",
+    44
+  ],
+  "1624-1": [
+    "wave arms",
+    "stand",
+    21
+  ],
+  "11777-0": [
+    "taps on door with knuckles on right hand",
+    "stand",
+    35
+  ],
+  "3976-0": [
+    "hands on head sway body from left to right",
+    "slightly crouch",
+    94
+  ],
+  "3976-2": [
+    "both arms down",
+    "head look to the left",
+    19
+  ],
+  "3976-3": [
+    "both arms down",
+    "head look to the right",
+    25
+  ],
+  "3976-4": [
+    "head look to the left",
+    "left hand touch mouth move arm up and down",
+    38
+  ],
+  "10505-0": [
+    "shuffle forward",
+    "look over right shoulder",
+    23
+  ],
+  "10505-1": [
+    "shuffle forward",
+    "look over left shoulder",
+    48
+  ],
+  "10505-2": [
+    "shuffle forward",
+    "look over right shoulder",
+    22
+  ],
+  "10505-4": [
+    "look over left shoulder",
+    "creep forward",
+    39
+  ],
+  "10505-5": [
+    "look over right shoulder",
+    "creep forward",
+    35
+  ],
+  "10505-6": [
+    "look over left shoulder",
+    "creep forward",
+    30
+  ],
+  "10505-7": [
+    "look over right shoulder",
+    "creep forward",
+    19
+  ],
+  "10505-9": [
+    "look over left shoulder",
+    "shuffle forward",
+    25
+  ],
+  "10505-10": [
+    "look over right shoulder",
+    "creep forward",
+    65
+  ],
+  "10505-11": [
+    "creep forward",
+    "look over right shoulder",
+    33
+  ],
+  "10505-12": [
+    "creep forward",
+    "look over right shoulder",
+    32
+  ],
+  "9873-0": [
+    "hold arms straight in front",
+    "look right",
+    17
+  ],
+  "2561-0": [
+    "stand",
+    "look to right",
+    43
+  ],
+  "10780-0": [
+    "juts hands out to front and back",
+    "turn left",
+    32
+  ],
+  "10780-2": [
+    "dances",
+    "turn left",
+    44
+  ],
+  "9721-0": [
+    "stand",
+    "slow silly walk",
+    301
+  ],
+  "9721-1": [
+    "fast silly walk",
+    "stand",
+    105
+  ],
+  "9721-3": [
+    "normal walk",
+    "touch face",
+    15
+  ],
+  "2745-0": [
+    "lean forward",
+    "walk",
+    109
+  ],
+  "2745-1": [
+    "lean forward",
+    "look to the left slightly",
+    24
+  ],
+  "2745-2": [
+    "lean forward",
+    "walk",
+    57
+  ],
+  "2745-3": [
+    "lean forward",
+    "walk",
+    16
+  ],
+  "2745-5": [
+    "look to the left slightly",
+    "lean forward",
+    19
+  ],
+  "3428-0": [
+    "stand",
+    "look back",
+    47
+  ],
+  "3428-1": [
+    "touch",
+    "low walk",
+    30
+  ],
+  "3428-2": [
+    "low walk",
+    "scratch head",
+    26
+  ],
+  "3428-3": [
+    "look back",
+    "low walk",
+    45
+  ],
+  "1389-0": [
+    "look center right",
+    "stand",
+    43
+  ],
+  "1389-1": [
+    "look down left",
+    "stand",
+    20
+  ],
+  "1389-2": [
+    "look center right",
+    "stand",
+    38
+  ],
+  "1389-3": [
+    "look down left",
+    "stand",
+    41
+  ],
+  "1389-4": [
+    "stand",
+    "look center right",
+    19
+  ],
+  "1389-5": [
+    "stand",
+    "look down left",
+    58
+  ],
+  "1389-6": [
+    "look center right",
+    "stand",
+    18
+  ],
+  "3665-0": [
+    "run forward",
+    "bend knees",
+    94
+  ],
+  "3665-1": [
+    "bend knees",
+    "turn around",
+    76
+  ],
+  "3665-2": [
+    "run forward",
+    "bend knees",
+    50
+  ],
+  "7038-0": [
+    "sit down",
+    "both arm cover head",
+    83
+  ],
+  "7038-2": [
+    "sit down",
+    "both arm cover head",
+    105
+  ],
+  "6729-0": [
+    "crouch down",
+    "look around for something",
+    452
+  ],
+  "9830-0": [
+    "step forward",
+    "raise arms",
+    74
+  ],
+  "9830-1": [
+    "flap",
+    "raise arms",
+    30
+  ],
+  "9830-2": [
+    "arms bring inward",
+    "crouch forward",
+    19
+  ],
+  "9830-3": [
+    "raise arms",
+    "crouch forward",
+    27
+  ],
+  "9830-4": [
+    "arms bring inward",
+    "crouch forward",
+    81
+  ],
+  "9830-5": [
+    "raise arms",
+    "crouch forward",
+    25
+  ],
+  "9830-7": [
+    "arms bring inward",
+    "crouch forward",
+    94
+  ],
+  "6134-1": [
+    "swing arms out",
+    "walk forward",
+    39
+  ],
+  "6134-2": [
+    "hold hands together",
+    "walk forward",
+    27
+  ],
+  "6134-3": [
+    "hold hands together",
+    "stand",
+    30
+  ],
+  "6134-4": [
+    "crouch",
+    "bend arms at chest",
+    73
+  ],
+  "6134-5": [
+    "crouch",
+    "bend arms at chest",
+    48
+  ],
+  "6134-6": [
+    "crouch",
+    "bend to right",
+    55
+  ],
+  "6134-9": [
+    "crouch",
+    "spin in circle",
+    75
+  ],
+  "6134-10": [
+    "bend arms at chest",
+    "crouch",
+    144
+  ],
+  "6134-11": [
+    "crouch",
+    "walk forward",
+    34
+  ],
+  "6134-12": [
+    "crouch",
+    "walk forward",
+    43
+  ],
+  "6134-13": [
+    "crouch",
+    "bend arms at chest",
+    124
+  ],
+  "8413-0": [
+    "stand lean forward",
+    "lower upper body",
+    20
+  ],
+  "8413-2": [
+    "look around",
+    "stand lean forward",
+    78
+  ],
+  "8413-4": [
+    "look around",
+    "stand lean forward",
+    75
+  ],
+  "8413-5": [
+    "look around",
+    "stand lean forward",
+    30
+  ],
+  "8413-6": [
+    "lower upper body",
+    "turn upper body left",
+    58
+  ],
+  "8413-7": [
+    "lower upper body",
+    "stand lean forward",
+    35
+  ],
+  "11358-0": [
+    "flap arms",
+    "walk forward",
+    54
+  ],
+  "11358-1": [
+    "lean forward",
+    "flap arms",
+    77
+  ],
+  "11358-2": [
+    "lean backward",
+    "flap arms",
+    75
+  ],
+  "11358-3": [
+    "lean forward",
+    "flap arms",
+    99
+  ],
+  "11358-4": [
+    "lean backward",
+    "flap arms",
+    99
+  ],
+  "7329-0": [
+    "act like a rat",
+    "move in circles",
+    112
+  ],
+  "7329-1": [
+    "act like a rat",
+    "stand with arms at waist level",
+    15
+  ],
+  "10251-0": [
+    "lean forward",
+    "stand stationary",
+    34
+  ],
+  "10251-1": [
+    "bob head",
+    "stand stationary",
+    39
+  ],
+  "10251-2": [
+    "bob head",
+    "stand stationary",
+    30
+  ],
+  "10251-3": [
+    "lean forward",
+    "stand stationary",
+    49
+  ],
+  "9801-1": [
+    "struggle",
+    "look backward",
+    51
+  ],
+  "11086-0": [
+    "lift up left leg",
+    "dodge",
+    24
+  ],
+  "11086-2": [
+    "dodge",
+    "bend forward",
+    22
+  ],
+  "11750-0": [
+    "kick things",
+    "scared movement",
+    107
+  ],
+  "11750-1": [
+    "scared movement",
+    "get down",
+    43
+  ],
+  "5006-0": [
+    "bring hands up to face",
+    "look around nervously",
+    38
+  ],
+  "5006-1": [
+    "look around nervously",
+    "cover face with hands",
+    18
+  ],
+  "10090-0": [
+    "look down",
+    "walk",
+    76
+  ],
+  "10090-1": [
+    "walk up steps",
+    "look down",
+    94
+  ],
+  "2036-1": [
+    "wide side step to the right",
+    "look down",
+    22
+  ],
+  "2036-2": [
+    "stand",
+    "look down",
+    43
+  ],
+  "10094-0": [
+    "wide side step to the right",
+    "look down at feet",
+    17
+  ],
+  "8485-0": [
+    "mime tap something with right hand",
+    "look down",
+    32
+  ],
+  "8485-1": [
+    "mime put something in back pocket with left hand",
+    "lower hands to sides",
+    19
+  ],
+  "3719-0": [
+    "look around",
+    "scare",
+    65
+  ],
+  "3719-1": [
+    "look around",
+    "scare",
+    45
+  ],
+  "234-0": [
+    "turn left",
+    "pick up",
+    80
+  ],
+  "4998-0": [
+    "hands on face",
+    "bend straighten knees",
+    28
+  ],
+  "4998-1": [
+    "bend straighten knees",
+    "rub hands together",
+    34
+  ],
+  "4998-2": [
+    "bend straighten knees",
+    "hands on chest",
+    32
+  ],
+  "4998-3": [
+    "rub hands on chest",
+    "bend straighten knees",
+    56
+  ],
+  "4998-4": [
+    "rub hands on chest",
+    "shake torso",
+    38
+  ],
+  "959-1": [
+    "stand",
+    "play drum set",
+    309
+  ],
+  "959-2": [
+    "stand",
+    "lower arms",
+    18
+  ],
+  "11153-0": [
+    "shake head",
+    "hunch over",
+    49
+  ],
+  "11153-1": [
+    "hunch over",
+    "shake head",
+    45
+  ],
+  "6187-4": [
+    "kick right foot forward",
+    "stand",
+    46
+  ],
+  "6187-5": [
+    "hold arms above head",
+    "stand",
+    26
+  ],
+  "6187-6": [
+    "stand",
+    "drop arms down",
+    20
+  ],
+  "6187-7": [
+    "wave right arm in front of body",
+    "stand",
+    32
+  ],
+  "6187-8": [
+    "raise arms",
+    "stand",
+    15
+  ],
+  "6187-9": [
+    "move hands around each other in a circular motion",
+    "stand",
+    44
+  ],
+  "6187-10": [
+    "move both arms up and down repeatedly",
+    "stand",
+    38
+  ],
+  "6187-12": [
+    "wave right arm to the side of body",
+    "stand",
+    49
+  ],
+  "6187-13": [
+    "stand",
+    "put right arm down",
+    15
+  ],
+  "5484-3": [
+    "side steps",
+    "turn left",
+    22
+  ],
+  "5484-4": [
+    "turn right",
+    "side steps",
+    17
+  ],
+  "5484-7": [
+    "side steps",
+    "turn left",
+    15
+  ],
+  "5484-8": [
+    "turn left",
+    "side steps",
+    23
+  ],
+  "11115-1": [
+    "climb up",
+    "turn left",
+    36
+  ],
+  "6846-0": [
+    "about face left",
+    "steep down off of something",
+    20
+  ],
+  "4310-0": [
+    "walk forward",
+    "walk down steps",
+    61
+  ],
+  "4340-0": [
+    "duck head",
+    "turn left",
+    38
+  ],
+  "4340-1": [
+    "turn right",
+    "duck head",
+    52
+  ],
+  "4340-2": [
+    "duck head",
+    "turn left",
+    82
+  ],
+  "4340-3": [
+    "turn right",
+    "duck head",
+    80
+  ],
+  "4340-4": [
+    "duck head",
+    "turn left",
+    54
+  ],
+  "4340-5": [
+    "duck head",
+    "turn right",
+    161
+  ],
+  "3260-0": [
+    "grab right hamstring with right hand",
+    "grab right quad with left hand",
+    23
+  ],
+  "10980-3": [
+    "hunch shoulders",
+    "look to the left",
+    21
+  ],
+  "10980-5": [
+    "move left foot",
+    "look straight forward",
+    22
+  ],
+  "10980-7": [
+    "twitch left elbow",
+    "look straight forward",
+    33
+  ],
+  "7451-0": [
+    "squat",
+    "look right",
+    20
+  ],
+  "7451-2": [
+    "duck head",
+    "both hands hold head",
+    48
+  ],
+  "7451-3": [
+    "look around",
+    "rise up",
+    41
+  ],
+  "7451-4": [
+    "duck head",
+    "both hands hold head",
+    31
+  ],
+  "7451-5": [
+    "look around",
+    "rise up",
+    28
+  ],
+  "3533-0": [
+    "move right hand on right ear",
+    "stand up",
+    32
+  ],
+  "3533-1": [
+    "move right hand down",
+    "stand up",
+    30
+  ],
+  "9495-0": [
+    "run forward",
+    "hands on back of neck",
+    36
+  ],
+  "6750-0": [
+    "look around",
+    "stand",
+    468
+  ],
+  "6203-0": [
+    "stand",
+    "look over towards right shoulder",
+    20
+  ],
+  "3893-0": [
+    "fight stance",
+    "right low kick",
+    48
+  ],
+  "3893-1": [
+    "fight stance",
+    "stand",
+    63
+  ],
+  "3893-2": [
+    "fight stance",
+    "right high kick",
+    50
+  ],
+  "3893-3": [
+    "fight stance",
+    "stand",
+    17
+  ],
+  "3893-4": [
+    "right high kick",
+    "fight stance",
+    46
+  ],
+  "3893-5": [
+    "fight stance",
+    "stand",
+    19
+  ],
+  "3893-6": [
+    "fight stance",
+    "right low kick",
+    44
+  ],
+  "3893-7": [
+    "fight stance",
+    "stand",
+    18
+  ],
+  "3893-8": [
+    "fight stance",
+    "right low kick",
+    42
+  ],
+  "3893-9": [
+    "fight stance",
+    "stand",
+    24
+  ],
+  "3893-10": [
+    "fight stance",
+    "right high kick",
+    56
+  ],
+  "3893-12": [
+    "fight stance",
+    "right high kick",
+    44
+  ],
+  "3893-13": [
+    "fight stance",
+    "stand",
+    28
+  ],
+  "3893-14": [
+    "fight stance",
+    "right high kick",
+    45
+  ],
+  "3893-15": [
+    "fight stance",
+    "stand",
+    17
+  ],
+  "3893-16": [
+    "right high kick",
+    "fight stance",
+    44
+  ],
+  "3893-17": [
+    "fight stance",
+    "stand",
+    19
+  ],
+  "3893-18": [
+    "fight stance",
+    "right high kick",
+    45
+  ],
+  "3893-19": [
+    "fight stance",
+    "stand",
+    17
+  ],
+  "3893-20": [
+    "fight stance",
+    "right high kick",
+    54
+  ],
+  "3893-21": [
+    "fight stance",
+    "stand",
+    16
+  ],
+  "3893-22": [
+    "fight stance",
+    "right high kick",
+    56
+  ],
+  "3893-23": [
+    "fight stance",
+    "stand",
+    41
+  ],
+  "5556-0": [
+    "stand",
+    "look right",
+    20
+  ],
+  "11446-0": [
+    "bend torso right",
+    "place hands on hips",
+    30
+  ],
+  "11446-1": [
+    "place hands on hips",
+    "bend torso left",
+    25
+  ],
+  "8240-0": [
+    "bends down",
+    "stand",
+    20
+  ],
+  "8240-1": [
+    "stand",
+    "moves object from floor to above head",
+    30
+  ],
+  "8240-2": [
+    "stand",
+    "bends down",
+    17
+  ],
+  "8240-3": [
+    "stand",
+    "moves object from floor to above head",
+    38
+  ],
+  "8240-4": [
+    "stand",
+    "bends down",
+    22
+  ],
+  "8240-5": [
+    "stand",
+    "moves object from floor to above head",
+    36
+  ],
+  "8240-6": [
+    "stand",
+    "bends down",
+    31
+  ],
+  "8240-7": [
+    "stand",
+    "moves object from floor to above head",
+    40
+  ],
+  "8240-9": [
+    "moves object from floor to above head",
+    "stand",
+    28
+  ],
+  "8240-11": [
+    "moves object from floor to above head",
+    "stand",
+    28
+  ],
+  "11464-0": [
+    "stand",
+    "turn",
+    31
+  ],
+  "9196-0": [
+    "bend down take",
+    "bend down",
+    20
+  ],
+  "9196-1": [
+    "walk",
+    "bend down",
+    39
+  ],
+  "4858-1": [
+    "run forward",
+    "shifts legs to the right",
+    18
+  ],
+  "11453-0": [
+    "stand",
+    "look to the left",
+    44
+  ],
+  "5209-0": [
+    "stand with arms down",
+    "look at the left",
+    45
+  ],
+  "5209-1": [
+    "stand with arms down",
+    "look at the ground",
+    23
+  ],
+  "4771-0": [
+    "stand",
+    "look right",
+    40
+  ],
+  "4771-1": [
+    "turn around",
+    "look right",
+    27
+  ],
+  "3697-0": [
+    "look left",
+    "stand",
+    52
+  ],
+  "8289-1": [
+    "duck",
+    "sway",
+    107
+  ],
+  "8289-2": [
+    "duck",
+    "sway",
+    67
+  ],
+  "8289-3": [
+    "duck",
+    "sway",
+    217
+  ],
+  "8289-4": [
+    "duck",
+    "sway",
+    51
+  ],
+  "8289-5": [
+    "duck",
+    "sway",
+    219
+  ],
+  "5706-0": [
+    "turn",
+    "walk",
+    23
+  ],
+  "5706-1": [
+    "turn",
+    "walk",
+    43
+  ],
+  "5706-2": [
+    "turn",
+    "walk",
+    46
+  ],
+  "5311-1": [
+    "swat right hand",
+    "stand",
+    18
+  ],
+  "2052-0": [
+    "step over",
+    "walk forward",
+    55
+  ],
+  "11758-0": [
+    "stand",
+    "lift right hand up to face",
+    93
+  ],
+  "11758-1": [
+    "lowers right hand",
+    "stand",
+    49
+  ],
+  "11758-2": [
+    "stand",
+    "reach forward with left hand",
+    48
+  ],
+  "11758-3": [
+    "left hand moves object to right hand",
+    "stand",
+    35
+  ],
+  "11758-4": [
+    "right hand lowers with object",
+    "stand",
+    60
+  ],
+  "11982-1": [
+    "rotate shoulders",
+    "walk forward",
+    23
+  ],
+  "2773-2": [
+    "make a chopping motion with right hand",
+    "hold another object with left hand",
+    198
+  ],
+  "1927-0": [
+    "swim",
+    "turn right",
+    209
+  ],
+  "3068-0": [
+    "hands on waist",
+    "walk",
+    66
+  ],
+  "3068-1": [
+    "extend arms down",
+    "walk",
+    20
+  ],
+  "9795-0": [
+    "sit down",
+    "left leg on right knee",
+    102
+  ],
+  "9795-1": [
+    "right leg on left knee",
+    "sit down",
+    152
+  ],
+  "6834-0": [
+    "pace",
+    "hold hands on hips",
+    101
+  ],
+  "6834-1": [
+    "pace",
+    "gesture",
+    38
+  ],
+  "6834-2": [
+    "pace",
+    "gesture",
+    53
+  ],
+  "10333-0": [
+    "sprint forward",
+    "right hand dribble",
+    43
+  ],
+  "11439-0": [
+    "place hands on lap",
+    "sit",
+    69
+  ],
+  "11439-1": [
+    "place hands on lap",
+    "sit",
+    64
+  ],
+  "9247-0": [
+    "stand",
+    "hand together in front of belly",
+    79
+  ],
+  "602-0": [
+    "lean from side to side",
+    "hold hands at armpits",
+    38
+  ],
+  "602-3": [
+    "hold hands at armpits",
+    "flap right arm at side",
+    64
+  ],
+  "602-5": [
+    "hold hands at armpits",
+    "flap arms at sides",
+    66
+  ],
+  "602-6": [
+    "hold hands at armpits",
+    "lean from side to side",
+    130
+  ],
+  "602-7": [
+    "hold hands at armpits",
+    "flap arms at sides",
+    53
+  ],
+  "602-9": [
+    "flap arms at sides",
+    "hold hands at armpits",
+    17
+  ],
+  "602-10": [
+    "lean from side to side",
+    "hold hands at armpits",
+    52
+  ],
+  "602-11": [
+    "flap arms at sides",
+    "hold hands at armpits",
+    36
+  ],
+  "602-12": [
+    "hold hands at armpits",
+    "look to left",
+    42
+  ],
+  "602-13": [
+    "hold hands at armpits",
+    "look to left",
+    20
+  ],
+  "602-15": [
+    "hold hands at armpits",
+    "lean from side to side",
+    42
+  ],
+  "602-16": [
+    "hold hands at armpits",
+    "flap arms at sides",
+    48
+  ],
+  "8944-0": [
+    "look right",
+    "shake arms",
+    23
+  ],
+  "1676-0": [
+    "look around",
+    "stand",
+    100
+  ],
+  "12772-0": [
+    "argue",
+    "right hand movement",
+    37
+  ],
+  "12772-1": [
+    "argue",
+    "right hand movement",
+    26
+  ],
+  "12772-2": [
+    "argue",
+    "both hand movement",
+    80
+  ],
+  "12772-3": [
+    "argue",
+    "right hand movement",
+    29
+  ],
+  "12772-4": [
+    "argue",
+    "both hand movement",
+    24
+  ],
+  "12772-5": [
+    "argue",
+    "left hand movement",
+    48
+  ],
+  "12772-6": [
+    "argue",
+    "both hand movement",
+    31
+  ],
+  "12772-8": [
+    "right hand movement",
+    "stand",
+    30
+  ],
+  "12772-9": [
+    "stand",
+    "both hand movement",
+    25
+  ],
+  "3348-2": [
+    "stand",
+    "hang up phone",
+    57
+  ],
+  "13066-0": [
+    "shower",
+    "stand",
+    512
+  ],
+  "1361-1": [
+    "look through object",
+    "right hand free",
+    28
+  ],
+  "1361-2": [
+    "adjust object",
+    "look through object",
+    67
+  ],
+  "2089-0": [
+    "look to the left",
+    "stand",
+    21
+  ],
+  "8625-0": [
+    "turn right",
+    "walk",
+    40
+  ],
+  "6727-1": [
+    "look up",
+    "walk",
+    25
+  ],
+  "6727-2": [
+    "look up",
+    "walk back",
+    15
+  ],
+  "6727-3": [
+    "look up",
+    "right leg kick",
+    41
+  ],
+  "1761-0": [
+    "jump kick",
+    "jump kick right leg",
+    17
+  ],
+  "3182-0": [
+    "look left to right",
+    "place hand over brow",
+    61
+  ],
+  "3182-1": [
+    "place hand over brow",
+    "look right to left",
+    139
+  ],
+  "3182-2": [
+    "rock side to side",
+    "stretch arms out in front together",
+    117
+  ],
+  "3182-3": [
+    "bend knees",
+    "place hands on mouth",
+    52
+  ],
+  "3182-4": [
+    "look right to left",
+    "place hand over brow",
+    93
+  ],
+  "7161-0": [
+    "hold hands up in front",
+    "bend knees",
+    29
+  ],
+  "7161-1": [
+    "hold hands up in front",
+    "bend knees",
+    46
+  ],
+  "7161-2": [
+    "hold hands up in front",
+    "bend knees",
+    27
+  ],
+  "7161-5": [
+    "hold hands up in front",
+    "look left",
+    41
+  ],
+  "7515-0": [
+    "look up",
+    "right arm up",
+    25
+  ],
+  "7515-1": [
+    "right arm up",
+    "look straight",
+    27
+  ],
+  "10889-0": [
+    "stand",
+    "hold item",
+    89
+  ],
+  "12441-0": [
+    "turn around right",
+    "walk",
+    68
+  ],
+  "12441-1": [
+    "walk",
+    "turn around left",
+    95
+  ],
+  "12441-2": [
+    "bend forward",
+    "walk",
+    40
+  ],
+  "12441-3": [
+    "bend forward",
+    "walk",
+    59
+  ],
+  "2080-0": [
+    "run forward lead with the right leg",
+    "bends forward with arms spread out",
+    27
+  ],
+  "2080-1": [
+    "bends forward with arms spread out",
+    "slow to a stop",
+    19
+  ],
+  "9110-0": [
+    "hold with hands",
+    "bend down",
+    27
+  ],
+  "6887-0": [
+    "left arm up with elbow bent",
+    "right hand on back",
+    57
+  ],
+  "6887-3": [
+    "left arm up with elbow bent",
+    "right hand on back",
+    30
+  ],
+  "12719-0": [
+    "jump with alternate legs",
+    "turn back",
+    33
+  ],
+  "12719-1": [
+    "turn back",
+    "walk",
+    31
+  ],
+  "6903-0": [
+    "turn",
+    "walk",
+    22
+  ],
+  "6903-1": [
+    "turn",
+    "walk",
+    49
+  ],
+  "6903-2": [
+    "turn",
+    "walk",
+    25
+  ],
+  "1344-0": [
+    "turn",
+    "walk",
+    20
+  ],
+  "8063-0": [
+    "walk forward",
+    "drink",
+    15
+  ],
+  "8063-1": [
+    "turn around right",
+    "walk forward",
+    40
+  ],
+  "8063-2": [
+    "turn around left",
+    "walk forward",
+    36
+  ],
+  "1435-0": [
+    "jump",
+    "jump stumble",
+    30
+  ],
+  "3350-0": [
+    "look around",
+    "just stand",
+    153
+  ],
+  "9411-0": [
+    "look around",
+    "shade eyes from right hand",
+    43
+  ],
+  "9411-1": [
+    "shade eyes from right hand",
+    "look around",
+    22
+  ],
+  "10339-1": [
+    "look around",
+    "right hand on nose",
+    36
+  ],
+  "10339-2": [
+    "swing torso",
+    "move arms up",
+    137
+  ],
+  "1217-0": [
+    "turn",
+    "play basketball",
+    176
+  ],
+  "1217-1": [
+    "play basketball",
+    "walk",
+    41
+  ],
+  "9451-0": [
+    "step backward",
+    "hands on hips",
+    32
+  ],
+  "9136-1": [
+    "steps forward",
+    "throw right arm to the left in front of chest",
+    24
+  ],
+  "9136-2": [
+    "throw left arm to the right in front of chest",
+    "turn to the right",
+    33
+  ],
+  "9136-3": [
+    "throw hand out and back together over head",
+    "jump",
+    45
+  ],
+  "9136-4": [
+    "bring hands down to waist",
+    "crouch forward",
+    42
+  ],
+  "9136-5": [
+    "move hands left and right in front of chest",
+    "crouch forward",
+    78
+  ],
+  "9136-6": [
+    "crouch forward",
+    "throw right arm to the left in front of chest",
+    21
+  ],
+  "9136-7": [
+    "throw right arm above head",
+    "crouch forward",
+    21
+  ],
+  "9136-9": [
+    "throw left arm above head",
+    "crouch forward",
+    15
+  ],
+  "9136-10": [
+    "stand",
+    "throw left arm above head",
+    15
+  ],
+  "318-0": [
+    "walk",
+    "hunch over",
+    209
+  ],
+  "2787-1": [
+    "pull backwards",
+    "hold on with right hand",
+    15
+  ],
+  "2787-2": [
+    "step forwards",
+    "hold on with right hand",
+    19
+  ],
+  "6442-0": [
+    "hand actions",
+    "body actions",
+    30
+  ],
+  "6442-1": [
+    "hand actions",
+    "body actions",
+    30
+  ],
+  "9395-0": [
+    "stick out arms",
+    "move head around",
+    88
+  ],
+  "9395-1": [
+    "flex arms",
+    "sweep to the right",
+    73
+  ],
+  "9253-0": [
+    "jog lightly",
+    "turn right",
+    19
+  ],
+  "5835-0": [
+    "hold hands at face",
+    "turn left and right at waist",
+    92
+  ],
+  "5047-0": [
+    "look around",
+    "wave right hand",
+    52
+  ],
+  "12740-1": [
+    "look down at left wrist",
+    "turn around",
+    16
+  ],
+  "12740-3": [
+    "stand",
+    "look down at feet",
+    19
+  ],
+  "2905-1": [
+    "look to the right",
+    "keep both hands in front of face like a binocular",
+    40
+  ],
+  "2905-2": [
+    "look to the left",
+    "keep both hands in front of face like a binocular",
+    22
+  ],
+  "2408-1": [
+    "reach toward toes",
+    "bend over",
+    31
+  ],
+  "2408-3": [
+    "bend over",
+    "reach toward left toes",
+    28
+  ],
+  "2408-4": [
+    "bend over",
+    "reach toward right toes",
+    17
+  ],
+  "11672-1": [
+    "look down",
+    "dance",
+    86
+  ],
+  "11672-2": [
+    "look up",
+    "dance",
+    26
+  ],
+  "4243-0": [
+    "sit down",
+    "stand",
+    30
+  ],
+  "4243-1": [
+    "answer phone with right hand",
+    "sit down",
+    118
+  ],
+  "12004-0": [
+    "look down",
+    "cross arms",
+    116
+  ],
+  "887-0": [
+    "walk backwards",
+    "look at the ground",
+    45
+  ],
+  "6057-0": [
+    "turn left",
+    "stand up",
+    31
+  ],
+  "6148-3": [
+    "turn right",
+    "lean forward",
+    39
+  ],
+  "6598-0": [
+    "cross left leg over right leg",
+    "sit",
+    25
+  ],
+  "4600-0": [
+    "look at left arm",
+    "stand up",
+    22
+  ],
+  "5038-0": [
+    "cross legs",
+    "squat down",
+    39
+  ],
+  "5038-1": [
+    "cross legs",
+    "squat with arms spread",
+    25
+  ],
+  "5038-2": [
+    "cross legs",
+    "stand up",
+    22
+  ],
+  "1600-0": [
+    "step back toward chair",
+    "look behind",
+    24
+  ],
+  "4652-0": [
+    "feet sink while walk",
+    "walk forward hands at sides",
+    131
+  ],
+  "4641-0": [
+    "look up",
+    "stand",
+    37
+  ],
+  "10465-0": [
+    "walk up an incline or ramp",
+    "walk forward arms at side",
+    111
+  ],
+  "5526-0": [
+    "walk backwards",
+    "go down the stairs",
+    99
+  ],
+  "6431-0": [
+    "stand with arms at sides",
+    "stumble forward on right foot",
+    31
+  ],
+  "5860-2": [
+    "walk",
+    "lean to the right",
+    31
+  ],
+  "7412-0": [
+    "lean right",
+    "walk",
+    29
+  ],
+  "7412-1": [
+    "lean right",
+    "walk",
+    17
+  ],
+  "7412-2": [
+    "lean left",
+    "walk",
+    31
+  ],
+  "3142-0": [
+    "stand",
+    "flap hands together in front of face palms towards each other",
+    109
+  ],
+  "5877-0": [
+    "bend over",
+    "shake",
+    36
+  ],
+  "5877-1": [
+    "lift up",
+    "shake",
+    45
+  ],
+  "344-0": [
+    "wave",
+    "bend",
+    26
+  ],
+  "8960-1": [
+    "unknown",
+    "place hands to face",
+    68
+  ],
+  "8960-2": [
+    "step backward",
+    "place elbows behind his back",
+    21
+  ],
+  "4276-0": [
+    "look down",
+    "walk backwards",
+    51
+  ],
+  "4276-1": [
+    "walk backwards",
+    "look to the side",
+    167
+  ],
+  "4276-2": [
+    "look to the side",
+    "walk backwards",
+    176
+  ],
+  "4276-3": [
+    "look to the side",
+    "walk backwards",
+    40
+  ],
+  "4276-4": [
+    "walk backwards",
+    "look down",
+    82
+  ],
+  "4276-5": [
+    "walk backwards",
+    "look down",
+    50
+  ],
+  "8983-0": [
+    "limp backwards",
+    "look to the side",
+    74
+  ],
+  "8983-1": [
+    "clutch midsection",
+    "staggering backwards",
+    313
+  ],
+  "2285-0": [
+    "step backwards",
+    "look back to the left",
+    46
+  ],
+  "5233-0": [
+    "duck down",
+    "touch forehead with left hand",
+    18
+  ],
+  "11885-1": [
+    "look around",
+    "move dizzy",
+    90
+  ],
+  "9118-0": [
+    "nod his head",
+    "walk",
+    47
+  ],
+  "5925-0": [
+    "right leg cross over left leg",
+    "sit",
+    74
+  ],
+  "5925-1": [
+    "left leg cross over right leg",
+    "sit",
+    62
+  ],
+  "5925-2": [
+    "sit",
+    "right leg cross over left leg",
+    87
+  ],
+  "5925-3": [
+    "left leg cross over right leg",
+    "sit",
+    29
+  ],
+  "11040-0": [
+    "turn around",
+    "walk",
+    29
+  ],
+  "1709-0": [
+    "walk slowly in circles",
+    "drop head",
+    641
+  ],
+  "1709-1": [
+    "step back",
+    "drop head",
+    44
+  ],
+  "1709-2": [
+    "lean down",
+    "drop head",
+    33
+  ],
+  "1709-3": [
+    "drop head",
+    "clasp hands together",
+    20
+  ],
+  "2085-0": [
+    "arms go down",
+    "walk",
+    23
+  ],
+  "8778-0": [
+    "prepare serve",
+    "stand with legs spread",
+    41
+  ],
+  "8778-1": [
+    "stand with legs spread",
+    "serve volley ball",
+    37
+  ],
+  "8778-2": [
+    "stand with legs spread",
+    "back up",
+    30
+  ],
+  "8778-4": [
+    "stand with legs spread",
+    "prepare serve",
+    44
+  ],
+  "6731-0": [
+    "hold left hand to shoulder",
+    "walk in circles",
+    628
+  ],
+  "3937-0": [
+    "place hands and head into position",
+    "walk in pattern",
+    50
+  ],
+  "1230-0": [
+    "both hand extended outward slightly apart",
+    "both hand extend outward slightly apart",
+    30
+  ],
+  "4235-0": [
+    "step backward",
+    "make a throwing motion",
+    29
+  ],
+  "2951-0": [
+    "stand",
+    "intoxicated swaying",
+    619
+  ],
+  "4749-0": [
+    "place left hand on object",
+    "place right hand on object",
+    19
+  ],
+  "4749-1": [
+    "place left hand on object",
+    "place right hand on object",
+    28
+  ],
+  "4749-2": [
+    "place right hand on object",
+    "place left hand on object",
+    37
+  ],
+  "6549-1": [
+    "walk clockwise",
+    "hit with right hand",
+    17
+  ],
+  "6549-3": [
+    "hit with right hand",
+    "walk clockwise",
+    19
+  ],
+  "6549-4": [
+    "hit with right hand",
+    "walk clockwise",
+    16
+  ],
+  "6549-7": [
+    "hit with right hand",
+    "walk clockwise",
+    16
+  ],
+  "6549-8": [
+    "walk clockwise",
+    "hit with right hand",
+    16
+  ],
+  "6549-10": [
+    "walk clockwise",
+    "hit with right hand",
+    16
+  ],
+  "6549-11": [
+    "walk clockwise",
+    "hit with right hand",
+    18
+  ],
+  "7488-1": [
+    "wave with right hand",
+    "hold microphone with left hand",
+    39
+  ],
+  "7488-7": [
+    "wave with right hand",
+    "hold microphone with left hand",
+    29
+  ],
+  "7488-8": [
+    "wave with right hand",
+    "hold microphone with left hand",
+    19
+  ],
+  "7488-9": [
+    "wave with right hand",
+    "hold microphone with left hand",
+    20
+  ],
+  "12295-0": [
+    "wave right hand",
+    "stand",
+    33
+  ],
+  "12295-1": [
+    "low hand",
+    "stand",
+    18
+  ],
+  "12295-2": [
+    "wave hands in the air",
+    "stand",
+    62
+  ],
+  "12295-4": [
+    "wave right hand",
+    "stand",
+    66
+  ],
+  "12295-5": [
+    "stand",
+    "low hand",
+    16
+  ],
+  "12295-6": [
+    "stand",
+    "wave right hand lower",
+    52
+  ],
+  "12295-8": [
+    "wave left hand",
+    "stand",
+    37
+  ],
+  "5444-0": [
+    "spin clockwise",
+    "hold arms out at sides",
+    117
+  ],
+  "5444-1": [
+    "hold arms out at sides",
+    "spin counterclockwise",
+    106
+  ],
+  "8202-0": [
+    "right arm elevate",
+    "walk",
+    73
+  ],
+  "8202-1": [
+    "body turn",
+    "right arm elevate",
+    47
+  ],
+  "8202-2": [
+    "right arm elevate",
+    "walk",
+    78
+  ],
+  "8202-3": [
+    "right arm elevate",
+    "body turn",
+    52
+  ],
+  "8202-4": [
+    "right arm elevate",
+    "walk",
+    75
+  ],
+  "8202-5": [
+    "right arm elevate",
+    "body turn",
+    75
+  ],
+  "8202-6": [
+    "right arm elevate",
+    "walk",
+    58
+  ],
+  "8202-7": [
+    "right arm elevate",
+    "body turn",
+    62
+  ],
+  "8202-8": [
+    "right arm elevate",
+    "walk",
+    70
+  ],
+  "8202-9": [
+    "right arm elevate",
+    "step back",
+    64
+  ],
+  "10672-1": [
+    "walk forwards",
+    "stumbles",
+    35
+  ],
+  "10672-3": [
+    "walk forwards",
+    "stumbles",
+    36
+  ],
+  "10672-4": [
+    "turn body and head around 180 degrees",
+    "walk forwards",
+    16
+  ],
+  "10672-5": [
+    "stumbles",
+    "walk forwards",
+    42
+  ],
+  "10672-7": [
+    "stumbles",
+    "walk forwards",
+    45
+  ],
+  "7565-0": [
+    "wave right arm",
+    "place left hand at mouth",
+    99
+  ],
+  "7565-1": [
+    "shake hands",
+    "place left hand at mouth",
+    37
+  ],
+  "7565-2": [
+    "wave right arm",
+    "place left hand at mouth",
+    146
+  ],
+  "7565-3": [
+    "shake hands",
+    "place left hand at mouth",
+    38
+  ],
+  "9378-0": [
+    "look up",
+    "put right hand over mouth",
+    52
+  ],
+  "9378-1": [
+    "nod head down",
+    "put right hand over mouth",
+    47
+  ],
+  "1743-0": [
+    "turn left",
+    "carry with both hands",
+    28
+  ],
+  "1743-1": [
+    "carry with left hand",
+    "turn left",
+    24
+  ],
+  "1743-2": [
+    "carry with both hands",
+    "turn left",
+    28
+  ],
+  "1743-3": [
+    "carry with both hands",
+    "turn left",
+    20
+  ],
+  "7310-0": [
+    "walk around",
+    "whole body shake",
+    644
+  ],
+  "257-0": [
+    "walk backwards",
+    "turn around",
+    44
+  ],
+  "257-1": [
+    "walk backwards",
+    "turn around",
+    33
+  ],
+  "9340-0": [
+    "sit on feet position",
+    "place hands on knees",
+    43
+  ],
+  "6654-0": [
+    "turn around",
+    "run back",
+    18
+  ],
+  "6654-2": [
+    "run forward",
+    "turn around",
+    19
+  ],
+  "6654-5": [
+    "run back",
+    "turn around",
+    16
+  ],
+  "6654-6": [
+    "run forward",
+    "turn around",
+    20
+  ],
+  "6654-7": [
+    "run back",
+    "turn around",
+    23
+  ],
+  "6654-8": [
+    "turn around",
+    "run forward",
+    15
+  ],
+  "1456-0": [
+    "left leg cross over right leg",
+    "sit",
+    119
+  ],
+  "1456-1": [
+    "right leg cross over right leg",
+    "sit",
+    118
+  ],
+  "1456-2": [
+    "left leg cross over right leg",
+    "lay back",
+    45
+  ],
+  "10995-0": [
+    "stand",
+    "move hands in wind motion",
+    365
+  ],
+  "10995-1": [
+    "low hands",
+    "stand",
+    29
+  ],
+  "10995-2": [
+    "stand",
+    "move hands in wind motion",
+    248
+  ],
+  "10503-0": [
+    "raise right hand to mouth",
+    "eat food",
+    31
+  ],
+  "10503-1": [
+    "raise right hand to mouth",
+    "eat food",
+    29
+  ],
+  "10503-2": [
+    "raise right hand to mouth",
+    "eat food",
+    85
+  ],
+  "10503-3": [
+    "raise right hand to mouth",
+    "eat food",
+    43
+  ],
+  "10503-4": [
+    "raise right hand to mouth",
+    "eat food",
+    89
+  ],
+  "10503-5": [
+    "raise right hand to mouth",
+    "eat food",
+    31
+  ],
+  "10503-6": [
+    "raise both hands to mouth",
+    "eat food",
+    40
+  ],
+  "631-0": [
+    "stand",
+    "move both hands to face",
+    101
+  ],
+  "631-1": [
+    "stand",
+    "touch face with right hand",
+    196
+  ],
+  "631-3": [
+    "stand",
+    "move both hands to face",
+    74
+  ],
+  "2541-0": [
+    "head down",
+    "walk",
+    55
+  ],
+  "2541-1": [
+    "look up",
+    "turn around",
+    23
+  ],
+  "2541-2": [
+    "walk",
+    "head down",
+    45
+  ],
+  "3442-1": [
+    "stand",
+    "reach out and shake right hand",
+    76
+  ],
+  "3442-2": [
+    "stand",
+    "reach out and shake left hand",
+    103
+  ],
+  "3442-3": [
+    "reach out with both hands",
+    "stand",
+    133
+  ],
+  "3442-4": [
+    "pivots body 45 degrees to the left",
+    "stand",
+    41
+  ],
+  "3442-5": [
+    "stand",
+    "reach out and shake right hand",
+    121
+  ],
+  "3442-6": [
+    "stand",
+    "reach out and shake left hand",
+    111
+  ],
+  "9854-0": [
+    "high jump",
+    "right hand full high",
+    16
+  ],
+  "9854-2": [
+    "right hand full high",
+    "high jump",
+    29
+  ],
+  "9854-3": [
+    "high jump",
+    "right hand full high",
+    27
+  ],
+  "9854-4": [
+    "high jump",
+    "right hand full high",
+    24
+  ],
+  "9854-5": [
+    "high jump",
+    "right hand full high",
+    19
+  ],
+  "9854-6": [
+    "right hand full high",
+    "high jump",
+    25
+  ],
+  "515-0": [
+    "move head around",
+    "clasp hands together",
+    489
+  ],
+  "2702-0": [
+    "style hair with right hand",
+    "hold mirror in front of face",
+    112
+  ],
+  "2702-1": [
+    "style hair with right hand",
+    "move mirror slightly to left",
+    51
+  ],
+  "2702-2": [
+    "style hair with right hand",
+    "move mirror slightly right",
+    135
+  ],
+  "2702-3": [
+    "move mirror far right",
+    "style hair with right hand",
+    47
+  ],
+  "2702-4": [
+    "style hair with right hand",
+    "move mirror far left",
+    98
+  ],
+  "127-0": [
+    "turn left",
+    "face rear",
+    26
+  ],
+  "127-1": [
+    "walk backwards",
+    "turn left",
+    68
+  ],
+  "127-2": [
+    "turn left",
+    "walk backwards",
+    55
+  ],
+  "127-3": [
+    "turn left",
+    "walk backwards",
+    21
+  ],
+  "127-4": [
+    "walk backwards",
+    "turn left",
+    40
+  ],
+  "127-5": [
+    "walk backwards",
+    "turn left",
+    32
+  ],
+  "11301-0": [
+    "walk forward",
+    "pick up object",
+    15
+  ],
+  "11301-1": [
+    "step on object",
+    "walk forward",
+    15
+  ],
+  "11301-2": [
+    "walk forward",
+    "turn around",
+    71
+  ],
+  "9410-0": [
+    "hit object",
+    "hold object",
+    475
+  ],
+  "8010-0": [
+    "check wall surface",
+    "stand",
+    526
+  ],
+  "5874-0": [
+    "stand",
+    "walk forward",
+    23
+  ],
+  "5874-1": [
+    "lose balance",
+    "walk forward",
+    66
+  ],
+  "5874-3": [
+    "walk forward",
+    "lose balance",
+    67
+  ],
+  "5874-5": [
+    "lose balance",
+    "walk forward",
+    34
+  ],
+  "9064-0": [
+    "hands on hips",
+    "turn around",
+    90
+  ],
+  "5322-0": [
+    "lower hands",
+    "walk in circles",
+    31
+  ],
+  "5576-0": [
+    "dodge",
+    "reach right hand up",
+    27
+  ],
+  "5576-1": [
+    "dodge",
+    "reach right hand up",
+    26
+  ],
+  "9440-0": [
+    "run",
+    "nod head",
+    17
+  ],
+  "10781-0": [
+    "hold right hand on chin",
+    "pace back and forth",
+    102
+  ],
+  "10781-1": [
+    "hold right hand on chin",
+    "pace back and forth",
+    456
+  ],
+  "2936-0": [
+    "walk across a plank",
+    "raise both arms",
+    33
+  ],
+  "2936-1": [
+    "hold both arms straight up",
+    "walk across a plank",
+    72
+  ],
+  "6457-0": [
+    "look down",
+    "walk",
+    89
+  ],
+  "8230-1": [
+    "turn 90 degrees right",
+    "walk forward",
+    45
+  ],
+  "179-0": [
+    "turn left",
+    "walk",
+    38
+  ],
+  "11429-0": [
+    "turnaround",
+    "walk",
+    40
+  ],
+  "11530-0": [
+    "stand",
+    "step forward",
+    40
+  ],
+  "11530-1": [
+    "grab item",
+    "stand",
+    90
+  ],
+  "11530-2": [
+    "stand",
+    "pour drink",
+    118
+  ],
+  "11530-3": [
+    "stand",
+    "set item down",
+    83
+  ],
+  "11530-4": [
+    "stand",
+    "step back",
+    54
+  ],
+  "3496-2": [
+    "wipes with right hand",
+    "wipes with left hand",
+    482
+  ],
+  "3496-3": [
+    "steps to the left",
+    "reach to the down left with right hand",
+    17
+  ],
+  "3496-5": [
+    "wipes with left hand",
+    "wipes with right hand",
+    22
+  ],
+  "3496-7": [
+    "reach to the down left with right hand",
+    "steps to the left",
+    16
+  ],
+  "5500-0": [
+    "extend right arm",
+    "bend",
+    23
+  ],
+  "5500-1": [
+    "bend",
+    "extend right arm",
+    22
+  ],
+  "5473-0": [
+    "wipe",
+    "hold",
+    65
+  ],
+  "3236-0": [
+    "turn right",
+    "walk",
+    43
+  ],
+  "5135-0": [
+    "turn head to the right",
+    "stand still",
+    46
+  ],
+  "12812-1": [
+    "step forward carefully",
+    "walk forward carefully",
+    30
+  ],
+  "2899-0": [
+    "look to the left",
+    "sit",
+    50
+  ],
+  "2899-1": [
+    "sit",
+    "scratch back of head with both hands",
+    112
+  ],
+  "2899-2": [
+    "touch back of head with right hand",
+    "sit",
+    101
+  ],
+  "2899-3": [
+    "upward swirl motion with right hand",
+    "sit",
+    65
+  ],
+  "2899-4": [
+    "sit",
+    "scratch back of head with both hands",
+    127
+  ],
+  "2899-5": [
+    "sit",
+    "shake motion by face with right hand",
+    97
+  ],
+  "2899-6": [
+    "shake both hands palm in by chest",
+    "sit",
+    92
+  ],
+  "2899-7": [
+    "sit",
+    "touch face with right hand",
+    52
+  ],
+  "2899-8": [
+    "raise both hands near chest shakes with palms out",
+    "sit",
+    60
+  ],
+  "2899-9": [
+    "touch back of head with right hand",
+    "sit",
+    105
+  ],
+  "4442-0": [
+    "extend right arm",
+    "stand",
+    72
+  ],
+  "4442-1": [
+    "scratch face",
+    "sit",
+    62
+  ],
+  "4442-2": [
+    "sit",
+    "lift both arms",
+    102
+  ],
+  "4442-3": [
+    "scratch back",
+    "sit",
+    86
+  ],
+  "4442-4": [
+    "scratch back",
+    "sit",
+    139
+  ],
+  "4442-5": [
+    "wave right arm in circle",
+    "sit",
+    91
+  ],
+  "4442-6": [
+    "scratch back",
+    "sit",
+    81
+  ],
+  "4442-7": [
+    "sit",
+    "lift right arm",
+    78
+  ],
+  "4442-8": [
+    "lift both arms",
+    "sit",
+    30
+  ],
+  "4442-9": [
+    "lift left arm",
+    "sit",
+    94
+  ],
+  "4442-10": [
+    "sit",
+    "wave both arms side to side",
+    135
+  ],
+  "4442-11": [
+    "lift both arms",
+    "sit",
+    70
+  ],
+  "8578-0": [
+    "arm out wide",
+    "walk forward",
+    83
+  ],
+  "10007-0": [
+    "move object to the right",
+    "turn object vertically",
+    27
+  ],
+  "6141-0": [
+    "stand",
+    "rearrange",
+    278
+  ],
+  "9542-0": [
+    "move object to the right",
+    "rotate object vertically",
+    33
+  ],
+  "8866-0": [
+    "stand",
+    "look down to left",
+    35
+  ],
+  "2433-0": [
+    "stand",
+    "arms out at sides",
+    21
+  ],
+  "4644-0": [
+    "stand",
+    "look right",
+    56
+  ],
+  "8196-0": [
+    "turnaround",
+    "walk",
+    25
+  ],
+  "3480-0": [
+    "walk",
+    "walk",
+    30
+  ],
+  "6625-0": [
+    "turn",
+    "walk",
+    36
+  ],
+  "7569-0": [
+    "turn right",
+    "walk",
+    45
+  ],
+  "764-0": [
+    "shake right hand",
+    "sit",
+    56
+  ],
+  "764-1": [
+    "sit",
+    "raise left hand",
+    62
+  ],
+  "764-2": [
+    "sit",
+    "clap",
+    38
+  ],
+  "764-3": [
+    "shake right hand",
+    "sit",
+    46
+  ],
+  "764-5": [
+    "raise left hand",
+    "sit",
+    39
+  ],
+  "764-6": [
+    "raise right hand",
+    "sit",
+    35
+  ],
+  "764-7": [
+    "sit",
+    "sweep hands side to side",
+    71
+  ],
+  "764-8": [
+    "raise both hands",
+    "sit",
+    50
+  ],
+  "764-9": [
+    "stretch out right arm",
+    "sit",
+    51
+  ],
+  "1879-0": [
+    "turn right",
+    "walk",
+    50
+  ],
+  "5323-0": [
+    "turn right",
+    "walk",
+    20
+  ],
+  "10451-0": [
+    "both hand on rail",
+    "lean over front",
+    182
+  ],
+  "7292-0": [
+    "sit down",
+    "place right hand on something",
+    54
+  ],
+  "7292-2": [
+    "place right hand on something",
+    "stand up",
+    36
+  ],
+  "781-0": [
+    "push air backwards",
+    "walk forward",
+    110
+  ],
+  "12866-0": [
+    "lean",
+    "look at foot",
+    58
+  ],
+  "7256-0": [
+    "raise arms",
+    "walk in straight line",
+    117
+  ],
+  "3852-0": [
+    "stand",
+    "wave",
+    158
+  ],
+  "11760-0": [
+    "quickly turn around",
+    "walk",
+    36
+  ],
+  "9803-0": [
+    "reach with right hand",
+    "lean forward",
+    66
+  ],
+  "8885-0": [
+    "hold",
+    "squat",
+    89
+  ],
+  "8631-1": [
+    "reach onto shelf",
+    "walk",
+    34
+  ],
+  "2552-1": [
+    "kneel",
+    "right knee on floor",
+    27
+  ],
+  "2552-2": [
+    "kneel",
+    "left knee on floor",
+    34
+  ],
+  "2552-3": [
+    "kneel",
+    "sit up straight",
+    20
+  ],
+  "3964-0": [
+    "stretch leg",
+    "hold",
+    67
+  ],
+  "8840-0": [
+    "go up stair",
+    "right hand on rail",
+    119
+  ],
+  "8840-2": [
+    "left hand on rail",
+    "turn back",
+    34
+  ],
+  "8840-3": [
+    "walk down stair",
+    "left hand on rail",
+    68
+  ],
+  "6906-0": [
+    "hold rail with left hand",
+    "walk",
+    102
+  ],
+  "2993-0": [
+    "wave arms",
+    "stand",
+    53
+  ],
+  "2993-1": [
+    "stand",
+    "lower arms",
+    35
+  ],
+  "3972-0": [
+    "shake right hand",
+    "sit",
+    51
+  ],
+  "3972-1": [
+    "slide over to the left",
+    "sit",
+    46
+  ],
+  "3972-2": [
+    "raise right hand",
+    "sit",
+    75
+  ],
+  "3972-3": [
+    "sit",
+    "clap",
+    30
+  ],
+  "3972-4": [
+    "wind right hand",
+    "sit",
+    51
+  ],
+  "3972-5": [
+    "gesture with both hands",
+    "sit",
+    71
+  ],
+  "3972-6": [
+    "raise right hand",
+    "sit",
+    43
+  ],
+  "3972-7": [
+    "sit",
+    "sweep hands side to side",
+    47
+  ],
+  "3972-8": [
+    "shake right hand",
+    "sit",
+    35
+  ],
+  "3972-9": [
+    "raise both hands",
+    "sit",
+    39
+  ],
+  "3972-10": [
+    "stretch out right arm",
+    "sit",
+    41
+  ],
+  "3972-11": [
+    "turn right",
+    "walk",
+    27
+  ],
+  "2956-0": [
+    "look at foot",
+    "rest left hand on bench",
+    54
+  ],
+  "2956-1": [
+    "low foot",
+    "rest left hand on bench",
+    21
+  ],
+  "9264-0": [
+    "place left hand down on ground",
+    "kneel on both knees",
+    87
+  ],
+  "3501-0": [
+    "sit down",
+    "head shake",
+    173
+  ],
+  "4842-0": [
+    "turn left",
+    "walk",
+    34
+  ],
+  "2798-0": [
+    "sit down",
+    "right hand up",
+    62
+  ],
+  "2798-1": [
+    "both arm movement",
+    "sit down",
+    31
+  ],
+  "2798-2": [
+    "sit down",
+    "both arm touch shoulders",
+    41
+  ],
+  "2798-3": [
+    "sit down",
+    "both arm movement",
+    67
+  ],
+  "5612-0": [
+    "point with right hand",
+    "sit",
+    60
+  ],
+  "5612-1": [
+    "stretch",
+    "sit",
+    74
+  ],
+  "5612-2": [
+    "scratch shoulder",
+    "sit",
+    92
+  ],
+  "5612-3": [
+    "rub hands",
+    "sit",
+    37
+  ],
+  "5612-4": [
+    "tap shoulder",
+    "sit",
+    46
+  ],
+  "5612-5": [
+    "sit",
+    "draw circle",
+    87
+  ],
+  "5612-6": [
+    "tap shoulder",
+    "sit",
+    93
+  ],
+  "5612-7": [
+    "signal high then low",
+    "sit",
+    90
+  ],
+  "5612-8": [
+    "shake head",
+    "sit",
+    43
+  ],
+  "5612-9": [
+    "sit",
+    "hand signal",
+    90
+  ],
+  "5612-10": [
+    "sit",
+    "hand signal",
+    73
+  ],
+  "5612-11": [
+    "sit",
+    "wave hands",
+    60
+  ],
+  "5612-12": [
+    "sit",
+    "tap shoulder",
+    20
+  ],
+  "5612-13": [
+    "hand signal",
+    "sit",
+    66
+  ],
+  "3145-0": [
+    "press left",
+    "stand",
+    17
+  ],
+  "3145-1": [
+    "stand",
+    "press right",
+    20
+  ],
+  "3145-2": [
+    "stand",
+    "press up",
+    25
+  ],
+  "3145-3": [
+    "stand",
+    "press center",
+    23
+  ],
+  "3145-4": [
+    "stand",
+    "press right",
+    30
+  ],
+  "3145-5": [
+    "stand",
+    "press left",
+    23
+  ],
+  "3145-6": [
+    "press up",
+    "stand",
+    27
+  ],
+  "3145-7": [
+    "press center",
+    "stand",
+    19
+  ],
+  "3145-8": [
+    "swipe right",
+    "stand",
+    40
+  ],
+  "3145-9": [
+    "swipe down",
+    "stand",
+    32
+  ],
+  "3145-10": [
+    "stand",
+    "press center",
+    68
+  ],
+  "3145-11": [
+    "stand",
+    "swipe left",
+    22
+  ],
+  "3145-12": [
+    "swipe down",
+    "stand",
+    24
+  ],
+  "3145-13": [
+    "press center",
+    "stand",
+    37
+  ],
+  "3145-14": [
+    "stand",
+    "spread hands apart",
+    95
+  ],
+  "3145-15": [
+    "connect diagonally",
+    "stand",
+    102
+  ],
+  "3145-16": [
+    "stand",
+    "move hands in circular motion",
+    97
+  ],
+  "3145-17": [
+    "stand",
+    "move hands in circular motion",
+    93
+  ],
+  "3145-18": [
+    "grab item on left",
+    "stand",
+    49
+  ],
+  "3145-19": [
+    "stand",
+    "move item to right",
+    60
+  ],
+  "3145-20": [
+    "grab item with right hand",
+    "stand",
+    42
+  ],
+  "3145-21": [
+    "move item to the left",
+    "stand",
+    67
+  ],
+  "3145-22": [
+    "lift both hands",
+    "stand",
+    53
+  ],
+  "3145-23": [
+    "stand",
+    "stretch out arms forward",
+    62
+  ],
+  "3145-24": [
+    "lift arms out to sides",
+    "stand",
+    150
+  ],
+  "3145-25": [
+    "stand",
+    "bend elbow upward",
+    99
+  ],
+  "3145-26": [
+    "stand",
+    "lift both hands",
+    41
+  ],
+  "3145-27": [
+    "stretch out arms forward",
+    "stand",
+    59
+  ],
+  "3145-28": [
+    "lift arms out to sides",
+    "stand",
+    155
+  ],
+  "3145-29": [
+    "bend elbow upward",
+    "stand",
+    82
+  ],
+  "3145-30": [
+    "stand",
+    "press left",
+    24
+  ],
+  "3145-31": [
+    "stand",
+    "press up",
+    24
+  ],
+  "3145-32": [
+    "press center",
+    "stand",
+    28
+  ],
+  "3145-33": [
+    "spread hands apart",
+    "stand",
+    95
+  ],
+  "3145-34": [
+    "stand",
+    "move right hand in circle",
+    97
+  ],
+  "3145-35": [
+    "stand",
+    "press center",
+    33
+  ],
+  "3145-36": [
+    "stand",
+    "press right",
+    52
+  ],
+  "1148-1": [
+    "raise both arms laterally",
+    "sit on chair",
+    38
+  ],
+  "1148-2": [
+    "sit on chair",
+    "bring down arms",
+    31
+  ],
+  "1148-3": [
+    "sit on chair",
+    "rest hands on thighs",
+    156
+  ],
+  "1148-4": [
+    "sit on chair",
+    "raise both arms laterally",
+    25
+  ],
+  "1148-5": [
+    "sit on chair",
+    "bring down arms",
+    26
+  ],
+  "11352-0": [
+    "stand",
+    "rearrange",
+    336
+  ],
+  "7420-0": [
+    "grab object with right hand",
+    "look to the left",
+    52
+  ],
+  "6130-0": [
+    "stand",
+    "look to the right",
+    21
+  ],
+  "5696-0": [
+    "turn",
+    "walk",
+    44
+  ],
+  "5696-1": [
+    "turn",
+    "walk",
+    42
+  ],
+  "5696-2": [
+    "turn",
+    "walk",
+    19
+  ],
+  "3716-0": [
+    "right hand on stair rail",
+    "walk up stairs",
+    92
+  ],
+  "12786-0": [
+    "raise both arms up",
+    "walk",
+    101
+  ],
+  "1008-0": [
+    "hold rail with left hand",
+    "climb down stairs",
+    66
+  ],
+  "7524-0": [
+    "walk down stairs",
+    "hold stair rail with left hand",
+    88
+  ],
+  "6537-0": [
+    "ascend",
+    "hold",
+    133
+  ],
+  "147-0": [
+    "sit",
+    "rest right arm",
+    17
+  ],
+  "147-1": [
+    "sit",
+    "rest right arm",
+    309
+  ],
+  "12167-0": [
+    "sit down",
+    "hold right arm up",
+    239
+  ],
+  "1959-0": [
+    "walk on balance beam",
+    "raise arms in the air",
+    83
+  ],
+  "1959-1": [
+    "step down",
+    "raise arms in the air",
+    26
+  ],
+  "8771-0": [
+    "stand",
+    "look right",
+    17
+  ],
+  "1490-0": [
+    "stand",
+    "look right",
+    15
+  ],
+  "435-0": [
+    "nod head",
+    "stand",
+    37
+  ],
+  "10616-0": [
+    "turn left",
+    "walk",
+    49
+  ],
+  "6738-0": [
+    "grab hold of partner",
+    "step forward",
+    33
+  ],
+  "6738-1": [
+    "grab hold of partner",
+    "step to the side",
+    18
+  ],
+  "6738-2": [
+    "grab hold of partner",
+    "step back",
+    31
+  ],
+  "6738-3": [
+    "grab hold of partner",
+    "step to the side",
+    25
+  ],
+  "6738-4": [
+    "grab hold of partner",
+    "step forward",
+    29
+  ],
+  "6738-5": [
+    "grab hold of partner",
+    "step to the side",
+    20
+  ],
+  "6738-6": [
+    "grab hold of partner",
+    "step back",
+    31
+  ],
+  "6738-7": [
+    "grab hold of partner",
+    "step to the side",
+    26
+  ],
+  "6738-8": [
+    "step forward",
+    "grab hold of partner",
+    32
+  ],
+  "6738-9": [
+    "grab hold of partner",
+    "step to the side",
+    22
+  ],
+  "6738-10": [
+    "grab hold of partner",
+    "step back",
+    30
+  ],
+  "6738-11": [
+    "grab hold of partner",
+    "step to the side",
+    24
+  ],
+  "6738-12": [
+    "grab hold of partner",
+    "step forward",
+    33
+  ],
+  "6738-13": [
+    "grab hold of partner",
+    "step to the side",
+    18
+  ],
+  "6738-14": [
+    "grab hold of partner",
+    "step back",
+    34
+  ],
+  "6738-15": [
+    "grab hold of partner",
+    "step to the side",
+    25
+  ],
+  "6738-16": [
+    "grab hold of partner",
+    "step forward",
+    31
+  ],
+  "6738-17": [
+    "grab hold of partner",
+    "step to the side",
+    21
+  ],
+  "6738-18": [
+    "grab hold of partner",
+    "step back",
+    32
+  ],
+  "6738-19": [
+    "grab hold of partner",
+    "step to the side",
+    20
+  ],
+  "6542-0": [
+    "steps forward with left leg",
+    "swings left arm",
+    21
+  ],
+  "11846-0": [
+    "hold both arms up to dance",
+    "steps forward with right leg",
+    45
+  ],
+  "11846-2": [
+    "hold both arms up to dance",
+    "steps forward with right leg",
+    121
+  ],
+  "11846-3": [
+    "hold both arms up to dance",
+    "steps forward with right leg",
+    21
+  ],
+  "11846-5": [
+    "hold both arms up to dance",
+    "steps forward with right leg",
+    27
+  ],
+  "9918-0": [
+    "hold arms as in waltz",
+    "right step forward",
+    23
+  ],
+  "9918-1": [
+    "left step left",
+    "hold arms as in waltz",
+    17
+  ],
+  "9918-3": [
+    "left step back",
+    "hold arms as in waltz",
+    20
+  ],
+  "9918-4": [
+    "right step across",
+    "hold arms as in waltz",
+    16
+  ],
+  "9918-5": [
+    "hold arms as in waltz",
+    "left step right",
+    15
+  ],
+  "9918-6": [
+    "hold arms as in waltz",
+    "right step forward",
+    19
+  ],
+  "9918-7": [
+    "left step across",
+    "hold arms as in waltz",
+    17
+  ],
+  "4748-1": [
+    "stand",
+    "play guitar",
+    52
+  ],
+  "4748-2": [
+    "stand",
+    "lower arms",
+    23
+  ],
+  "3845-2": [
+    "hold arms out to the left",
+    "step backward",
+    33
+  ],
+  "3845-3": [
+    "hold arms out to the left",
+    "bring feet together",
+    15
+  ],
+  "3845-4": [
+    "hold arms out to the left",
+    "step forward",
+    38
+  ],
+  "3845-6": [
+    "step backward",
+    "hold arms out to the left",
+    28
+  ],
+  "3845-7": [
+    "hold arms out to the left",
+    "bring feet together",
+    23
+  ],
+  "3845-8": [
+    "step forward",
+    "hold arms out to the left",
+    33
+  ],
+  "3845-10": [
+    "hold arms out to the left",
+    "step backward",
+    40
+  ],
+  "3845-12": [
+    "hold arms out to the left",
+    "step forward",
+    30
+  ],
+  "3845-14": [
+    "hold arms out to the left",
+    "step backward",
+    38
+  ],
+  "3845-16": [
+    "hold arms out to the left",
+    "step forward",
+    37
+  ],
+  "3845-18": [
+    "hold arms out to the left",
+    "step backward",
+    30
+  ],
+  "3845-20": [
+    "look at floor",
+    "stand",
+    44
+  ],
+  "8197-0": [
+    "stir right arm",
+    "stand",
+    69
+  ],
+  "8197-1": [
+    "lower right arm",
+    "stand",
+    15
+  ],
+  "12900-0": [
+    "arrange items in front with left hand",
+    "stand still",
+    30
+  ],
+  "12900-1": [
+    "stand still",
+    "pick up something with left hand",
+    60
+  ],
+  "12900-2": [
+    "stretch both arms",
+    "stand still",
+    30
+  ],
+  "12900-3": [
+    "both hand horizontal movement",
+    "stretch both arms",
+    80
+  ],
+  "12900-4": [
+    "arrange items in front with right hand",
+    "stretch both arms",
+    29
+  ],
+  "12900-5": [
+    "arrange items in front with right hand",
+    "right hand single stretch",
+    30
+  ],
+  "51-0": [
+    "stand",
+    "both arms point forward",
+    26
+  ],
+  "51-1": [
+    "swim",
+    "stand",
+    188
+  ],
+  "1551-0": [
+    "stand",
+    "wave",
+    157
+  ],
+  "10197-0": [
+    "stand",
+    "rearrange",
+    158
+  ],
+  "8407-0": [
+    "turn",
+    "walk",
+    20
+  ],
+  "8407-1": [
+    "turn",
+    "walk",
+    22
+  ],
+  "8407-2": [
+    "turn",
+    "walk",
+    21
+  ],
+  "8407-3": [
+    "turn",
+    "walk",
+    18
+  ],
+  "3133-0": [
+    "stand",
+    "rearrange",
+    254
+  ],
+  "5505-1": [
+    "lift arms",
+    "move arms to the right",
+    15
+  ],
+  "5505-2": [
+    "move arms to the right",
+    "extend arms",
+    15
+  ],
+  "6547-0": [
+    "rearrange",
+    "stand up",
+    285
+  ],
+  "4444-0": [
+    "sit",
+    "raise left hand",
+    33
+  ],
+  "4444-1": [
+    "raise left hand",
+    "sit",
+    53
+  ],
+  "4444-2": [
+    "raise right hand",
+    "sit",
+    105
+  ],
+  "4444-3": [
+    "raise left hand",
+    "sit",
+    38
+  ],
+  "4444-4": [
+    "raise right hand",
+    "sit",
+    120
+  ],
+  "4444-5": [
+    "raise right hand",
+    "sit",
+    50
+  ],
+  "4444-6": [
+    "raise both hands",
+    "sit",
+    38
+  ],
+  "4444-7": [
+    "raise both hands",
+    "sit",
+    112
+  ],
+  "4444-8": [
+    "raise both hands",
+    "sit",
+    57
+  ],
+  "4444-9": [
+    "raise both hands",
+    "sit",
+    63
+  ],
+  "4444-10": [
+    "raise left hand",
+    "sit",
+    53
+  ],
+  "4444-11": [
+    "wave right hand low",
+    "sit",
+    33
+  ],
+  "4444-12": [
+    "raise left hand",
+    "sit",
+    35
+  ],
+  "6641-0": [
+    "use right hand for support",
+    "walk",
+    63
+  ],
+  "12805-0": [
+    "pick up bottle with right hand",
+    "pick up bottle with left hand",
+    30
+  ],
+  "12805-1": [
+    "pour from bottle with right hand",
+    "pour from bottle with left hand",
+    57
+  ],
+  "12805-2": [
+    "put down bottle with left hand",
+    "put down bottle with right hand",
+    21
+  ],
+  "12805-4": [
+    "hold stirrer in drink",
+    "pick up bottle with left hand",
+    31
+  ],
+  "12805-5": [
+    "pour from bottle with left hand",
+    "hold stirrer in drink",
+    55
+  ],
+  "12805-6": [
+    "hold stirrer in drink",
+    "put down bottle with left hand",
+    35
+  ],
+  "12805-8": [
+    "put down bottle with left hand",
+    "step backwards",
+    15
+  ],
+  "7119-0": [
+    "walk with support",
+    "stand",
+    15
+  ],
+  "11594-0": [
+    "right arm reach",
+    "walk",
+    26
+  ],
+  "11594-1": [
+    "walk",
+    "left arm reach",
+    27
+  ],
+  "9937-0": [
+    "use right hand for support",
+    "walk",
+    29
+  ],
+  "9937-1": [
+    "use right hand for support",
+    "walk",
+    26
+  ],
+  "3321-0": [
+    "pick up something",
+    "bend down",
+    25
+  ],
+  "3321-2": [
+    "pick up something",
+    "make gesture with right hand",
+    30
+  ],
+  "3321-3": [
+    "make gesture with right hand",
+    "pick up something",
+    78
+  ],
+  "3321-4": [
+    "make gesture with right hand",
+    "walk",
+    23
+  ],
+  "3321-5": [
+    "bend down",
+    "make gesture with right hand",
+    17
+  ],
+  "6369-0": [
+    "lean forward on right leg",
+    "pick up object",
+    19
+  ],
+  "6369-1": [
+    "carry object",
+    "walk left",
+    27
+  ],
+  "6369-2": [
+    "walk to right",
+    "carry object",
+    26
+  ],
+  "6938-0": [
+    "grab item",
+    "stand",
+    55
+  ],
+  "6938-1": [
+    "stand",
+    "clean with right hand",
+    363
+  ],
+  "6938-2": [
+    "put item back",
+    "stand",
+    83
+  ],
+  "6938-3": [
+    "stand",
+    "step back",
+    24
+  ],
+  "9455-0": [
+    "hang on to rail",
+    "walk",
+    113
+  ],
+  "4964-0": [
+    "walk with support",
+    "turn left",
+    35
+  ],
+  "9602-0": [
+    "grab item with right hand",
+    "stand",
+    71
+  ],
+  "9602-2": [
+    "stand",
+    "turn",
+    19
+  ],
+  "9602-3": [
+    "stand",
+    "clean",
+    345
+  ],
+  "9602-4": [
+    "stand",
+    "put item away",
+    24
+  ],
+  "9602-5": [
+    "stand",
+    "walk",
+    31
+  ],
+  "9602-7": [
+    "put item away",
+    "stand",
+    24
+  ],
+  "9602-8": [
+    "stand",
+    "step back",
+    15
+  ],
+  "6069-0": [
+    "extend right hand toward rail",
+    "walk",
+    18
+  ],
+  "6069-1": [
+    "extend left hand toward rail",
+    "walk",
+    26
+  ],
+  "6069-2": [
+    "hold onto rail with both hands",
+    "walk",
+    71
+  ],
+  "843-0": [
+    "walk",
+    "place right hand on rail",
+    74
+  ],
+  "7358-0": [
+    "walk",
+    "turn around",
+    27
+  ],
+  "4571-1": [
+    "turn left",
+    "walk",
+    26
+  ],
+  "10023-0": [
+    "sit t pose",
+    "sit",
+    16
+  ],
+  "10023-2": [
+    "sit with right hand arm extend out",
+    "sit",
+    145
+  ],
+  "2972-0": [
+    "hold",
+    "sit",
+    20
+  ],
+  "2972-1": [
+    "sit",
+    "hold",
+    28
+  ],
+  "3097-0": [
+    "wipe",
+    "hold",
+    226
+  ],
+  "8431-0": [
+    "turn left",
+    "walk",
+    55
+  ],
+  "7648-0": [
+    "walk",
+    "turn around",
+    35
+  ],
+  "5316-0": [
+    "turn left",
+    "walk",
+    39
+  ],
+  "10174-0": [
+    "walk across a beam",
+    "raise hands above the head",
+    45
+  ],
+  "10174-1": [
+    "walk across a beam",
+    "hold up hands above the head with arms bent at the elbow",
+    135
+  ],
+  "9418-0": [
+    "sit down slightly right",
+    "right hand movement till neck",
+    58
+  ],
+  "9418-1": [
+    "sit down slightly right",
+    "right hand movement till chest",
+    45
+  ],
+  "9418-2": [
+    "sit down slightly right",
+    "right hand movement till neck",
+    57
+  ],
+  "9418-3": [
+    "sit down slightly right",
+    "right hand movement till chest",
+    40
+  ],
+  "9418-4": [
+    "right hand movement till neck",
+    "sit down slightly right",
+    92
+  ],
+  "1481-0": [
+    "stand",
+    "clap",
+    41
+  ],
+  "1481-1": [
+    "stretch",
+    "sit down",
+    101
+  ],
+  "1692-0": [
+    "sit down slightly to left",
+    "right leg extend forward",
+    15
+  ],
+  "1692-3": [
+    "both arms on respected knees",
+    "sit down slightly to left",
+    44
+  ],
+  "1692-4": [
+    "sit down slightly to left",
+    "right leg extend forward",
+    29
+  ],
+  "1692-8": [
+    "right leg to original position",
+    "sit down slightly to left",
+    17
+  ],
+  "1692-11": [
+    "right leg to original position",
+    "sit down slightly to left",
+    25
+  ],
+  "5482-0": [
+    "turn left",
+    "walk",
+    39
+  ],
+  "1023-0": [
+    "turn",
+    "walk",
+    15
+  ],
+  "1023-1": [
+    "turn",
+    "walk",
+    15
+  ],
+  "1023-2": [
+    "turn",
+    "walk",
+    39
+  ],
+  "7668-1": [
+    "rotate right",
+    "walk forward",
+    76
+  ],
+  "12273-0": [
+    "turn",
+    "walk",
+    20
+  ],
+  "12273-1": [
+    "turn",
+    "walk",
+    25
+  ],
+  "12273-2": [
+    "turn",
+    "walk",
+    21
+  ],
+  "7810-0": [
+    "lean forwards",
+    "walk forwards",
+    108
+  ],
+  "7810-1": [
+    "walk forwards",
+    "lean forwards",
+    40
+  ],
+  "7810-2": [
+    "lean forwards",
+    "walk forwards",
+    119
+  ],
+  "7810-4": [
+    "walk forwards",
+    "bend knees",
+    128
+  ],
+  "11254-0": [
+    "turn right",
+    "carry with right hand",
+    62
+  ],
+  "11254-1": [
+    "walk forward",
+    "carry with right hand",
+    72
+  ],
+  "11254-3": [
+    "carry with right hand",
+    "turn left",
+    53
+  ],
+  "11254-4": [
+    "walk forward",
+    "carry with right hand",
+    44
+  ],
+  "11254-6": [
+    "carry with right hand",
+    "walk forward",
+    66
+  ],
+  "11867-0": [
+    "hold object in right hand",
+    "walk",
+    121
+  ],
+  "11867-1": [
+    "hold object in right hand",
+    "turn left",
+    47
+  ],
+  "11867-2": [
+    "run",
+    "hold object in right hand",
+    73
+  ],
+  "11867-3": [
+    "turn right",
+    "hold object in right hand",
+    51
+  ],
+  "11867-4": [
+    "run",
+    "hold object in left hand",
+    64
+  ],
+  "11867-5": [
+    "hold object in left hand",
+    "turn left",
+    46
+  ],
+  "11867-6": [
+    "hold object in left hand",
+    "walk",
+    111
+  ],
+  "11867-7": [
+    "walk",
+    "hold object in right hand",
+    101
+  ],
+  "11867-8": [
+    "turn right",
+    "hold object in right hand",
+    34
+  ],
+  "11867-9": [
+    "hold object in right hand",
+    "run",
+    74
+  ],
+  "11867-10": [
+    "turn left",
+    "hold object in right hand",
+    62
+  ],
+  "11867-11": [
+    "run",
+    "hold object in left hand",
+    71
+  ],
+  "11867-12": [
+    "hold object in left hand",
+    "turn right",
+    51
+  ],
+  "11867-13": [
+    "hold object in left hand",
+    "walk",
+    105
+  ],
+  "8394-0": [
+    "kneel down on right knee",
+    "tie shoelace",
+    74
+  ],
+  "8394-1": [
+    "tie shoelace",
+    "kneel down on right knee",
+    87
+  ],
+  "674-0": [
+    "look around",
+    "stand",
+    98
+  ],
+  "674-1": [
+    "stand",
+    "lift right arm",
+    20
+  ],
+  "674-2": [
+    "stand",
+    "look down",
+    62
+  ],
+  "5238-2": [
+    "stops and grabs object with right hand from ground",
+    "stops and bends down to ground at knees",
+    44
+  ],
+  "5238-3": [
+    "stops and bends down to ground at knees",
+    "stops and grabs object with right hand from ground",
+    46
+  ],
+  "4414-0": [
+    "circle right arm forward",
+    "circle left arm forward",
+    148
+  ],
+  "4414-1": [
+    "circle left arm backward",
+    "circle right arm backward",
+    167
+  ],
+  "4414-2": [
+    "circle right arm forward",
+    "walk forward",
+    155
+  ],
+  "2969-0": [
+    "turn around left",
+    "walk forward",
+    83
+  ],
+  "2969-1": [
+    "walk forward",
+    "turn around right",
+    61
+  ],
+  "2969-2": [
+    "jog",
+    "turn around left",
+    60
+  ],
+  "2969-3": [
+    "jog",
+    "turn around right",
+    38
+  ],
+  "2736-9": [
+    "lean back",
+    "lift both arms",
+    29
+  ],
+  "11709-0": [
+    "turn right",
+    "walk",
+    101
+  ],
+  "11709-1": [
+    "turn right",
+    "walk",
+    62
+  ],
+  "11709-2": [
+    "turn right",
+    "walk",
+    71
+  ],
+  "11709-3": [
+    "walk",
+    "turn right",
+    130
+  ],
+  "11709-4": [
+    "walk",
+    "turn right",
+    113
+  ],
+  "818-0": [
+    "turn left",
+    "carry with right hand",
+    33
+  ],
+  "818-3": [
+    "turn right",
+    "carry with right hand",
+    37
+  ],
+  "818-4": [
+    "step forward",
+    "carry with right hand",
+    35
+  ],
+  "5740-0": [
+    "bend forward",
+    "swing arms inside out",
+    149
+  ],
+  "5740-1": [
+    "spin both arms forwards",
+    "walk",
+    107
+  ],
+  "5740-2": [
+    "walk",
+    "spin spin arms backwards",
+    121
+  ],
+  "743-1": [
+    "turn",
+    "walk",
+    19
+  ],
+  "743-3": [
+    "turn",
+    "walk",
+    46
+  ],
+  "7820-0": [
+    "moves object upwards with right hand",
+    "stand",
+    53
+  ],
+  "7820-1": [
+    "stand",
+    "moves object downwards with right hand",
+    25
+  ],
+  "7820-2": [
+    "stand",
+    "moves object downwards with right hand",
+    19
+  ],
+  "7820-4": [
+    "moves object upwards with right hand",
+    "stand",
+    42
+  ],
+  "9665-0": [
+    "hold face in hands",
+    "swing his torso around",
+    103
+  ],
+  "9665-1": [
+    "stand",
+    "just stand",
+    27
+  ],
+  "9665-2": [
+    "stoop to one knee",
+    "tie his shoe",
+    90
+  ],
+  "11906-0": [
+    "stretch",
+    "grab foot",
+    115
+  ],
+  "11906-1": [
+    "touch nose",
+    "stand",
+    36
+  ],
+  "6050-1": [
+    "both hand on right leg",
+    "stand on left leg",
+    17
+  ],
+  "2550-0": [
+    "squat",
+    "football referee touchdown pose",
+    25
+  ],
+  "2550-1": [
+    "football referee touchdown pose",
+    "squat",
+    24
+  ],
+  "8843-0": [
+    "pick up sword",
+    "bend down on left knee",
+    18
+  ],
+  "8843-1": [
+    "pick up sword",
+    "rise up",
+    18
+  ],
+  "8843-2": [
+    "swing sword",
+    "step forward",
+    30
+  ],
+  "8843-3": [
+    "step back",
+    "swing sword",
+    27
+  ],
+  "8843-4": [
+    "step forward",
+    "swing sword",
+    21
+  ],
+  "8843-5": [
+    "step back",
+    "swing sword",
+    24
+  ],
+  "8843-6": [
+    "step forward",
+    "swing sword",
+    25
+  ],
+  "8843-7": [
+    "step back",
+    "swing sword",
+    40
+  ],
+  "8843-8": [
+    "step forward",
+    "swing sword",
+    19
+  ],
+  "8843-9": [
+    "step back",
+    "swing sword",
+    28
+  ],
+  "8843-10": [
+    "step forward",
+    "swing sword",
+    20
+  ],
+  "8843-11": [
+    "swing sword",
+    "step back",
+    24
+  ],
+  "8843-12": [
+    "step forward",
+    "swing sword",
+    25
+  ],
+  "8843-13": [
+    "step back",
+    "swing sword",
+    30
+  ],
+  "8843-14": [
+    "step forward",
+    "swing sword",
+    27
+  ],
+  "8843-15": [
+    "step back",
+    "swing sword",
+    22
+  ],
+  "8843-16": [
+    "step forward",
+    "swing sword",
+    19
+  ],
+  "8843-17": [
+    "step back",
+    "swing sword",
+    20
+  ],
+  "8843-18": [
+    "swing sword",
+    "step forward",
+    28
+  ],
+  "8843-19": [
+    "step back",
+    "swing sword",
+    19
+  ],
+  "8843-20": [
+    "step forward",
+    "swing sword",
+    15
+  ],
+  "8843-21": [
+    "swing sword",
+    "step back",
+    21
+  ],
+  "8843-22": [
+    "swing sword",
+    "step forward",
+    25
+  ],
+  "8843-23": [
+    "step back",
+    "swing sword",
+    23
+  ],
+  "8843-24": [
+    "step forward",
+    "swing sword",
+    21
+  ],
+  "8843-25": [
+    "step back",
+    "swing sword",
+    30
+  ],
+  "8843-26": [
+    "swing sword",
+    "bob feet",
+    327
+  ],
+  "4486-0": [
+    "draw an object closer",
+    "sit",
+    33
+  ],
+  "6618-0": [
+    "turn right",
+    "walk",
+    52
+  ],
+  "6618-1": [
+    "turn right",
+    "walk",
+    68
+  ],
+  "6618-2": [
+    "turn right",
+    "walk",
+    102
+  ],
+  "6618-3": [
+    "turn right",
+    "walk",
+    71
+  ],
+  "6618-4": [
+    "hang head",
+    "walk",
+    124
+  ],
+  "6618-5": [
+    "turn right",
+    "walk",
+    90
+  ],
+  "6618-6": [
+    "turn right",
+    "walk",
+    90
+  ],
+  "6618-7": [
+    "turn right",
+    "walk",
+    101
+  ],
+  "6618-8": [
+    "turn right",
+    "walk",
+    48
+  ],
+  "6618-9": [
+    "turn right",
+    "walk",
+    51
+  ],
+  "8988-0": [
+    "stand",
+    "shake hands",
+    39
+  ],
+  "8988-2": [
+    "touch head",
+    "stand",
+    15
+  ],
+  "8988-3": [
+    "stand",
+    "shake hands",
+    40
+  ],
+  "8988-4": [
+    "stand",
+    "point left",
+    22
+  ],
+  "8988-5": [
+    "stand",
+    "point right",
+    17
+  ],
+  "8988-6": [
+    "stand",
+    "point both arms",
+    30
+  ],
+  "6107-0": [
+    "turn",
+    "walk",
+    87
+  ],
+  "6107-1": [
+    "turn",
+    "walk",
+    68
+  ],
+  "6107-2": [
+    "turn",
+    "walk",
+    50
+  ],
+  "6107-3": [
+    "turn",
+    "walk",
+    56
+  ],
+  "6107-4": [
+    "walk",
+    "turn",
+    76
+  ],
+  "6107-5": [
+    "turn",
+    "walk",
+    101
+  ],
+  "6107-6": [
+    "turn",
+    "walk",
+    67
+  ],
+  "6107-7": [
+    "turn",
+    "walk",
+    53
+  ],
+  "6107-8": [
+    "turn",
+    "walk",
+    54
+  ],
+  "6107-9": [
+    "turn",
+    "walk",
+    147
+  ],
+  "5171-0": [
+    "step backwards",
+    "juggle",
+    59
+  ],
+  "5156-0": [
+    "move left hand to chin",
+    "walk",
+    17
+  ],
+  "5156-1": [
+    "walk",
+    "sprinkle with hand",
+    25
+  ],
+  "11362-0": [
+    "turn left",
+    "walk",
+    85
+  ],
+  "11362-1": [
+    "turn left",
+    "walk",
+    37
+  ],
+  "11362-2": [
+    "turn left",
+    "walk",
+    37
+  ],
+  "11362-3": [
+    "turn right",
+    "walk",
+    28
+  ],
+  "11362-4": [
+    "turn right",
+    "walk",
+    37
+  ],
+  "11362-5": [
+    "turn right",
+    "walk",
+    55
+  ],
+  "11362-6": [
+    "turn right",
+    "walk",
+    34
+  ],
+  "11362-7": [
+    "walk",
+    "turn right",
+    58
+  ],
+  "11362-8": [
+    "turn right",
+    "walk",
+    32
+  ],
+  "11362-9": [
+    "walk",
+    "turn right",
+    45
+  ],
+  "11362-10": [
+    "turn right",
+    "walk",
+    38
+  ],
+  "11362-11": [
+    "turn right",
+    "walk",
+    91
+  ],
+  "11362-12": [
+    "turn right",
+    "walk",
+    43
+  ],
+  "11362-13": [
+    "walk",
+    "turn right",
+    43
+  ],
+  "11362-14": [
+    "turn right",
+    "walk",
+    76
+  ],
+  "11362-15": [
+    "turn right",
+    "walk",
+    25
+  ],
+  "11362-16": [
+    "turn right",
+    "walk",
+    49
+  ],
+  "8258-1": [
+    "spin around",
+    "jump in place",
+    22
+  ],
+  "7141-0": [
+    "jump in place",
+    "spin",
+    20
+  ],
+  "822-2": [
+    "turn around",
+    "walk",
+    15
+  ]
+}

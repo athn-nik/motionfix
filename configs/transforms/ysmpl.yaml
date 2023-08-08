@@ -1,0 +1,17 @@
+name: SMPLTransform
+ename: smpl
+
+_target_: sinc.transforms.SMPLTransform
+
+normalization: true
+
+defaults:
+  - rots2rfeats: globvelandy
+  - rots2joints: smplh
+  - joints2jfeats: rifke
+
+rots2rfeats:
+  normalization: true
+
+joints2jfeats:
+  normalization: true

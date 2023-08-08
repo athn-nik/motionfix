@@ -1,0 +1,34 @@
+dataname: babel-amass-kd
+_target_: sinc.data.babel.BABELDataModule
+
+# Paths
+dtype: 'spatial_pairs' # 'seg', 'seq', 'pairs', 'pairs_only', 'separate_pairs', ''
+datapath: ${path.data}/babel/babel-smplh-30fps-male
+gpt_path: ${path.deps}/gpt/gpt3-labels.json
+
+# Amass
+smplh_path: ${path.data}/smpl_models/smplh
+load_with_rot: true
+
+# Machine
+batch_size: ${machine.batch_size}
+num_workers: ${machine.num_workers}
+
+# Motion
+framerate: 30
+sampler: ${sampler}
+defaults:
+  - /transforms/ysmpl.yaml@transforms
+
+transforms:
+  rots2rfeats:
+    keep_dim: true
+  joints2jfeats:
+    keep_dim: true
+
+# Other
+tiny: false
+walk_only: false
+kit_only: false
+mode: 'train'
+simultaneous_max: 4

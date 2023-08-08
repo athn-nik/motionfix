@@ -1,0 +1,44 @@
+modelname: space
+_target_: sinc.model.sinc.SINC
+
+latent_dim: 256
+vae: true
+
+transforms: ${transforms}
+
+ff_size: 1024
+num_layers: 6
+num_head: ${model.num_layers}
+droupout: 0.1
+activation: "gelu"
+nvids_to_save: ${callback.render.nvids_to_save}
+lr_scheduler: null # reduceonplateau, steplr
+
+# using motion branch or not
+motion_branch: true
+
+# teacher forcing the motin or not.
+teacher_forcing: false
+
+# single vs multiple latents vectors for the mutliple texts
+separate_latents: true
+
+# concatenate words or not with HARD-CODED word
+concat_text_word: while
+
+# concatenating text branches or not
+single_text_desc: true
+
+reduce_latents: null # bodyparts / action / average / null
+
+defaults:
+  - textencoder: text_space
+  - motionencoder: actor
+  - motiondecoder: actor
+  - losses: sinc_indep
+  - optim: adamw
+  - /model/losses/function/recons@func_recons
+  - /model/losses/function/recons@func_latent
+  - /model/losses/function/klmulti@func_kl_multi
+  - /model/losses/function/kl@func_kl
+

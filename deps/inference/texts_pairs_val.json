@@ -1,0 +1,5092 @@
+{
+  "spatial_pairs-2307-2": [
+    "fight stance",
+    "stand"
+  ],
+  "spatial_pairs-1226-0": [
+    "turn",
+    "run"
+  ],
+  "spatial_pairs-12255-2": [
+    "walk",
+    "carry"
+  ],
+  "spatial_pairs-10241-0": [
+    "walk",
+    "arms lift",
+    "look down"
+  ],
+  "spatial_pairs-12405-5": [
+    "hold on with hands",
+    "shake head from side to side"
+  ],
+  "spatial_pairs-11933-0": [
+    "stand",
+    "look around"
+  ],
+  "spatial_pairs-11933-2": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-8242-0": [
+    "swing karate sticks",
+    "spin"
+  ],
+  "spatial_pairs-8242-1": [
+    "swing karate sticks",
+    "backpedal"
+  ],
+  "spatial_pairs-5314-0": [
+    "hold with right hand",
+    "stand"
+  ],
+  "spatial_pairs-6551-2": [
+    "turn head slightly to the right",
+    "stand with hands at side"
+  ],
+  "spatial_pairs-6551-3": [
+    "turn head to the left",
+    "stand with hands at side"
+  ],
+  "spatial_pairs-1486-0": [
+    "stumble",
+    "rotate left angle"
+  ],
+  "spatial_pairs-973-7": [
+    "roll upper body in circular motion from waist",
+    "stand"
+  ],
+  "spatial_pairs-973-8": [
+    "roll right ankle in front of body",
+    "stand"
+  ],
+  "spatial_pairs-973-13": [
+    "stand",
+    "make large counter clockwise circles with left leg in front of body"
+  ],
+  "spatial_pairs-8980-1": [
+    "dance ballet",
+    "sway arms",
+    "jump"
+  ],
+  "spatial_pairs-8980-4": [
+    "dance ballet",
+    "sway arms"
+  ],
+  "spatial_pairs-8980-5": [
+    "dance ballet",
+    "sway arms"
+  ],
+  "spatial_pairs-8980-6": [
+    "dance ballet",
+    "sway arms"
+  ],
+  "spatial_pairs-8980-7": [
+    "dance ballet",
+    "sway arms"
+  ],
+  "spatial_pairs-8980-8": [
+    "dance ballet",
+    "sway arms"
+  ],
+  "spatial_pairs-8980-10": [
+    "dance ballet",
+    "sway arms"
+  ],
+  "spatial_pairs-8980-12": [
+    "dance ballet",
+    "jump",
+    "sway arms"
+  ],
+  "spatial_pairs-8980-14": [
+    "walk",
+    "sway arms"
+  ],
+  "spatial_pairs-8980-15": [
+    "walk",
+    "turnaround"
+  ],
+  "spatial_pairs-8980-17": [
+    "sway arms",
+    "turnaround",
+    "dance ballet"
+  ],
+  "spatial_pairs-8980-18": [
+    "turnaround",
+    "dance ballet"
+  ],
+  "spatial_pairs-10277-0": [
+    "walk",
+    "turn around"
+  ],
+  "spatial_pairs-6167-0": [
+    "take",
+    "bend down"
+  ],
+  "spatial_pairs-7980-0": [
+    "arms stretch out",
+    "rotate wrists"
+  ],
+  "spatial_pairs-7980-1": [
+    "walk",
+    "turn left"
+  ],
+  "spatial_pairs-7980-2": [
+    "turn left",
+    "walk"
+  ],
+  "spatial_pairs-7980-3": [
+    "turn left",
+    "walk"
+  ],
+  "spatial_pairs-11913-0": [
+    "rise",
+    "turn around"
+  ],
+  "spatial_pairs-4538-0": [
+    "look left",
+    "stand in place"
+  ],
+  "spatial_pairs-4538-1": [
+    "look right",
+    "stand in place"
+  ],
+  "spatial_pairs-4538-2": [
+    "look forward",
+    "stand in place"
+  ],
+  "spatial_pairs-4538-3": [
+    "look right",
+    "stand in place"
+  ],
+  "spatial_pairs-4538-4": [
+    "look down",
+    "stand in place"
+  ],
+  "spatial_pairs-6379-0": [
+    "head turn towards left shoulder",
+    "stand"
+  ],
+  "spatial_pairs-6379-1": [
+    "catch object with both hands in front of torso",
+    "stand"
+  ],
+  "spatial_pairs-6379-2": [
+    "throw object overhand with right arm",
+    "stand"
+  ],
+  "spatial_pairs-6379-3": [
+    "stand",
+    "catch object with both hands in front of torso"
+  ],
+  "spatial_pairs-6379-4": [
+    "throw object overhand with right arm",
+    "stand"
+  ],
+  "spatial_pairs-6379-5": [
+    "catch object with both hands in front of torso",
+    "stand"
+  ],
+  "spatial_pairs-6379-7": [
+    "throw object overhand with right arm",
+    "stand"
+  ],
+  "spatial_pairs-6379-8": [
+    "stand",
+    "catch object with both hands in front of torso"
+  ],
+  "spatial_pairs-6379-10": [
+    "stand",
+    "throw object overhand with right arm"
+  ],
+  "spatial_pairs-6379-11": [
+    "catch object with both hands in front of torso",
+    "stand"
+  ],
+  "spatial_pairs-6379-12": [
+    "stand",
+    "throw object overhand with right arm"
+  ],
+  "spatial_pairs-6379-13": [
+    "stand",
+    "catch object with both hands in front of torso"
+  ],
+  "spatial_pairs-6379-14": [
+    "bounces object off ground with right hand",
+    "stand"
+  ],
+  "spatial_pairs-6379-15": [
+    "catch object with both hands in front of torso",
+    "stand"
+  ],
+  "spatial_pairs-8738-3": [
+    "grab object",
+    "bend over"
+  ],
+  "spatial_pairs-8132-0": [
+    "grab object",
+    "squat"
+  ],
+  "spatial_pairs-5913-0": [
+    "knock",
+    "stand"
+  ],
+  "spatial_pairs-5480-0": [
+    "walk forward",
+    "touch face with left hand"
+  ],
+  "spatial_pairs-8494-0": [
+    "touch neck",
+    "look to left"
+  ],
+  "spatial_pairs-8283-13": [
+    "stand",
+    "make large counter clockwise circles with left leg in front of body"
+  ],
+  "spatial_pairs-8283-14": [
+    "walk forwards in counter clockwise circle",
+    "stand"
+  ],
+  "spatial_pairs-13122-0": [
+    "walk",
+    "turn left"
+  ],
+  "spatial_pairs-13122-1": [
+    "turn left",
+    "walk"
+  ],
+  "spatial_pairs-13122-2": [
+    "turn left",
+    "walk"
+  ],
+  "spatial_pairs-13122-3": [
+    "walk",
+    "turn left"
+  ],
+  "spatial_pairs-13122-4": [
+    "turn left",
+    "walk"
+  ],
+  "spatial_pairs-13122-5": [
+    "walk",
+    "turn left"
+  ],
+  "spatial_pairs-70-0": [
+    "walk in circles",
+    "pace in circles"
+  ],
+  "spatial_pairs-5496-0": [
+    "touch ground",
+    "lift right leg back"
+  ],
+  "spatial_pairs-5496-1": [
+    "touch ground",
+    "lift left leg back"
+  ],
+  "spatial_pairs-5496-2": [
+    "circle left arm backwards",
+    "circle right arm backwards"
+  ],
+  "spatial_pairs-5496-3": [
+    "circle left arm backwards",
+    "circle right arm backwards"
+  ],
+  "spatial_pairs-5496-4": [
+    "circle left arm backwards",
+    "circle head counterclockwise"
+  ],
+  "spatial_pairs-10281-0": [
+    "catch",
+    "stand"
+  ],
+  "spatial_pairs-10281-1": [
+    "stand",
+    "throw in the air"
+  ],
+  "spatial_pairs-10281-2": [
+    "stand",
+    "catch"
+  ],
+  "spatial_pairs-10281-4": [
+    "stand",
+    "throw in the air"
+  ],
+  "spatial_pairs-10281-5": [
+    "stand",
+    "catch"
+  ],
+  "spatial_pairs-7767-0": [
+    "look to the right",
+    "stand"
+  ],
+  "spatial_pairs-7767-1": [
+    "catch object with both hands",
+    "stand"
+  ],
+  "spatial_pairs-7767-2": [
+    "stand",
+    "throw object overhand with right hand"
+  ],
+  "spatial_pairs-7767-3": [
+    "stand",
+    "catch object with both hands"
+  ],
+  "spatial_pairs-7767-4": [
+    "throw object overhand with right hand",
+    "stand"
+  ],
+  "spatial_pairs-7767-5": [
+    "catch object with both hands",
+    "stand"
+  ],
+  "spatial_pairs-7767-6": [
+    "throw object overhand with right hand",
+    "stand"
+  ],
+  "spatial_pairs-7282-2": [
+    "stand",
+    "knock on door"
+  ],
+  "spatial_pairs-4013-0": [
+    "reach both hands down to floor",
+    "bends knees and down at waist"
+  ],
+  "spatial_pairs-4013-1": [
+    "move item up to knee level",
+    "bends knees and down at waist"
+  ],
+  "spatial_pairs-5717-0": [
+    "stand",
+    "turn head to right"
+  ],
+  "spatial_pairs-6809-7": [
+    "lifts left hand towards face",
+    "roll upper body from waist"
+  ],
+  "spatial_pairs-6809-9": [
+    "lifts left hand towards face",
+    "roll right ankle in front of body clockwise"
+  ],
+  "spatial_pairs-8167-0": [
+    "uplift object on surface",
+    "bend down"
+  ],
+  "spatial_pairs-5443-2": [
+    "sit on chair",
+    "adjust seat"
+  ],
+  "spatial_pairs-10714-0": [
+    "reach to floor with both hands",
+    "bends at waist with knees bent"
+  ],
+  "spatial_pairs-10714-1": [
+    "move item up to knee high level from floor",
+    "bends at waist with knees bent"
+  ],
+  "spatial_pairs-13075-0": [
+    "look down",
+    "stand"
+  ],
+  "spatial_pairs-3265-0": [
+    "walk forward",
+    "crouch"
+  ],
+  "spatial_pairs-3908-0": [
+    "walk",
+    "swing left arm forwards in a circle"
+  ],
+  "spatial_pairs-3908-1": [
+    "walk",
+    "turn left",
+    "swing left arm forwards in a circle"
+  ],
+  "spatial_pairs-3908-2": [
+    "walk",
+    "turn left"
+  ],
+  "spatial_pairs-3908-3": [
+    "turn left",
+    "skip"
+  ],
+  "spatial_pairs-3908-6": [
+    "turn right",
+    "jog"
+  ],
+  "spatial_pairs-3908-7": [
+    "turn right",
+    "jog"
+  ],
+  "spatial_pairs-3908-8": [
+    "turn right",
+    "walk"
+  ],
+  "spatial_pairs-3908-9": [
+    "turn right",
+    "walk"
+  ],
+  "spatial_pairs-3908-11": [
+    "turn left",
+    "step back"
+  ],
+  "spatial_pairs-3908-12": [
+    "turn left",
+    "walk"
+  ],
+  "spatial_pairs-7446-0": [
+    "walk laterally",
+    "turn around"
+  ],
+  "spatial_pairs-7446-1": [
+    "walk forward",
+    "stretch arms"
+  ],
+  "spatial_pairs-7446-2": [
+    "walk forward",
+    "stretch arms",
+    "turn around"
+  ],
+  "spatial_pairs-7446-3": [
+    "walk forward",
+    "stretch arms"
+  ],
+  "spatial_pairs-12301-0": [
+    "lift object with both hands",
+    "bend down at the knees"
+  ],
+  "spatial_pairs-12301-1": [
+    "lift object with both hands",
+    "straighten legs"
+  ],
+  "spatial_pairs-12301-4": [
+    "place object down",
+    "put left leg forward",
+    "lean forward"
+  ],
+  "spatial_pairs-9960-0": [
+    "grab object",
+    "squat with knees to the chest"
+  ],
+  "spatial_pairs-3763-0": [
+    "tap with right hand",
+    "stand"
+  ],
+  "spatial_pairs-3763-1": [
+    "stand",
+    "look around"
+  ],
+  "spatial_pairs-9924-0": [
+    "stand",
+    "watch ball"
+  ],
+  "spatial_pairs-11500-0": [
+    "walk",
+    "turn lefts"
+  ],
+  "spatial_pairs-11500-1": [
+    "walk",
+    "turn lefts"
+  ],
+  "spatial_pairs-11500-2": [
+    "walk",
+    "turn lefts"
+  ],
+  "spatial_pairs-11500-3": [
+    "walk",
+    "turn lefts"
+  ],
+  "spatial_pairs-11500-4": [
+    "walk",
+    "turn lefts"
+  ],
+  "spatial_pairs-11500-5": [
+    "walk",
+    "turn lefts"
+  ],
+  "spatial_pairs-4776-2": [
+    "punts object with right leg out stretched",
+    "right arm jerk in front of torso and to the side"
+  ],
+  "spatial_pairs-4776-3": [
+    "take step",
+    "stand"
+  ],
+  "spatial_pairs-9860-0": [
+    "make door knock motion with right hand",
+    "stand"
+  ],
+  "spatial_pairs-1624-1": [
+    "wave arms",
+    "stand"
+  ],
+  "spatial_pairs-11777-0": [
+    "taps on door with knuckles on right hand",
+    "stand"
+  ],
+  "spatial_pairs-3976-0": [
+    "slightly crouch",
+    "hands on head sway body from left to right"
+  ],
+  "spatial_pairs-3976-2": [
+    "head look to the left",
+    "both arms down"
+  ],
+  "spatial_pairs-3976-3": [
+    "head look to the right",
+    "both arms down"
+  ],
+  "spatial_pairs-3976-4": [
+    "left hand touch mouth move arm up and down",
+    "head look to the left"
+  ],
+  "spatial_pairs-10505-0": [
+    "shuffle forward",
+    "look over right shoulder"
+  ],
+  "spatial_pairs-10505-1": [
+    "shuffle forward",
+    "look over left shoulder"
+  ],
+  "spatial_pairs-10505-2": [
+    "shuffle forward",
+    "look over right shoulder"
+  ],
+  "spatial_pairs-10505-4": [
+    "look over left shoulder",
+    "creep forward"
+  ],
+  "spatial_pairs-10505-5": [
+    "creep forward",
+    "look over right shoulder"
+  ],
+  "spatial_pairs-10505-6": [
+    "creep forward",
+    "look over left shoulder"
+  ],
+  "spatial_pairs-10505-7": [
+    "creep forward",
+    "look over right shoulder"
+  ],
+  "spatial_pairs-10505-10": [
+    "shuffle forward",
+    "look over left shoulder"
+  ],
+  "spatial_pairs-10505-11": [
+    "creep forward",
+    "look over right shoulder"
+  ],
+  "spatial_pairs-10505-12": [
+    "creep forward",
+    "look over right shoulder"
+  ],
+  "spatial_pairs-10505-13": [
+    "creep forward",
+    "look over right shoulder"
+  ],
+  "spatial_pairs-9873-0": [
+    "look right",
+    "hold arms straight in front"
+  ],
+  "spatial_pairs-2561-0": [
+    "look to right",
+    "stand"
+  ],
+  "spatial_pairs-10780-0": [
+    "juts hands out to front and back",
+    "turn left"
+  ],
+  "spatial_pairs-10780-1": [
+    "waves right arm left and right",
+    "hold nose",
+    "crouch"
+  ],
+  "spatial_pairs-10780-3": [
+    "turn left",
+    "dances"
+  ],
+  "spatial_pairs-9721-0": [
+    "slow silly walk",
+    "stand"
+  ],
+  "spatial_pairs-9721-1": [
+    "fast silly walk",
+    "stand"
+  ],
+  "spatial_pairs-9721-3": [
+    "touch face",
+    "normal walk"
+  ],
+  "spatial_pairs-2745-0": [
+    "walk",
+    "lean forward"
+  ],
+  "spatial_pairs-2745-1": [
+    "look to the left slightly",
+    "lean forward"
+  ],
+  "spatial_pairs-2745-2": [
+    "walk",
+    "lean forward"
+  ],
+  "spatial_pairs-2745-3": [
+    "walk",
+    "look to the left slightly",
+    "lean forward"
+  ],
+  "spatial_pairs-2745-4": [
+    "walk",
+    "lean forward"
+  ],
+  "spatial_pairs-2745-5": [
+    "walk",
+    "look to the right slightly",
+    "lean forward"
+  ],
+  "spatial_pairs-2745-7": [
+    "look to the left slightly",
+    "lean forward"
+  ],
+  "spatial_pairs-3428-0": [
+    "look back",
+    "stand"
+  ],
+  "spatial_pairs-3428-1": [
+    "touch",
+    "low walk"
+  ],
+  "spatial_pairs-3428-2": [
+    "low walk",
+    "scratch head"
+  ],
+  "spatial_pairs-3428-3": [
+    "low walk",
+    "look back"
+  ],
+  "spatial_pairs-1389-0": [
+    "stand",
+    "look center right"
+  ],
+  "spatial_pairs-1389-1": [
+    "look down left",
+    "stand"
+  ],
+  "spatial_pairs-1389-2": [
+    "look center right",
+    "stand"
+  ],
+  "spatial_pairs-1389-3": [
+    "look down left",
+    "stand"
+  ],
+  "spatial_pairs-1389-4": [
+    "look center right",
+    "stand"
+  ],
+  "spatial_pairs-1389-5": [
+    "look down left",
+    "stand"
+  ],
+  "spatial_pairs-1389-6": [
+    "look center right",
+    "stand"
+  ],
+  "spatial_pairs-3665-0": [
+    "bend knees",
+    "run forward"
+  ],
+  "spatial_pairs-3665-1": [
+    "bend knees",
+    "turn around"
+  ],
+  "spatial_pairs-3665-2": [
+    "run forward",
+    "bend knees"
+  ],
+  "spatial_pairs-7038-0": [
+    "both arm cover head",
+    "sit down"
+  ],
+  "spatial_pairs-7038-2": [
+    "both arm cover head",
+    "sit down"
+  ],
+  "spatial_pairs-6729-0": [
+    "look around for something",
+    "crouch down"
+  ],
+  "spatial_pairs-9830-0": [
+    "step forward",
+    "raise arms"
+  ],
+  "spatial_pairs-9830-1": [
+    "raise arms",
+    "flap"
+  ],
+  "spatial_pairs-9830-2": [
+    "crouch forward",
+    "arms bring inward"
+  ],
+  "spatial_pairs-9830-3": [
+    "crouch forward",
+    "raise arms"
+  ],
+  "spatial_pairs-9830-4": [
+    "crouch forward",
+    "raise arms",
+    "move upper body"
+  ],
+  "spatial_pairs-9830-5": [
+    "crouch forward",
+    "arms bring inward"
+  ],
+  "spatial_pairs-9830-6": [
+    "crouch forward",
+    "raise arms"
+  ],
+  "spatial_pairs-9830-7": [
+    "crouch forward",
+    "move upper body",
+    "raise arms"
+  ],
+  "spatial_pairs-9830-9": [
+    "crouch forward",
+    "arms bring inward"
+  ],
+  "spatial_pairs-6134-1": [
+    "walk forward",
+    "swing arms out"
+  ],
+  "spatial_pairs-6134-3": [
+    "walk forward",
+    "hold hands together"
+  ],
+  "spatial_pairs-6134-4": [
+    "stand",
+    "hold hands together"
+  ],
+  "spatial_pairs-6134-5": [
+    "bend arms at chest",
+    "crouch"
+  ],
+  "spatial_pairs-6134-6": [
+    "bend arms at chest",
+    "crouch"
+  ],
+  "spatial_pairs-6134-7": [
+    "bend to right",
+    "crouch"
+  ],
+  "spatial_pairs-6134-10": [
+    "crouch",
+    "spin in circle"
+  ],
+  "spatial_pairs-6134-11": [
+    "crouch",
+    "bend arms at chest",
+    "spin in circle"
+  ],
+  "spatial_pairs-6134-12": [
+    "walk forward",
+    "crouch",
+    "bend arms at chest"
+  ],
+  "spatial_pairs-6134-13": [
+    "crouch",
+    "bend arms at chest"
+  ],
+  "spatial_pairs-6134-14": [
+    "walk forward",
+    "crouch"
+  ],
+  "spatial_pairs-6134-15": [
+    "walk forward",
+    "crouch"
+  ],
+  "spatial_pairs-6134-17": [
+    "crouch",
+    "bend arms at chest"
+  ],
+  "spatial_pairs-8413-0": [
+    "lower upper body",
+    "stand lean forward"
+  ],
+  "spatial_pairs-8413-2": [
+    "raise upper body",
+    "stand lean forward",
+    "stand with leg forward"
+  ],
+  "spatial_pairs-8413-5": [
+    "stand lean forward",
+    "look around"
+  ],
+  "spatial_pairs-8413-7": [
+    "stand lean forward",
+    "look around"
+  ],
+  "spatial_pairs-8413-8": [
+    "stand lean forward",
+    "look around"
+  ],
+  "spatial_pairs-8413-9": [
+    "lower upper body",
+    "turn upper body left"
+  ],
+  "spatial_pairs-8413-10": [
+    "stand lean forward",
+    "lower upper body"
+  ],
+  "spatial_pairs-11358-0": [
+    "walk forward",
+    "flap arms"
+  ],
+  "spatial_pairs-11358-1": [
+    "flap arms",
+    "lean forward"
+  ],
+  "spatial_pairs-11358-2": [
+    "lean backward",
+    "flap arms"
+  ],
+  "spatial_pairs-11358-3": [
+    "flap arms",
+    "lean forward"
+  ],
+  "spatial_pairs-11358-4": [
+    "lean backward",
+    "flap arms"
+  ],
+  "spatial_pairs-7329-0": [
+    "move in circles",
+    "act like a rat"
+  ],
+  "spatial_pairs-7329-1": [
+    "act like a rat",
+    "stand with arms at waist level"
+  ],
+  "spatial_pairs-10251-0": [
+    "stand stationary",
+    "lean forward"
+  ],
+  "spatial_pairs-10251-1": [
+    "stand stationary",
+    "bob head"
+  ],
+  "spatial_pairs-10251-2": [
+    "lean back",
+    "stand stationary",
+    "bob head"
+  ],
+  "spatial_pairs-10251-3": [
+    "stand stationary",
+    "bob head"
+  ],
+  "spatial_pairs-10251-4": [
+    "stand stationary",
+    "lean forward"
+  ],
+  "spatial_pairs-9801-1": [
+    "look backward",
+    "struggle"
+  ],
+  "spatial_pairs-11086-0": [
+    "dodge",
+    "lift up left leg"
+  ],
+  "spatial_pairs-11086-2": [
+    "bend forward",
+    "dodge"
+  ],
+  "spatial_pairs-11750-0": [
+    "kick things",
+    "scared movement"
+  ],
+  "spatial_pairs-11750-1": [
+    "scared movement",
+    "get down"
+  ],
+  "spatial_pairs-5006-0": [
+    "bring hands up to face",
+    "look around nervously"
+  ],
+  "spatial_pairs-5006-1": [
+    "cover face with hands",
+    "look around nervously"
+  ],
+  "spatial_pairs-5006-3": [
+    "cover face with hands",
+    "cower in fear",
+    "squat down"
+  ],
+  "spatial_pairs-10090-0": [
+    "walk",
+    "look down"
+  ],
+  "spatial_pairs-10090-1": [
+    "look down",
+    "walk up steps"
+  ],
+  "spatial_pairs-2036-1": [
+    "wide side step to the right",
+    "look down"
+  ],
+  "spatial_pairs-2036-2": [
+    "stand",
+    "look down"
+  ],
+  "spatial_pairs-10094-0": [
+    "wide side step to the right",
+    "look down at feet"
+  ],
+  "spatial_pairs-8485-0": [
+    "look down",
+    "mime tap something with right hand"
+  ],
+  "spatial_pairs-8485-1": [
+    "mime put something in back pocket with left hand",
+    "lower hands to sides"
+  ],
+  "spatial_pairs-3719-0": [
+    "scare",
+    "look around"
+  ],
+  "spatial_pairs-3719-1": [
+    "scare",
+    "look around"
+  ],
+  "spatial_pairs-234-0": [
+    "pick up",
+    "turn left"
+  ],
+  "spatial_pairs-4998-0": [
+    "hands on face",
+    "bend straighten knees"
+  ],
+  "spatial_pairs-4998-1": [
+    "bend straighten knees",
+    "rub hands together"
+  ],
+  "spatial_pairs-4998-2": [
+    "bend straighten knees",
+    "hands on chest"
+  ],
+  "spatial_pairs-4998-3": [
+    "rub hands on chest",
+    "bend straighten knees"
+  ],
+  "spatial_pairs-4998-5": [
+    "rub hands on chest",
+    "shake torso"
+  ],
+  "spatial_pairs-959-2": [
+    "stand",
+    "play drum set"
+  ],
+  "spatial_pairs-959-3": [
+    "lower arms",
+    "stand"
+  ],
+  "spatial_pairs-11153-0": [
+    "hunch over",
+    "shake head"
+  ],
+  "spatial_pairs-11153-1": [
+    "shake head",
+    "hunch over"
+  ],
+  "spatial_pairs-6187-4": [
+    "stand",
+    "kick right foot forward"
+  ],
+  "spatial_pairs-6187-5": [
+    "stand",
+    "hold arms above head"
+  ],
+  "spatial_pairs-6187-6": [
+    "stand",
+    "drop arms down"
+  ],
+  "spatial_pairs-6187-7": [
+    "stand",
+    "wave right arm in front of body"
+  ],
+  "spatial_pairs-6187-8": [
+    "raise arms",
+    "stand"
+  ],
+  "spatial_pairs-6187-9": [
+    "stand",
+    "move hands around each other in a circular motion"
+  ],
+  "spatial_pairs-6187-10": [
+    "stand",
+    "move both arms up and down repeatedly"
+  ],
+  "spatial_pairs-6187-12": [
+    "wave right arm to the side of body",
+    "stand"
+  ],
+  "spatial_pairs-6187-13": [
+    "put right arm down",
+    "stand"
+  ],
+  "spatial_pairs-5484-3": [
+    "side steps",
+    "turn left"
+  ],
+  "spatial_pairs-5484-4": [
+    "side steps",
+    "turn right"
+  ],
+  "spatial_pairs-5484-7": [
+    "turn left",
+    "side steps"
+  ],
+  "spatial_pairs-5484-8": [
+    "turn left",
+    "side steps"
+  ],
+  "spatial_pairs-11115-1": [
+    "turn left",
+    "climb up"
+  ],
+  "spatial_pairs-6846-0": [
+    "steep down off of something",
+    "about face left"
+  ],
+  "spatial_pairs-4310-0": [
+    "walk forward",
+    "walk down steps"
+  ],
+  "spatial_pairs-4340-0": [
+    "duck head",
+    "turn left"
+  ],
+  "spatial_pairs-4340-1": [
+    "turn right",
+    "duck head"
+  ],
+  "spatial_pairs-4340-2": [
+    "turn left",
+    "duck head"
+  ],
+  "spatial_pairs-4340-3": [
+    "turn right",
+    "duck head"
+  ],
+  "spatial_pairs-4340-4": [
+    "turn left",
+    "duck head"
+  ],
+  "spatial_pairs-4340-5": [
+    "turn right",
+    "duck head"
+  ],
+  "spatial_pairs-3260-0": [
+    "grab right hamstring with right hand",
+    "grab right quad with left hand"
+  ],
+  "spatial_pairs-3260-1": [
+    "grab right hamstring with right hand",
+    "walk while drag right leg",
+    "grab right quad with left hand"
+  ],
+  "spatial_pairs-10980-5": [
+    "hunch shoulders",
+    "lift left foot",
+    "bend knees",
+    "move right foot"
+  ],
+  "spatial_pairs-10980-9": [
+    "hunch shoulders",
+    "look to the left"
+  ],
+  "spatial_pairs-10980-11": [
+    "look straight forward",
+    "move left foot"
+  ],
+  "spatial_pairs-10980-14": [
+    "twitch left elbow",
+    "look straight forward"
+  ],
+  "spatial_pairs-7451-0": [
+    "look right",
+    "squat"
+  ],
+  "spatial_pairs-7451-2": [
+    "both hands hold head",
+    "duck head"
+  ],
+  "spatial_pairs-7451-3": [
+    "rise up",
+    "look around"
+  ],
+  "spatial_pairs-7451-4": [
+    "duck head",
+    "both hands hold head"
+  ],
+  "spatial_pairs-7451-5": [
+    "look around",
+    "rise up"
+  ],
+  "spatial_pairs-3533-0": [
+    "stand up",
+    "move right hand on right ear"
+  ],
+  "spatial_pairs-3533-1": [
+    "stand up",
+    "move right hand down"
+  ],
+  "spatial_pairs-9495-0": [
+    "run forward",
+    "hands on back of neck"
+  ],
+  "spatial_pairs-6750-0": [
+    "stand",
+    "look around"
+  ],
+  "spatial_pairs-6203-0": [
+    "stand",
+    "look over towards right shoulder"
+  ],
+  "spatial_pairs-3893-0": [
+    "fight stance",
+    "right low kick"
+  ],
+  "spatial_pairs-3893-1": [
+    "fight stance",
+    "stand"
+  ],
+  "spatial_pairs-3893-2": [
+    "fight stance",
+    "right high kick"
+  ],
+  "spatial_pairs-3893-3": [
+    "stand",
+    "fight stance"
+  ],
+  "spatial_pairs-3893-4": [
+    "right high kick",
+    "fight stance"
+  ],
+  "spatial_pairs-3893-5": [
+    "stand",
+    "fight stance"
+  ],
+  "spatial_pairs-3893-6": [
+    "right low kick",
+    "fight stance"
+  ],
+  "spatial_pairs-3893-7": [
+    "stand",
+    "fight stance"
+  ],
+  "spatial_pairs-3893-8": [
+    "fight stance",
+    "right low kick"
+  ],
+  "spatial_pairs-3893-9": [
+    "fight stance",
+    "stand"
+  ],
+  "spatial_pairs-3893-10": [
+    "fight stance",
+    "right high kick"
+  ],
+  "spatial_pairs-3893-12": [
+    "fight stance",
+    "right high kick"
+  ],
+  "spatial_pairs-3893-13": [
+    "stand",
+    "fight stance"
+  ],
+  "spatial_pairs-3893-14": [
+    "fight stance",
+    "right high kick"
+  ],
+  "spatial_pairs-3893-15": [
+    "stand",
+    "fight stance"
+  ],
+  "spatial_pairs-3893-16": [
+    "right high kick",
+    "fight stance"
+  ],
+  "spatial_pairs-3893-17": [
+    "stand",
+    "fight stance"
+  ],
+  "spatial_pairs-3893-18": [
+    "fight stance",
+    "right high kick"
+  ],
+  "spatial_pairs-3893-19": [
+    "stand",
+    "fight stance"
+  ],
+  "spatial_pairs-3893-20": [
+    "fight stance",
+    "right high kick"
+  ],
+  "spatial_pairs-3893-21": [
+    "stand",
+    "fight stance"
+  ],
+  "spatial_pairs-3893-22": [
+    "fight stance",
+    "right high kick"
+  ],
+  "spatial_pairs-3893-23": [
+    "fight stance",
+    "stand"
+  ],
+  "spatial_pairs-12710-0": [
+    "lift right forearm in the air",
+    "step forward",
+    "curl left arm"
+  ],
+  "spatial_pairs-12710-1": [
+    "curl left arm",
+    "lift right forearm in the air",
+    "bend right knee forward"
+  ],
+  "spatial_pairs-12710-2": [
+    "curl left arm",
+    "bend right knee forward",
+    "lift right forearm in the air"
+  ],
+  "spatial_pairs-12710-3": [
+    "curl left arm",
+    "lift right forearm in the air",
+    "bend right knee forward"
+  ],
+  "spatial_pairs-12710-4": [
+    "step forward",
+    "lift right forearm in the air",
+    "curl left arm"
+  ],
+  "spatial_pairs-12710-5": [
+    "bend right knee forward",
+    "curl left arm",
+    "spin right arm downwards"
+  ],
+  "spatial_pairs-12710-6": [
+    "spin right arm downwards",
+    "step forward",
+    "curl left arm"
+  ],
+  "spatial_pairs-12710-7": [
+    "curl left arm",
+    "spin right arm downwards",
+    "bend right knee forward"
+  ],
+  "spatial_pairs-12710-8": [
+    "curl left arm",
+    "step forward",
+    "spin right arm downwards"
+  ],
+  "spatial_pairs-5556-0": [
+    "look right",
+    "stand"
+  ],
+  "spatial_pairs-11446-0": [
+    "bend torso right",
+    "place hands on hips"
+  ],
+  "spatial_pairs-11446-2": [
+    "place hands on hips",
+    "bend torso left"
+  ],
+  "spatial_pairs-8240-0": [
+    "bends down",
+    "stand"
+  ],
+  "spatial_pairs-8240-1": [
+    "bends down",
+    "moves object from floor to above head",
+    "stand"
+  ],
+  "spatial_pairs-8240-2": [
+    "stand",
+    "moves object from floor to above head"
+  ],
+  "spatial_pairs-8240-3": [
+    "bends down",
+    "stand"
+  ],
+  "spatial_pairs-8240-4": [
+    "bends down",
+    "moves object from floor to above head",
+    "stand"
+  ],
+  "spatial_pairs-8240-5": [
+    "moves object from floor to above head",
+    "stand"
+  ],
+  "spatial_pairs-8240-6": [
+    "bends down",
+    "stand"
+  ],
+  "spatial_pairs-8240-8": [
+    "moves object from floor to above head",
+    "stand"
+  ],
+  "spatial_pairs-8240-9": [
+    "bends down",
+    "stand"
+  ],
+  "spatial_pairs-8240-10": [
+    "moves object from floor to above head",
+    "stand"
+  ],
+  "spatial_pairs-8240-12": [
+    "moves object from floor to above head",
+    "bends down",
+    "stand"
+  ],
+  "spatial_pairs-8240-13": [
+    "moves object from floor to above head",
+    "stand"
+  ],
+  "spatial_pairs-8240-15": [
+    "moves object from floor to above head",
+    "bends down",
+    "stand"
+  ],
+  "spatial_pairs-8240-16": [
+    "moves object from floor to above head",
+    "stand"
+  ],
+  "spatial_pairs-11464-0": [
+    "turn",
+    "stand"
+  ],
+  "spatial_pairs-7600-1": [
+    "jump turn right",
+    "jump",
+    "turn right"
+  ],
+  "spatial_pairs-9196-0": [
+    "bend down",
+    "bend down take"
+  ],
+  "spatial_pairs-9196-2": [
+    "walk",
+    "bend down"
+  ],
+  "spatial_pairs-4858-2": [
+    "shifts legs to the right",
+    "run forward"
+  ],
+  "spatial_pairs-11453-0": [
+    "look to the left",
+    "stand"
+  ],
+  "spatial_pairs-5209-0": [
+    "stand with arms down",
+    "look at the left"
+  ],
+  "spatial_pairs-5209-1": [
+    "look at the ground",
+    "stand with arms down"
+  ],
+  "spatial_pairs-4771-0": [
+    "look right",
+    "stand"
+  ],
+  "spatial_pairs-4771-1": [
+    "look right",
+    "turn around"
+  ],
+  "spatial_pairs-3697-0": [
+    "look left",
+    "stand"
+  ],
+  "spatial_pairs-8289-1": [
+    "sway",
+    "duck"
+  ],
+  "spatial_pairs-8289-2": [
+    "sway",
+    "duck",
+    "look around"
+  ],
+  "spatial_pairs-8289-3": [
+    "sway",
+    "duck"
+  ],
+  "spatial_pairs-8289-4": [
+    "sway",
+    "look around",
+    "duck"
+  ],
+  "spatial_pairs-8289-5": [
+    "sway",
+    "duck"
+  ],
+  "spatial_pairs-8289-6": [
+    "step forward",
+    "sway",
+    "duck"
+  ],
+  "spatial_pairs-8289-7": [
+    "sway",
+    "duck"
+  ],
+  "spatial_pairs-8289-8": [
+    "sway",
+    "look around",
+    "duck"
+  ],
+  "spatial_pairs-8289-9": [
+    "sway",
+    "duck"
+  ],
+  "spatial_pairs-5706-0": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-5706-1": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-5706-2": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-5311-1": [
+    "swat right hand",
+    "stand"
+  ],
+  "spatial_pairs-2052-0": [
+    "walk forward",
+    "step over"
+  ],
+  "spatial_pairs-11758-0": [
+    "lift right hand up to face",
+    "stand"
+  ],
+  "spatial_pairs-11758-2": [
+    "lowers right hand",
+    "stand"
+  ],
+  "spatial_pairs-11758-4": [
+    "reach forward with left hand",
+    "stand"
+  ],
+  "spatial_pairs-11758-6": [
+    "left hand moves object to right hand",
+    "stand"
+  ],
+  "spatial_pairs-11758-8": [
+    "right hand lowers with object",
+    "stand"
+  ],
+  "spatial_pairs-11982-1": [
+    "walk forward",
+    "rotate shoulders"
+  ],
+  "spatial_pairs-2773-2": [
+    "make a chopping motion with right hand",
+    "hold another object with left hand"
+  ],
+  "spatial_pairs-1927-0": [
+    "turn right",
+    "swim"
+  ],
+  "spatial_pairs-3068-0": [
+    "walk",
+    "hands on waist"
+  ],
+  "spatial_pairs-3068-1": [
+    "walk",
+    "extend arms down"
+  ],
+  "spatial_pairs-9795-0": [
+    "left leg on right knee",
+    "sit down"
+  ],
+  "spatial_pairs-9795-1": [
+    "right leg on left knee",
+    "sit down"
+  ],
+  "spatial_pairs-6834-0": [
+    "pace",
+    "hold hands on hips"
+  ],
+  "spatial_pairs-6834-1": [
+    "pace",
+    "gesture"
+  ],
+  "spatial_pairs-6834-2": [
+    "pace",
+    "gesture"
+  ],
+  "spatial_pairs-10333-0": [
+    "right hand dribble",
+    "sprint forward"
+  ],
+  "spatial_pairs-11439-0": [
+    "place hands on lap",
+    "sit"
+  ],
+  "spatial_pairs-11439-1": [
+    "place hands on lap",
+    "set feet down on floor",
+    "sit"
+  ],
+  "spatial_pairs-11439-2": [
+    "place hands on lap",
+    "sit"
+  ],
+  "spatial_pairs-9247-0": [
+    "stand",
+    "hand together in front of belly"
+  ],
+  "spatial_pairs-602-0": [
+    "lean from side to side",
+    "hold hands at armpits"
+  ],
+  "spatial_pairs-602-1": [
+    "lean from side to side",
+    "hold hands at armpits",
+    "look to left"
+  ],
+  "spatial_pairs-602-3": [
+    "hold hands at armpits",
+    "flap arms at sides",
+    "look to left"
+  ],
+  "spatial_pairs-602-5": [
+    "hold hands at armpits",
+    "flap right arm at side"
+  ],
+  "spatial_pairs-602-7": [
+    "flap arms at sides",
+    "hold hands at armpits"
+  ],
+  "spatial_pairs-602-8": [
+    "hold hands at armpits",
+    "lean from side to side"
+  ],
+  "spatial_pairs-602-9": [
+    "hold hands at armpits",
+    "flap arms at sides"
+  ],
+  "spatial_pairs-602-11": [
+    "flap arms at sides",
+    "hold hands at armpits"
+  ],
+  "spatial_pairs-602-12": [
+    "hold hands at armpits",
+    "lean from side to side"
+  ],
+  "spatial_pairs-602-13": [
+    "hold hands at armpits",
+    "flap arms at sides"
+  ],
+  "spatial_pairs-602-15": [
+    "hold hands at armpits",
+    "look to left"
+  ],
+  "spatial_pairs-602-16": [
+    "lean from side to side",
+    "hold hands at armpits",
+    "look to left"
+  ],
+  "spatial_pairs-602-17": [
+    "lean from side to side",
+    "hold hands at armpits",
+    "look to left",
+    "flap arms at sides"
+  ],
+  "spatial_pairs-602-19": [
+    "hold hands at armpits",
+    "look to left"
+  ],
+  "spatial_pairs-602-20": [
+    "hold hands at armpits",
+    "look to left",
+    "lean from side to side"
+  ],
+  "spatial_pairs-602-22": [
+    "flap arms at sides",
+    "hold hands at armpits",
+    "look to left"
+  ],
+  "spatial_pairs-602-24": [
+    "lean from side to side",
+    "hold hands at armpits",
+    "look to left"
+  ],
+  "spatial_pairs-602-25": [
+    "lean from side to side",
+    "hold hands at armpits"
+  ],
+  "spatial_pairs-602-26": [
+    "flap arms at sides",
+    "hold hands at armpits"
+  ],
+  "spatial_pairs-8944-0": [
+    "look right",
+    "shake arms"
+  ],
+  "spatial_pairs-1676-0": [
+    "stand",
+    "look around"
+  ],
+  "spatial_pairs-1676-1": [
+    "stand",
+    "vacuum"
+  ],
+  "spatial_pairs-12772-0": [
+    "right hand movement",
+    "argue"
+  ],
+  "spatial_pairs-12772-1": [
+    "right hand movement",
+    "argue"
+  ],
+  "spatial_pairs-12772-2": [
+    "both hand movement",
+    "argue"
+  ],
+  "spatial_pairs-12772-3": [
+    "right hand movement",
+    "argue"
+  ],
+  "spatial_pairs-12772-4": [
+    "both hand movement",
+    "argue"
+  ],
+  "spatial_pairs-12772-5": [
+    "left hand movement",
+    "argue"
+  ],
+  "spatial_pairs-12772-6": [
+    "argue",
+    "both hand movement"
+  ],
+  "spatial_pairs-12772-8": [
+    "stand",
+    "right hand movement"
+  ],
+  "spatial_pairs-12772-9": [
+    "both hand movement",
+    "stand"
+  ],
+  "spatial_pairs-3348-1": [
+    "sway",
+    "stand",
+    "answer phone"
+  ],
+  "spatial_pairs-3348-3": [
+    "hang up phone",
+    "stand"
+  ],
+  "spatial_pairs-13066-0": [
+    "shower",
+    "stand"
+  ],
+  "spatial_pairs-1361-1": [
+    "look through object",
+    "right hand free"
+  ],
+  "spatial_pairs-1361-2": [
+    "look through object",
+    "adjust object"
+  ],
+  "spatial_pairs-2089-0": [
+    "stand",
+    "look to the left"
+  ],
+  "spatial_pairs-8625-0": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-6727-2": [
+    "look up",
+    "walk"
+  ],
+  "spatial_pairs-6727-3": [
+    "look up",
+    "walk back"
+  ],
+  "spatial_pairs-6727-4": [
+    "look up",
+    "right leg kick"
+  ],
+  "spatial_pairs-1761-0": [
+    "jump kick",
+    "jump kick right leg"
+  ],
+  "spatial_pairs-3182-0": [
+    "look left to right",
+    "place hand over brow"
+  ],
+  "spatial_pairs-3182-1": [
+    "place hand over brow",
+    "look right to left"
+  ],
+  "spatial_pairs-3182-2": [
+    "stretch arms out in front together",
+    "rock side to side"
+  ],
+  "spatial_pairs-3182-3": [
+    "place hands on mouth",
+    "bend knees"
+  ],
+  "spatial_pairs-3182-4": [
+    "place hand over brow",
+    "look right to left"
+  ],
+  "spatial_pairs-7161-0": [
+    "bend knees",
+    "hold hands up in front"
+  ],
+  "spatial_pairs-7161-1": [
+    "scratch with left hand",
+    "bend knees",
+    "hold hands up in front",
+    "scratch with right hand"
+  ],
+  "spatial_pairs-7161-2": [
+    "bend knees",
+    "hold hands up in front",
+    "scratch with right hand"
+  ],
+  "spatial_pairs-7161-3": [
+    "bend knees",
+    "hold hands up in front"
+  ],
+  "spatial_pairs-7161-5": [
+    "scratch with left hand",
+    "bend knees",
+    "scratch with right hand",
+    "hold hands up in front"
+  ],
+  "spatial_pairs-7161-6": [
+    "bend knees",
+    "scratch with right hand",
+    "hold hands up in front"
+  ],
+  "spatial_pairs-7161-7": [
+    "bend knees",
+    "hold hands up in front"
+  ],
+  "spatial_pairs-7161-9": [
+    "scratch with right hand",
+    "scratch with left hand",
+    "hold hands up in front"
+  ],
+  "spatial_pairs-7161-12": [
+    "look left",
+    "hold hands up in front"
+  ],
+  "spatial_pairs-7161-17": [
+    "scratch with left hand",
+    "scratch with right hand",
+    "bend knees",
+    "hold hands up in front"
+  ],
+  "spatial_pairs-7515-0": [
+    "look up",
+    "right arm up"
+  ],
+  "spatial_pairs-7515-1": [
+    "right arm up",
+    "look straight"
+  ],
+  "spatial_pairs-10889-0": [
+    "hold item",
+    "stand"
+  ],
+  "spatial_pairs-12441-0": [
+    "walk",
+    "turn around right"
+  ],
+  "spatial_pairs-12441-1": [
+    "walk",
+    "turn around left"
+  ],
+  "spatial_pairs-12441-2": [
+    "walk",
+    "bend forward"
+  ],
+  "spatial_pairs-12441-3": [
+    "walk",
+    "bend forward"
+  ],
+  "spatial_pairs-2080-0": [
+    "run forward lead with the right leg",
+    "bends forward with arms spread out"
+  ],
+  "spatial_pairs-2080-2": [
+    "slow to a stop",
+    "bends forward with arms spread out"
+  ],
+  "spatial_pairs-9110-0": [
+    "hold with hands",
+    "bend down"
+  ],
+  "spatial_pairs-6887-0": [
+    "right hand on back",
+    "left arm up with elbow bent"
+  ],
+  "spatial_pairs-6887-4": [
+    "right hand on back",
+    "lean sideways",
+    "left arm up with elbow bent"
+  ],
+  "spatial_pairs-6887-5": [
+    "right hand on back",
+    "left arm up with elbow bent"
+  ],
+  "spatial_pairs-6887-6": [
+    "right hand on back",
+    "left arm up with elbow bent",
+    "lean sideways"
+  ],
+  "spatial_pairs-12719-0": [
+    "turn back",
+    "jump with alternate legs"
+  ],
+  "spatial_pairs-12719-2": [
+    "walk",
+    "turn back"
+  ],
+  "spatial_pairs-6903-0": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-6903-1": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-6903-2": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-1344-0": [
+    "turn",
+    "walk"
+  ],
+  "spatial_pairs-8063-0": [
+    "drink",
+    "walk forward"
+  ],
+  "spatial_pairs-8063-1": [
+    "walk forward",
+    "turn around right"
+  ],
+  "spatial_pairs-8063-2": [
+    "turn around left",
+    "walk forward"
+  ],
+  "spatial_pairs-1435-0": [
+    "jump stumble",
+    "jump"
+  ],
+  "spatial_pairs-3350-0": [
+    "just stand",
+    "look around"
+  ],
+  "spatial_pairs-9411-0": [
+    "shade eyes from right hand",
+    "look around"
+  ],
+  "spatial_pairs-9411-1": [
+    "shade eyes from right hand",
+    "look around"
+  ],
+  "spatial_pairs-10339-1": [
+    "right hand on nose",
+    "look around"
+  ],
+  "spatial_pairs-10339-2": [
+    "move arms up",
+    "swing torso"
+  ],
+  "spatial_pairs-1217-0": [
+    "turn",
+    "play basketball"
+  ],
+  "spatial_pairs-1217-1": [
+    "walk",
+    "play basketball"
+  ],
+  "spatial_pairs-9451-0": [
+    "hands on hips",
+    "step backward"
+  ],
+  "spatial_pairs-9136-1": [
+    "steps forward",
+    "throw right arm to the left in front of chest"
+  ],
+  "spatial_pairs-9136-2": [
+    "turn to the right",
+    "throw left arm to the right in front of chest"
+  ],
+  "spatial_pairs-9136-3": [
+    "throw hand out and back together over head",
+    "jump"
+  ],
+  "spatial_pairs-9136-4": [
+    "crouch forward",
+    "bring hands down to waist"
+  ],
+  "spatial_pairs-9136-5": [
+    "move hands left and right in front of chest",
+    "crouch forward"
+  ],
+  "spatial_pairs-9136-6": [
+    "throw right arm to the left in front of chest",
+    "crouch forward"
+  ],
+  "spatial_pairs-9136-7": [
+    "throw right arm above head",
+    "crouch forward"
+  ],
+  "spatial_pairs-9136-9": [
+    "throw left arm above head",
+    "crouch forward"
+  ],
+  "spatial_pairs-9136-10": [
+    "throw left arm above head",
+    "stand"
+  ],
+  "spatial_pairs-318-0": [
+    "walk",
+    "hunch over"
+  ],
+  "spatial_pairs-2787-1": [
+    "pull backwards",
+    "hold on with right hand",
+    "step forwards"
+  ],
+  "spatial_pairs-2787-2": [
+    "pull backwards",
+    "hold on with right hand"
+  ],
+  "spatial_pairs-2787-4": [
+    "hold on with right hand",
+    "step forwards"
+  ],
+  "spatial_pairs-6494-0": [
+    "walk forward",
+    "head turn to the left",
+    "arms near sides"
+  ],
+  "spatial_pairs-6494-1": [
+    "head turn to the left",
+    "arms near sides",
+    "side steps to the right"
+  ],
+  "spatial_pairs-6494-2": [
+    "side steps to the left",
+    "head turn to the left",
+    "arms near sides"
+  ],
+  "spatial_pairs-6442-0": [
+    "body actions",
+    "hand actions"
+  ],
+  "spatial_pairs-6442-1": [
+    "body actions",
+    "hand actions"
+  ],
+  "spatial_pairs-9395-0": [
+    "move head around",
+    "stick out arms"
+  ],
+  "spatial_pairs-9395-1": [
+    "sweep to the right",
+    "flex arms"
+  ],
+  "spatial_pairs-9253-0": [
+    "turn right",
+    "jog lightly"
+  ],
+  "spatial_pairs-5835-0": [
+    "hold hands at face",
+    "turn left and right at waist"
+  ],
+  "spatial_pairs-5047-0": [
+    "look around",
+    "wave right hand"
+  ],
+  "spatial_pairs-12740-1": [
+    "turn around",
+    "look down at left wrist"
+  ],
+  "spatial_pairs-12740-3": [
+    "stand",
+    "look down at feet"
+  ],
+  "spatial_pairs-2905-1": [
+    "look to the right",
+    "keep both hands in front of face like a binocular"
+  ],
+  "spatial_pairs-2905-2": [
+    "look to the left",
+    "keep both hands in front of face like a binocular"
+  ],
+  "spatial_pairs-2408-1": [
+    "reach toward toes",
+    "bend over"
+  ],
+  "spatial_pairs-2408-3": [
+    "reach toward left toes",
+    "bend over"
+  ],
+  "spatial_pairs-2408-4": [
+    "reach toward right toes",
+    "bend over"
+  ],
+  "spatial_pairs-11672-1": [
+    "look down",
+    "dance"
+  ],
+  "spatial_pairs-11672-2": [
+    "look up",
+    "dance"
+  ],
+  "spatial_pairs-4243-0": [
+    "stand",
+    "sit down"
+  ],
+  "spatial_pairs-4243-1": [
+    "sit down",
+    "answer phone with right hand"
+  ],
+  "spatial_pairs-12004-0": [
+    "cross arms",
+    "look down"
+  ],
+  "spatial_pairs-887-0": [
+    "walk backwards",
+    "look at the ground"
+  ],
+  "spatial_pairs-6057-0": [
+    "stand up",
+    "turn left"
+  ],
+  "spatial_pairs-6148-3": [
+    "turn right",
+    "lean forward"
+  ],
+  "spatial_pairs-6598-0": [
+    "cross left leg over right leg",
+    "sit"
+  ],
+  "spatial_pairs-4600-0": [
+    "stand up",
+    "look at left arm"
+  ],
+  "spatial_pairs-5038-0": [
+    "squat down",
+    "cross legs"
+  ],
+  "spatial_pairs-5038-1": [
+    "cross legs",
+    "squat with arms spread"
+  ],
+  "spatial_pairs-5038-2": [
+    "stand up",
+    "cross legs"
+  ],
+  "spatial_pairs-1600-0": [
+    "look behind",
+    "step back toward chair"
+  ],
+  "spatial_pairs-4652-0": [
+    "feet sink while walk",
+    "walk forward hands at sides"
+  ],
+  "spatial_pairs-4641-0": [
+    "look up",
+    "stand"
+  ],
+  "spatial_pairs-10465-0": [
+    "walk forward arms at side",
+    "walk up an incline or ramp"
+  ],
+  "spatial_pairs-5526-0": [
+    "walk backwards",
+    "go down the stairs"
+  ],
+  "spatial_pairs-6431-0": [
+    "stand with arms at sides",
+    "stumble forward on right foot"
+  ],
+  "spatial_pairs-5860-1": [
+    "lean to the right",
+    "stand",
+    "raise arms"
+  ],
+  "spatial_pairs-5860-3": [
+    "walk",
+    "lean to the right"
+  ],
+  "spatial_pairs-7412-0": [
+    "walk",
+    "lean right"
+  ],
+  "spatial_pairs-7412-1": [
+    "lean right",
+    "walk"
+  ],
+  "spatial_pairs-7412-2": [
+    "walk",
+    "lean left"
+  ],
+  "spatial_pairs-3142-0": [
+    "flap hands together in front of face palms towards each other",
+    "stand"
+  ],
+  "spatial_pairs-5877-0": [
+    "bend over",
+    "shake"
+  ],
+  "spatial_pairs-5877-1": [
+    "shake",
+    "lift up"
+  ],
+  "spatial_pairs-344-0": [
+    "bend",
+    "wave"
+  ],
+  "spatial_pairs-8960-1": [
+    "place hands to face",
+    "unknown"
+  ],
+  "spatial_pairs-8960-2": [
+    "step backward",
+    "place elbows behind his back"
+  ],
+  "spatial_pairs-4276-0": [
+    "walk backwards",
+    "look down"
+  ],
+  "spatial_pairs-4276-1": [
+    "walk backwards",
+    "look to the side"
+  ],
+  "spatial_pairs-4276-2": [
+    "walk backwards",
+    "look to the side"
+  ],
+  "spatial_pairs-4276-3": [
+    "walk backwards",
+    "look to the side"
+  ],
+  "spatial_pairs-4276-4": [
+    "walk backwards",
+    "look down"
+  ],
+  "spatial_pairs-4276-5": [
+    "look down",
+    "walk backwards"
+  ],
+  "spatial_pairs-8983-0": [
+    "look to the side",
+    "limp backwards"
+  ],
+  "spatial_pairs-8983-1": [
+    "staggering backwards",
+    "clutch midsection"
+  ],
+  "spatial_pairs-2285-0": [
+    "step backwards",
+    "look back to the left"
+  ],
+  "spatial_pairs-5233-0": [
+    "duck down",
+    "touch forehead with left hand"
+  ],
+  "spatial_pairs-11885-1": [
+    "move dizzy",
+    "look around"
+  ],
+  "spatial_pairs-9118-0": [
+    "walk",
+    "nod his head"
+  ],
+  "spatial_pairs-5925-0": [
+    "right leg cross over left leg",
+    "sit"
+  ],
+  "spatial_pairs-5925-1": [
+    "sit",
+    "left leg cross over right leg"
+  ],
+  "spatial_pairs-5925-2": [
+    "right leg cross over left leg",
+    "sit"
+  ],
+  "spatial_pairs-5925-3": [
+    "left leg cross over right leg",
+    "sit"
+  ],
+  "spatial_pairs-11040-0": [
+    "walk",
+    "turn around"
+  ],
+  "spatial_pairs-1709-0": [
+    "walk slowly in circles",
+    "drop head"
+  ],
+  "spatial_pairs-1709-1": [
+    "step back",
+    "drop head"
+  ],
+  "spatial_pairs-1709-2": [
+    "lean down",
+    "drop head"
+  ],
+  "spatial_pairs-1709-3": [
+    "clasp hands together",
+    "drop head"
+  ],
+  "spatial_pairs-2085-0": [
+    "walk",
+    "arms go down"
+  ],
+  "spatial_pairs-8778-0": [
+    "prepare serve",
+    "stand with legs spread"
+  ],
+  "spatial_pairs-8778-1": [
+    "stand with legs spread",
+    "serve volley ball"
+  ],
+  "spatial_pairs-8778-2": [
+    "back up",
+    "stand with legs spread"
+  ],
+  "spatial_pairs-8778-4": [
+    "stand with legs spread",
+    "prepare serve"
+  ],
+  "spatial_pairs-6731-0": [
+    "walk in circles",
+    "hold left hand to shoulder"
+  ],
+  "spatial_pairs-3937-0": [
+    "walk in pattern",
+    "place hands and head into position"
+  ],
+  "spatial_pairs-1230-0": [
+    "both hand extended outward slightly apart",
+    "both hand extend outward slightly apart"
+  ],
+  "spatial_pairs-4235-0": [
+    "make a throwing motion",
+    "step backward"
+  ],
+  "spatial_pairs-2951-0": [
+    "intoxicated swaying",
+    "stand"
+  ],
+  "spatial_pairs-4749-0": [
+    "place left hand on object",
+    "place right hand on object"
+  ],
+  "spatial_pairs-4749-2": [
+    "bow head",
+    "place left hand on object",
+    "place right hand on object",
+    "press forward"
+  ],
+  "spatial_pairs-4749-3": [
+    "rear back",
+    "place left hand on object",
+    "place right hand on object",
+    "bow head"
+  ],
+  "spatial_pairs-4749-4": [
+    "place left hand on object",
+    "place right hand on object"
+  ],
+  "spatial_pairs-4749-5": [
+    "bow head",
+    "place left hand on object",
+    "place right hand on object"
+  ],
+  "spatial_pairs-4749-6": [
+    "bow head",
+    "place left hand on object",
+    "press forward",
+    "place right hand on object"
+  ],
+  "spatial_pairs-4749-7": [
+    "bow head",
+    "place left hand on object",
+    "rear back",
+    "place right hand on object"
+  ],
+  "spatial_pairs-4749-8": [
+    "place right hand on object",
+    "place left hand on object"
+  ],
+  "spatial_pairs-4749-9": [
+    "bow head",
+    "place right hand on object",
+    "place left hand on object"
+  ],
+  "spatial_pairs-4749-10": [
+    "bow head",
+    "place right hand on object",
+    "place left hand on object",
+    "press forward"
+  ],
+  "spatial_pairs-4749-11": [
+    "bow head",
+    "place right hand on object",
+    "rear back",
+    "place left hand on object"
+  ],
+  "spatial_pairs-6549-1": [
+    "hit with right hand",
+    "walk clockwise"
+  ],
+  "spatial_pairs-6549-3": [
+    "hit with right hand",
+    "walk clockwise"
+  ],
+  "spatial_pairs-6549-4": [
+    "hit with right hand",
+    "walk clockwise"
+  ],
+  "spatial_pairs-6549-7": [
+    "hit with right hand",
+    "walk clockwise"
+  ],
+  "spatial_pairs-6549-8": [
+    "hit with right hand",
+    "walk clockwise"
+  ],
+  "spatial_pairs-6549-10": [
+    "hit with right hand",
+    "walk clockwise"
+  ],
+  "spatial_pairs-6549-11": [
+    "hit with right hand",
+    "walk clockwise"
+  ],
+  "spatial_pairs-7488-1": [
+    "wave with right hand",
+    "face left",
+    "hold microphone with left hand"
+  ],
+  "spatial_pairs-7488-2": [
+    "wave with right hand",
+    "hold microphone with left hand"
+  ],
+  "spatial_pairs-7488-4": [
+    "wave with right hand",
+    "bow",
+    "face right",
+    "hold microphone with left hand"
+  ],
+  "spatial_pairs-7488-9": [
+    "bow",
+    "face left",
+    "hold microphone with left hand",
+    "wave with right hand"
+  ],
+  "spatial_pairs-7488-13": [
+    "hold microphone with left hand",
+    "shake hand with right hand",
+    "face left"
+  ],
+  "spatial_pairs-7488-15": [
+    "hold microphone with left hand",
+    "wave with right hand"
+  ],
+  "spatial_pairs-7488-19": [
+    "hold microphone with left hand",
+    "wave with right hand"
+  ],
+  "spatial_pairs-7488-20": [
+    "face left",
+    "hold microphone with left hand",
+    "wave with right hand"
+  ],
+  "spatial_pairs-7488-23": [
+    "hold microphone with left hand",
+    "wave with right hand"
+  ],
+  "spatial_pairs-12295-1": [
+    "stand",
+    "wave right hand"
+  ],
+  "spatial_pairs-12295-2": [
+    "low hand",
+    "stand"
+  ],
+  "spatial_pairs-12295-3": [
+    "stand",
+    "wave hands in the air"
+  ],
+  "spatial_pairs-12295-5": [
+    "wave right hand",
+    "stand"
+  ],
+  "spatial_pairs-12295-6": [
+    "low hand",
+    "stand"
+  ],
+  "spatial_pairs-12295-7": [
+    "stand",
+    "wave right hand lower"
+  ],
+  "spatial_pairs-12295-9": [
+    "wave left hand",
+    "stand"
+  ],
+  "spatial_pairs-5444-0": [
+    "spin clockwise",
+    "hold arms out at sides"
+  ],
+  "spatial_pairs-5444-1": [
+    "spin counterclockwise",
+    "hold arms out at sides"
+  ],
+  "spatial_pairs-8202-0": [
+    "walk",
+    "right arm elevate"
+  ],
+  "spatial_pairs-8202-1": [
+    "right arm elevate",
+    "body turn"
+  ],
+  "spatial_pairs-8202-2": [
+    "walk",
+    "right arm elevate"
+  ],
+  "spatial_pairs-8202-3": [
+    "right arm elevate",
+    "body turn"
+  ],
+  "spatial_pairs-8202-4": [
+    "right arm elevate",
+    "walk"
+  ],
+  "spatial_pairs-8202-5": [
+    "body turn",
+    "right arm elevate"
+  ],
+  "spatial_pairs-8202-6": [
+    "right arm elevate",
+    "walk"
+  ],
+  "spatial_pairs-8202-7": [
+    "body turn",
+    "right arm elevate"
+  ],
+  "spatial_pairs-8202-8": [
+    "right arm elevate",
+    "walk"
+  ],
+  "spatial_pairs-8202-9": [
+    "right arm elevate",
+    "step back"
+  ],
+  "spatial_pairs-10672-1": [
+    "stumbles",
+    "walk forwards"
+  ],
+  "spatial_pairs-10672-4": [
+    "stumbles",
+    "walk forwards"
+  ],
+  "spatial_pairs-10672-6": [
+    "turn body and head around 180 degrees",
+    "walk forwards"
+  ],
+  "spatial_pairs-10672-7": [
+    "walk forwards",
+    "stumbles"
+  ],
+  "spatial_pairs-10672-10": [
+    "stumbles",
+    "walk forwards"
+  ],
+  "spatial_pairs-7565-0": [
+    "wave right arm",
+    "place left hand at mouth"
+  ],
+  "spatial_pairs-7565-1": [
+    "place left hand at mouth",
+    "shake hands"
+  ],
+  "spatial_pairs-7565-2": [
+    "wave right arm",
+    "place left hand at mouth"
+  ],
+  "spatial_pairs-7565-3": [
+    "shake hands",
+    "place left hand at mouth"
+  ],
+  "spatial_pairs-9378-0": [
+    "look up",
+    "put right hand over mouth"
+  ],
+  "spatial_pairs-9378-1": [
+    "nod head down",
+    "put right hand over mouth"
+  ],
+  "spatial_pairs-1743-0": [
+    "carry with both hands",
+    "turn left"
+  ],
+  "spatial_pairs-1743-1": [
+    "carry with left hand",
+    "turn left"
+  ],
+  "spatial_pairs-1743-2": [
+    "turn left",
+    "carry with both hands"
+  ],
+  "spatial_pairs-1743-3": [
+    "turn left",
+    "carry with both hands"
+  ],
+  "spatial_pairs-7310-0": [
+    "walk around",
+    "whole body shake"
+  ],
+  "spatial_pairs-257-0": [
+    "walk backwards",
+    "turn around"
+  ],
+  "spatial_pairs-257-1": [
+    "turn around",
+    "walk backwards"
+  ],
+  "spatial_pairs-9340-0": [
+    "sit on feet position",
+    "place hands on knees"
+  ],
+  "spatial_pairs-6654-0": [
+    "run back",
+    "turn around"
+  ],
+  "spatial_pairs-6654-2": [
+    "run forward",
+    "turn around"
+  ],
+  "spatial_pairs-6654-5": [
+    "turn around",
+    "run back"
+  ],
+  "spatial_pairs-6654-6": [
+    "run forward",
+    "turn around"
+  ],
+  "spatial_pairs-6654-7": [
+    "turn around",
+    "run back"
+  ],
+  "spatial_pairs-6654-8": [
+    "run forward",
+    "turn around"
+  ],
+  "spatial_pairs-1456-0": [
+    "sit",
+    "left leg cross over right leg"
+  ],
+  "spatial_pairs-1456-1": [
+    "right leg cross over right leg",
+    "sit"
+  ],
+  "spatial_pairs-1456-2": [
+    "left leg cross over right leg",
+    "lay back"
+  ],
+  "spatial_pairs-10995-0": [
+    "move hands in wind motion",
+    "stand"
+  ],
+  "spatial_pairs-10995-1": [
+    "low hands",
+    "stand"
+  ],
+  "spatial_pairs-10995-2": [
+    "stand",
+    "move hands in wind motion"
+  ],
+  "spatial_pairs-10503-0": [
+    "raise right hand to mouth",
+    "eat food"
+  ],
+  "spatial_pairs-10503-1": [
+    "raise right hand to mouth",
+    "eat food"
+  ],
+  "spatial_pairs-10503-2": [
+    "raise right hand to mouth",
+    "eat food"
+  ],
+  "spatial_pairs-10503-3": [
+    "raise right hand to mouth",
+    "eat food"
+  ],
+  "spatial_pairs-10503-4": [
+    "raise right hand to mouth",
+    "eat food"
+  ],
+  "spatial_pairs-10503-5": [
+    "raise right hand to mouth",
+    "eat food"
+  ],
+  "spatial_pairs-10503-6": [
+    "raise both hands to mouth",
+    "eat food"
+  ],
+  "spatial_pairs-631-0": [
+    "stand",
+    "move both hands to face"
+  ],
+  "spatial_pairs-631-1": [
+    "touch face with right hand",
+    "stand"
+  ],
+  "spatial_pairs-631-2": [
+    "touch face with right hand",
+    "left hand grabs right writs",
+    "stand"
+  ],
+  "spatial_pairs-631-5": [
+    "stand",
+    "move both hands to face"
+  ],
+  "spatial_pairs-2541-0": [
+    "head down",
+    "walk"
+  ],
+  "spatial_pairs-2541-1": [
+    "look up",
+    "turn around"
+  ],
+  "spatial_pairs-2541-2": [
+    "head down",
+    "walk"
+  ],
+  "spatial_pairs-3442-1": [
+    "stand",
+    "reach out and shake right hand"
+  ],
+  "spatial_pairs-3442-2": [
+    "reach out and shake left hand",
+    "stand"
+  ],
+  "spatial_pairs-3442-3": [
+    "reach out with both hands",
+    "stand"
+  ],
+  "spatial_pairs-3442-4": [
+    "pivots body 45 degrees to the left",
+    "stand"
+  ],
+  "spatial_pairs-3442-5": [
+    "stand",
+    "reach out and shake right hand"
+  ],
+  "spatial_pairs-3442-6": [
+    "stand",
+    "reach out and shake left hand"
+  ],
+  "spatial_pairs-9854-0": [
+    "high jump",
+    "right hand full high"
+  ],
+  "spatial_pairs-9854-2": [
+    "right hand full high",
+    "high jump"
+  ],
+  "spatial_pairs-9854-3": [
+    "right hand full high",
+    "high jump"
+  ],
+  "spatial_pairs-9854-4": [
+    "high jump",
+    "right hand full high"
+  ],
+  "spatial_pairs-9854-5": [
+    "high jump",
+    "right hand full high"
+  ],
+  "spatial_pairs-9854-6": [
+    "high jump",
+    "right hand full high"
+  ],
+  "spatial_pairs-515-0": [
+    "clasp hands together",
+    "move head around"
+  ],
+  "spatial_pairs-2702-0": [
+    "style hair with right hand",
+    "hold mirror in front of face"
+  ],
+  "spatial_pairs-2702-1": [
+    "move mirror slightly to left",
+    "style hair with right hand"
+  ],
+  "spatial_pairs-2702-2": [
+    "move mirror slightly right",
+    "style hair with right hand"
+  ],
+  "spatial_pairs-2702-3": [
+    "style hair with right hand",
+    "move mirror far right"
+  ],
+  "spatial_pairs-2702-4": [
+    "style hair with right hand",
+    "move mirror far left"
+  ],
+  "spatial_pairs-127-0": [
+    "face rear",
+    "turn left"
+  ],
+  "spatial_pairs-127-1": [
+    "turn left",
+    "walk backwards"
+  ],
+  "spatial_pairs-127-2": [
+    "turn left",
+    "walk backwards"
+  ],
+  "spatial_pairs-127-3": [
+    "walk backwards",
+    "turn left"
+  ],
+  "spatial_pairs-127-4": [
+    "turn left",
+    "walk backwards"
+  ],
+  "spatial_pairs-127-5": [
+    "walk backwards",
+    "turn left"
+  ],
+  "spatial_pairs-11301-0": [
+    "walk forward",
+    "pick up object"
+  ],
+  "spatial_pairs-11301-1": [
+    "walk forward",
+    "step on object"
+  ],
+  "spatial_pairs-11301-2": [
+    "walk forward",
+    "turn around"
+  ],
+  "spatial_pairs-9410-0": [
+    "hit object",
+    "hold object"
+  ],
+  "spatial_pairs-8010-0": [
+    "stand",
+    "check wall surface"
+  ],
+  "spatial_pairs-5874-0": [
+    "walk forward",
+    "stand"
+  ],
+  "spatial_pairs-5874-2": [
+    "walk forward",
+    "lose balance"
+  ],
+  "spatial_pairs-5874-4": [
+    "walk forward",
+    "lose balance"
+  ],
+  "spatial_pairs-5874-6": [
+    "walk forward",
+    "lose balance"
+  ],
+  "spatial_pairs-9064-0": [
+    "hands on hips",
+    "turn around"
+  ],
+  "spatial_pairs-5322-0": [
+    "walk in circles",
+    "lower hands"
+  ],
+  "spatial_pairs-5576-0": [
+    "reach right hand up",
+    "dodge"
+  ],
+  "spatial_pairs-5576-1": [
+    "dodge",
+    "reach right hand up"
+  ],
+  "spatial_pairs-9440-0": [
+    "nod head",
+    "run"
+  ],
+  "spatial_pairs-10781-0": [
+    "pace back and forth",
+    "hold right hand on chin"
+  ],
+  "spatial_pairs-10781-1": [
+    "pace back and forth",
+    "hold right hand on chin"
+  ],
+  "spatial_pairs-2936-0": [
+    "walk across a plank",
+    "raise both arms"
+  ],
+  "spatial_pairs-2936-1": [
+    "hold both arms straight up",
+    "walk across a plank"
+  ],
+  "spatial_pairs-6457-0": [
+    "walk",
+    "look down"
+  ],
+  "spatial_pairs-8230-1": [
+    "walk forward",
+    "turn 90 degrees right"
+  ],
+  "spatial_pairs-179-0": [
+    "walk",
+    "turn left"
+  ],
+  "spatial_pairs-11429-0": [
+    "walk",
+    "turnaround"
+  ],
+  "spatial_pairs-11530-0": [
+    "step forward",
+    "stand"
+  ],
+  "spatial_pairs-11530-1": [
+    "grab item",
+    "stand"
+  ],
+  "spatial_pairs-11530-2": [
+    "stand",
+    "pour drink"
+  ],
+  "spatial_pairs-11530-3": [
+    "set item down",
+    "stand"
+  ],
+  "spatial_pairs-11530-4": [
+    "step back",
+    "stand"
+  ],
+  "spatial_pairs-3496-2": [
+    "wipes with left hand",
+    "wipes with right hand"
+  ],
+  "spatial_pairs-3496-3": [
+    "reach to the down left with right hand",
+    "steps to the left"
+  ],
+  "spatial_pairs-3496-5": [
+    "wipes with right hand",
+    "wipes with left hand"
+  ],
+  "spatial_pairs-3496-7": [
+    "reach to the down left with right hand",
+    "steps to the left"
+  ],
+  "spatial_pairs-5500-0": [
+    "bend",
+    "extend right arm"
+  ],
+  "spatial_pairs-5500-1": [
+    "bend",
+    "extend right arm"
+  ],
+  "spatial_pairs-5473-0": [
+    "hold",
+    "wipe"
+  ],
+  "spatial_pairs-3236-0": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-5135-0": [
+    "stand still",
+    "turn head to the right"
+  ],
+  "spatial_pairs-12812-1": [
+    "walk forward carefully",
+    "step forward carefully"
+  ],
+  "spatial_pairs-2899-0": [
+    "sit",
+    "look to the left"
+  ],
+  "spatial_pairs-2899-1": [
+    "sit",
+    "scratch back of head with both hands"
+  ],
+  "spatial_pairs-2899-2": [
+    "touch back of head with right hand",
+    "sit"
+  ],
+  "spatial_pairs-2899-3": [
+    "sit",
+    "upward swirl motion with right hand"
+  ],
+  "spatial_pairs-2899-4": [
+    "sit",
+    "scratch back of head with both hands"
+  ],
+  "spatial_pairs-2899-5": [
+    "sit",
+    "shake motion by face with right hand"
+  ],
+  "spatial_pairs-2899-6": [
+    "sit",
+    "shake both hands palm in by chest"
+  ],
+  "spatial_pairs-2899-7": [
+    "touch face with right hand",
+    "sit"
+  ],
+  "spatial_pairs-2899-8": [
+    "raise both hands near chest shakes with palms out",
+    "sit"
+  ],
+  "spatial_pairs-2899-9": [
+    "sit",
+    "touch back of head with right hand"
+  ],
+  "spatial_pairs-4442-0": [
+    "extend right arm",
+    "stand"
+  ],
+  "spatial_pairs-4442-1": [
+    "sit",
+    "scratch face"
+  ],
+  "spatial_pairs-4442-2": [
+    "sit",
+    "lift both arms"
+  ],
+  "spatial_pairs-4442-3": [
+    "sit",
+    "scratch back"
+  ],
+  "spatial_pairs-4442-4": [
+    "scratch back",
+    "sit"
+  ],
+  "spatial_pairs-4442-5": [
+    "sit",
+    "wave right arm in circle"
+  ],
+  "spatial_pairs-4442-6": [
+    "sit",
+    "scratch back"
+  ],
+  "spatial_pairs-4442-7": [
+    "sit",
+    "lift right arm"
+  ],
+  "spatial_pairs-4442-8": [
+    "lift both arms",
+    "sit"
+  ],
+  "spatial_pairs-4442-9": [
+    "lift left arm",
+    "sit"
+  ],
+  "spatial_pairs-4442-10": [
+    "wave both arms side to side",
+    "sit"
+  ],
+  "spatial_pairs-4442-11": [
+    "sit",
+    "lift both arms"
+  ],
+  "spatial_pairs-8578-0": [
+    "walk forward",
+    "arm out wide"
+  ],
+  "spatial_pairs-10007-0": [
+    "turn object vertically",
+    "move object to the right"
+  ],
+  "spatial_pairs-6141-0": [
+    "rearrange",
+    "stand"
+  ],
+  "spatial_pairs-9542-0": [
+    "rotate object vertically",
+    "move object to the right"
+  ],
+  "spatial_pairs-8866-0": [
+    "stand",
+    "look down to left"
+  ],
+  "spatial_pairs-2433-0": [
+    "arms out at sides",
+    "stand"
+  ],
+  "spatial_pairs-4644-0": [
+    "look right",
+    "stand"
+  ],
+  "spatial_pairs-8196-0": [
+    "walk",
+    "turnaround"
+  ],
+  "spatial_pairs-3480-0": [
+    "walk",
+    "walk"
+  ],
+  "spatial_pairs-6625-0": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-7569-0": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-764-0": [
+    "sit",
+    "shake right hand"
+  ],
+  "spatial_pairs-764-1": [
+    "raise left hand",
+    "sit"
+  ],
+  "spatial_pairs-764-2": [
+    "sit",
+    "clap"
+  ],
+  "spatial_pairs-764-3": [
+    "sit",
+    "shake right hand"
+  ],
+  "spatial_pairs-764-5": [
+    "sit",
+    "raise left hand",
+    "touch left hand with right"
+  ],
+  "spatial_pairs-764-6": [
+    "sit",
+    "raise left hand"
+  ],
+  "spatial_pairs-764-7": [
+    "sit",
+    "raise right hand"
+  ],
+  "spatial_pairs-764-8": [
+    "sit",
+    "sweep hands side to side"
+  ],
+  "spatial_pairs-764-9": [
+    "sit",
+    "raise both hands"
+  ],
+  "spatial_pairs-764-10": [
+    "stretch out right arm",
+    "sit"
+  ],
+  "spatial_pairs-1879-0": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-5323-0": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-10451-0": [
+    "both hand on rail",
+    "lean over front"
+  ],
+  "spatial_pairs-7292-0": [
+    "place right hand on something",
+    "sit down"
+  ],
+  "spatial_pairs-7292-2": [
+    "stand up",
+    "place right hand on something"
+  ],
+  "spatial_pairs-781-0": [
+    "walk forward",
+    "push air backwards"
+  ],
+  "spatial_pairs-12866-0": [
+    "look at foot",
+    "lean"
+  ],
+  "spatial_pairs-7256-0": [
+    "walk in straight line",
+    "raise arms"
+  ],
+  "spatial_pairs-3852-0": [
+    "wave",
+    "stand"
+  ],
+  "spatial_pairs-11760-0": [
+    "walk",
+    "quickly turn around"
+  ],
+  "spatial_pairs-9803-0": [
+    "reach with right hand",
+    "lean forward"
+  ],
+  "spatial_pairs-8885-0": [
+    "hold",
+    "squat"
+  ],
+  "spatial_pairs-8631-1": [
+    "walk",
+    "turn right",
+    "reach onto shelf"
+  ],
+  "spatial_pairs-8631-2": [
+    "walk",
+    "reach onto shelf"
+  ],
+  "spatial_pairs-2552-1": [
+    "right knee on floor",
+    "kneel",
+    "reach down with left hand"
+  ],
+  "spatial_pairs-2552-2": [
+    "right knee on floor",
+    "kneel"
+  ],
+  "spatial_pairs-2552-3": [
+    "kneel",
+    "left knee on floor"
+  ],
+  "spatial_pairs-2552-4": [
+    "sit up straight",
+    "kneel"
+  ],
+  "spatial_pairs-3964-0": [
+    "stretch leg",
+    "hold"
+  ],
+  "spatial_pairs-8840-0": [
+    "go up stair",
+    "right hand on rail"
+  ],
+  "spatial_pairs-8840-2": [
+    "left hand on rail",
+    "turn back"
+  ],
+  "spatial_pairs-8840-3": [
+    "left hand on rail",
+    "walk down stair"
+  ],
+  "spatial_pairs-6906-0": [
+    "walk",
+    "hold rail with left hand"
+  ],
+  "spatial_pairs-2993-0": [
+    "wave arms",
+    "stand"
+  ],
+  "spatial_pairs-2993-1": [
+    "lower arms",
+    "stand"
+  ],
+  "spatial_pairs-3972-0": [
+    "sit",
+    "shake right hand"
+  ],
+  "spatial_pairs-3972-1": [
+    "slide over to the left",
+    "sit"
+  ],
+  "spatial_pairs-3972-2": [
+    "sit",
+    "raise right hand"
+  ],
+  "spatial_pairs-3972-3": [
+    "sit",
+    "clap"
+  ],
+  "spatial_pairs-3972-4": [
+    "sit",
+    "wind right hand"
+  ],
+  "spatial_pairs-3972-5": [
+    "gesture with both hands",
+    "sit"
+  ],
+  "spatial_pairs-3972-6": [
+    "sit",
+    "raise right hand"
+  ],
+  "spatial_pairs-3972-7": [
+    "sit",
+    "sweep hands side to side"
+  ],
+  "spatial_pairs-3972-8": [
+    "sit",
+    "shake right hand"
+  ],
+  "spatial_pairs-3972-9": [
+    "sit",
+    "raise both hands"
+  ],
+  "spatial_pairs-3972-10": [
+    "stretch out right arm",
+    "sit"
+  ],
+  "spatial_pairs-3972-11": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-2956-0": [
+    "rest left hand on bench",
+    "look at foot"
+  ],
+  "spatial_pairs-2956-1": [
+    "rest left hand on bench",
+    "low foot"
+  ],
+  "spatial_pairs-9264-0": [
+    "place left hand down on ground",
+    "kneel on both knees"
+  ],
+  "spatial_pairs-3501-0": [
+    "head shake",
+    "sit down"
+  ],
+  "spatial_pairs-4842-0": [
+    "walk",
+    "turn left"
+  ],
+  "spatial_pairs-2798-0": [
+    "sit down",
+    "right hand up"
+  ],
+  "spatial_pairs-2798-1": [
+    "sit down",
+    "both arm movement"
+  ],
+  "spatial_pairs-2798-2": [
+    "both arm touch shoulders",
+    "sit down"
+  ],
+  "spatial_pairs-2798-3": [
+    "both arm movement",
+    "sit down"
+  ],
+  "spatial_pairs-5612-0": [
+    "point with right hand",
+    "sit"
+  ],
+  "spatial_pairs-5612-1": [
+    "stretch",
+    "sit"
+  ],
+  "spatial_pairs-5612-2": [
+    "scratch shoulder",
+    "sit"
+  ],
+  "spatial_pairs-5612-3": [
+    "sit",
+    "rub hands"
+  ],
+  "spatial_pairs-5612-4": [
+    "tap shoulder",
+    "sit"
+  ],
+  "spatial_pairs-5612-5": [
+    "draw circle",
+    "sit"
+  ],
+  "spatial_pairs-5612-6": [
+    "sit",
+    "tap shoulder"
+  ],
+  "spatial_pairs-5612-7": [
+    "signal high then low",
+    "sit"
+  ],
+  "spatial_pairs-5612-8": [
+    "sit",
+    "shake head"
+  ],
+  "spatial_pairs-5612-9": [
+    "sit",
+    "hand signal"
+  ],
+  "spatial_pairs-5612-10": [
+    "sit",
+    "hand signal"
+  ],
+  "spatial_pairs-5612-11": [
+    "sit",
+    "wave hands"
+  ],
+  "spatial_pairs-5612-13": [
+    "tap shoulder",
+    "sit"
+  ],
+  "spatial_pairs-5612-14": [
+    "hand signal",
+    "sit"
+  ],
+  "spatial_pairs-3145-0": [
+    "press left",
+    "stand"
+  ],
+  "spatial_pairs-3145-1": [
+    "stand",
+    "press right"
+  ],
+  "spatial_pairs-3145-2": [
+    "press up",
+    "stand"
+  ],
+  "spatial_pairs-3145-3": [
+    "stand",
+    "press center"
+  ],
+  "spatial_pairs-3145-4": [
+    "stand",
+    "press right"
+  ],
+  "spatial_pairs-3145-5": [
+    "press left",
+    "stand"
+  ],
+  "spatial_pairs-3145-6": [
+    "press up",
+    "stand"
+  ],
+  "spatial_pairs-3145-7": [
+    "stand",
+    "press center"
+  ],
+  "spatial_pairs-3145-8": [
+    "swipe right",
+    "stand"
+  ],
+  "spatial_pairs-3145-9": [
+    "stand",
+    "swipe down"
+  ],
+  "spatial_pairs-3145-10": [
+    "press center",
+    "stand"
+  ],
+  "spatial_pairs-3145-11": [
+    "stand",
+    "swipe left"
+  ],
+  "spatial_pairs-3145-12": [
+    "swipe down",
+    "stand"
+  ],
+  "spatial_pairs-3145-13": [
+    "press center",
+    "stand"
+  ],
+  "spatial_pairs-3145-14": [
+    "spread hands apart",
+    "stand"
+  ],
+  "spatial_pairs-3145-15": [
+    "connect diagonally",
+    "stand"
+  ],
+  "spatial_pairs-3145-16": [
+    "move hands in circular motion",
+    "stand"
+  ],
+  "spatial_pairs-3145-17": [
+    "move hands in circular motion",
+    "stand"
+  ],
+  "spatial_pairs-3145-18": [
+    "stand",
+    "grab item on left"
+  ],
+  "spatial_pairs-3145-19": [
+    "stand",
+    "move item to right"
+  ],
+  "spatial_pairs-3145-20": [
+    "stand",
+    "grab item with right hand"
+  ],
+  "spatial_pairs-3145-21": [
+    "move item to the left",
+    "stand"
+  ],
+  "spatial_pairs-3145-22": [
+    "lift both hands",
+    "stand"
+  ],
+  "spatial_pairs-3145-23": [
+    "stretch out arms forward",
+    "stand"
+  ],
+  "spatial_pairs-3145-24": [
+    "lift arms out to sides",
+    "stand"
+  ],
+  "spatial_pairs-3145-25": [
+    "bend elbow upward",
+    "stand"
+  ],
+  "spatial_pairs-3145-26": [
+    "lift both hands",
+    "stand"
+  ],
+  "spatial_pairs-3145-27": [
+    "stand",
+    "stretch out arms forward"
+  ],
+  "spatial_pairs-3145-28": [
+    "lift arms out to sides",
+    "stand"
+  ],
+  "spatial_pairs-3145-29": [
+    "bend elbow upward",
+    "stand"
+  ],
+  "spatial_pairs-3145-30": [
+    "press left",
+    "stand"
+  ],
+  "spatial_pairs-3145-31": [
+    "press up",
+    "stand"
+  ],
+  "spatial_pairs-3145-32": [
+    "press center",
+    "stand"
+  ],
+  "spatial_pairs-3145-33": [
+    "stand",
+    "spread hands apart"
+  ],
+  "spatial_pairs-3145-34": [
+    "move right hand in circle",
+    "stand"
+  ],
+  "spatial_pairs-3145-35": [
+    "press center",
+    "stand"
+  ],
+  "spatial_pairs-3145-36": [
+    "stand",
+    "press right"
+  ],
+  "spatial_pairs-1148-1": [
+    "sit on chair",
+    "raise both arms laterally"
+  ],
+  "spatial_pairs-1148-2": [
+    "bring down arms",
+    "sit on chair"
+  ],
+  "spatial_pairs-1148-3": [
+    "rest hands on thighs",
+    "sit on chair"
+  ],
+  "spatial_pairs-1148-4": [
+    "raise both arms laterally",
+    "sit on chair"
+  ],
+  "spatial_pairs-1148-5": [
+    "sit on chair",
+    "bring down arms"
+  ],
+  "spatial_pairs-11352-0": [
+    "rearrange",
+    "stand"
+  ],
+  "spatial_pairs-7420-0": [
+    "grab object with right hand",
+    "look to the left"
+  ],
+  "spatial_pairs-6130-0": [
+    "look to the right",
+    "stand"
+  ],
+  "spatial_pairs-5696-0": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-5696-1": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-5696-2": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-3716-0": [
+    "walk up stairs",
+    "right hand on stair rail"
+  ],
+  "spatial_pairs-12786-0": [
+    "walk",
+    "raise both arms up"
+  ],
+  "spatial_pairs-1008-0": [
+    "climb down stairs",
+    "hold rail with left hand"
+  ],
+  "spatial_pairs-7524-0": [
+    "hold stair rail with left hand",
+    "walk down stairs"
+  ],
+  "spatial_pairs-6537-0": [
+    "ascend",
+    "hold"
+  ],
+  "spatial_pairs-147-0": [
+    "sit",
+    "rest right arm"
+  ],
+  "spatial_pairs-147-1": [
+    "sit",
+    "rest right arm",
+    "low left arm"
+  ],
+  "spatial_pairs-147-2": [
+    "rest right arm",
+    "sit"
+  ],
+  "spatial_pairs-147-3": [
+    "rest right arm",
+    "sit",
+    "raise left arm"
+  ],
+  "spatial_pairs-12167-0": [
+    "hold right arm up",
+    "sit down"
+  ],
+  "spatial_pairs-1959-0": [
+    "raise arms in the air",
+    "walk on balance beam"
+  ],
+  "spatial_pairs-1959-1": [
+    "raise arms in the air",
+    "step down"
+  ],
+  "spatial_pairs-8771-0": [
+    "look right",
+    "stand"
+  ],
+  "spatial_pairs-1490-0": [
+    "look right",
+    "stand"
+  ],
+  "spatial_pairs-435-0": [
+    "nod head",
+    "stand"
+  ],
+  "spatial_pairs-10616-0": [
+    "walk",
+    "turn left"
+  ],
+  "spatial_pairs-6738-0": [
+    "grab hold of partner",
+    "step forward"
+  ],
+  "spatial_pairs-6738-1": [
+    "grab hold of partner",
+    "step to the side"
+  ],
+  "spatial_pairs-6738-2": [
+    "grab hold of partner",
+    "step back"
+  ],
+  "spatial_pairs-6738-3": [
+    "grab hold of partner",
+    "step to the side"
+  ],
+  "spatial_pairs-6738-4": [
+    "step forward",
+    "grab hold of partner"
+  ],
+  "spatial_pairs-6738-5": [
+    "step to the side",
+    "grab hold of partner"
+  ],
+  "spatial_pairs-6738-6": [
+    "grab hold of partner",
+    "step back"
+  ],
+  "spatial_pairs-6738-7": [
+    "grab hold of partner",
+    "step to the side"
+  ],
+  "spatial_pairs-6738-8": [
+    "grab hold of partner",
+    "step forward"
+  ],
+  "spatial_pairs-6738-9": [
+    "step to the side",
+    "grab hold of partner"
+  ],
+  "spatial_pairs-6738-10": [
+    "grab hold of partner",
+    "step back"
+  ],
+  "spatial_pairs-6738-11": [
+    "step to the side",
+    "grab hold of partner"
+  ],
+  "spatial_pairs-6738-12": [
+    "grab hold of partner",
+    "step forward"
+  ],
+  "spatial_pairs-6738-13": [
+    "step to the side",
+    "grab hold of partner"
+  ],
+  "spatial_pairs-6738-14": [
+    "grab hold of partner",
+    "step back"
+  ],
+  "spatial_pairs-6738-15": [
+    "grab hold of partner",
+    "step to the side"
+  ],
+  "spatial_pairs-6738-16": [
+    "grab hold of partner",
+    "step forward"
+  ],
+  "spatial_pairs-6738-17": [
+    "grab hold of partner",
+    "step to the side"
+  ],
+  "spatial_pairs-6738-18": [
+    "grab hold of partner",
+    "step back"
+  ],
+  "spatial_pairs-6738-19": [
+    "grab hold of partner",
+    "step to the side"
+  ],
+  "spatial_pairs-6542-0": [
+    "swings left arm",
+    "steps forward with left leg"
+  ],
+  "spatial_pairs-11846-0": [
+    "steps forward with right leg",
+    "hold both arms up to dance"
+  ],
+  "spatial_pairs-11846-1": [
+    "steps forward with left leg",
+    "steps forward with right leg",
+    "hold both arms up to dance"
+  ],
+  "spatial_pairs-11846-2": [
+    "steps right foot to left foot",
+    "steps forward with right leg",
+    "hold both arms up to dance"
+  ],
+  "spatial_pairs-11846-4": [
+    "steps left foot back",
+    "steps forward with right leg",
+    "hold both arms up to dance"
+  ],
+  "spatial_pairs-11846-5": [
+    "steps right foot back",
+    "steps forward with right leg",
+    "hold both arms up to dance"
+  ],
+  "spatial_pairs-11846-7": [
+    "steps forward with right leg",
+    "hold both arms up to dance"
+  ],
+  "spatial_pairs-11846-8": [
+    "hold both arms up to dance",
+    "steps forward with right leg",
+    "steps forward with left leg"
+  ],
+  "spatial_pairs-11846-10": [
+    "steps left foot back",
+    "steps forward with right leg",
+    "hold both arms up to dance"
+  ],
+  "spatial_pairs-11846-11": [
+    "hold both arms up to dance",
+    "steps forward with right leg",
+    "steps right foot back"
+  ],
+  "spatial_pairs-11846-12": [
+    "steps left foot to right foot",
+    "steps forward with right leg",
+    "hold both arms up to dance"
+  ],
+  "spatial_pairs-11846-13": [
+    "steps forward with right leg",
+    "hold both arms up to dance"
+  ],
+  "spatial_pairs-11846-14": [
+    "steps forward with left leg",
+    "steps forward with right leg",
+    "hold both arms up to dance"
+  ],
+  "spatial_pairs-11846-17": [
+    "steps forward with right leg",
+    "hold both arms up to dance",
+    "steps left foot back"
+  ],
+  "spatial_pairs-11846-18": [
+    "steps right foot back",
+    "steps forward with right leg",
+    "hold both arms up to dance"
+  ],
+  "spatial_pairs-11846-20": [
+    "steps forward with right leg",
+    "hold both arms up to dance"
+  ],
+  "spatial_pairs-11846-21": [
+    "steps forward with left leg",
+    "steps forward with right leg",
+    "hold both arms up to dance"
+  ],
+  "spatial_pairs-11846-22": [
+    "steps right foot to left foot",
+    "steps forward with right leg",
+    "hold both arms up to dance"
+  ],
+  "spatial_pairs-11846-24": [
+    "steps forward with right leg",
+    "hold both arms up to dance",
+    "steps left foot back"
+  ],
+  "spatial_pairs-11846-25": [
+    "hold both arms up to dance",
+    "steps forward with right leg",
+    "steps right foot back"
+  ],
+  "spatial_pairs-9918-0": [
+    "right step forward",
+    "hold arms as in waltz"
+  ],
+  "spatial_pairs-9918-1": [
+    "left step left",
+    "hold arms as in waltz"
+  ],
+  "spatial_pairs-9918-3": [
+    "left step back",
+    "hold arms as in waltz"
+  ],
+  "spatial_pairs-9918-4": [
+    "right step across",
+    "hold arms as in waltz"
+  ],
+  "spatial_pairs-9918-5": [
+    "hold arms as in waltz",
+    "left step right"
+  ],
+  "spatial_pairs-9918-6": [
+    "right step forward",
+    "hold arms as in waltz"
+  ],
+  "spatial_pairs-9918-7": [
+    "left step across",
+    "hold arms as in waltz"
+  ],
+  "spatial_pairs-12902-1": [
+    "arms out stretched",
+    "dance",
+    "steps forward with right leg"
+  ],
+  "spatial_pairs-12902-4": [
+    "arms out stretched",
+    "dance",
+    "steps to the left"
+  ],
+  "spatial_pairs-12902-5": [
+    "arms out stretched",
+    "dance",
+    "step back with left leg"
+  ],
+  "spatial_pairs-12902-6": [
+    "arms out stretched",
+    "dance",
+    "step back with right leg"
+  ],
+  "spatial_pairs-12902-7": [
+    "arms out stretched",
+    "dance",
+    "steps to the right"
+  ],
+  "spatial_pairs-12902-8": [
+    "arms out stretched",
+    "dance",
+    "steps forward with right leg"
+  ],
+  "spatial_pairs-12902-9": [
+    "arms out stretched",
+    "dance",
+    "steps forward with left leg"
+  ],
+  "spatial_pairs-12902-10": [
+    "arms out stretched",
+    "dance",
+    "steps to the left"
+  ],
+  "spatial_pairs-12902-11": [
+    "arms out stretched",
+    "dance",
+    "step back with left leg"
+  ],
+  "spatial_pairs-12902-14": [
+    "arms out stretched",
+    "dance",
+    "steps to the right"
+  ],
+  "spatial_pairs-12902-15": [
+    "arms out stretched",
+    "dance",
+    "steps forward with right leg"
+  ],
+  "spatial_pairs-12902-16": [
+    "arms out stretched",
+    "dance",
+    "steps forward with left leg"
+  ],
+  "spatial_pairs-12902-17": [
+    "arms out stretched",
+    "dance",
+    "steps to the left"
+  ],
+  "spatial_pairs-12902-18": [
+    "arms out stretched",
+    "dance",
+    "step back with left leg"
+  ],
+  "spatial_pairs-12902-19": [
+    "arms out stretched",
+    "dance",
+    "step back with right leg"
+  ],
+  "spatial_pairs-12902-21": [
+    "arms out stretched",
+    "steps forward with right leg",
+    "dance"
+  ],
+  "spatial_pairs-12902-22": [
+    "arms out stretched",
+    "steps forward with left leg",
+    "dance"
+  ],
+  "spatial_pairs-12902-23": [
+    "arms out stretched",
+    "steps to the left",
+    "dance"
+  ],
+  "spatial_pairs-12902-24": [
+    "arms out stretched",
+    "dance",
+    "step back with left leg"
+  ],
+  "spatial_pairs-12902-25": [
+    "arms out stretched",
+    "dance",
+    "step back with right leg"
+  ],
+  "spatial_pairs-12902-26": [
+    "arms out stretched",
+    "dance",
+    "steps to the right"
+  ],
+  "spatial_pairs-12902-27": [
+    "arms out stretched",
+    "steps forward with right leg",
+    "dance"
+  ],
+  "spatial_pairs-12902-28": [
+    "arms out stretched",
+    "steps forward with left leg",
+    "dance"
+  ],
+  "spatial_pairs-12902-29": [
+    "arms out stretched",
+    "steps to the left",
+    "dance"
+  ],
+  "spatial_pairs-12902-30": [
+    "arms out stretched",
+    "step back with left leg",
+    "dance"
+  ],
+  "spatial_pairs-12902-31": [
+    "arms out stretched",
+    "dance",
+    "step back with right leg"
+  ],
+  "spatial_pairs-12902-32": [
+    "arms out stretched",
+    "steps to the right",
+    "dance"
+  ],
+  "spatial_pairs-4748-1": [
+    "stand",
+    "play guitar"
+  ],
+  "spatial_pairs-4748-2": [
+    "lower arms",
+    "stand"
+  ],
+  "spatial_pairs-3845-2": [
+    "hold arms out to the left",
+    "step backward"
+  ],
+  "spatial_pairs-3845-4": [
+    "hold arms out to the left",
+    "bring feet together"
+  ],
+  "spatial_pairs-3845-5": [
+    "step forward",
+    "hold arms out to the left"
+  ],
+  "spatial_pairs-3845-8": [
+    "hold arms out to the left",
+    "step backward"
+  ],
+  "spatial_pairs-3845-10": [
+    "hold arms out to the left",
+    "bring feet together"
+  ],
+  "spatial_pairs-3845-11": [
+    "step forward",
+    "hold arms out to the left"
+  ],
+  "spatial_pairs-3845-14": [
+    "hold arms out to the left",
+    "step backward"
+  ],
+  "spatial_pairs-3845-16": [
+    "step forward",
+    "hold arms out to the left"
+  ],
+  "spatial_pairs-3845-18": [
+    "hold arms out to the left",
+    "step backward"
+  ],
+  "spatial_pairs-3845-21": [
+    "hold arms out to the left",
+    "step forward"
+  ],
+  "spatial_pairs-3845-24": [
+    "hold arms out to the left",
+    "step backward"
+  ],
+  "spatial_pairs-3845-26": [
+    "look at floor",
+    "stand"
+  ],
+  "spatial_pairs-8197-0": [
+    "stir right arm",
+    "stand"
+  ],
+  "spatial_pairs-8197-2": [
+    "lower right arm",
+    "stand"
+  ],
+  "spatial_pairs-12900-0": [
+    "arrange items in front with left hand",
+    "stand still"
+  ],
+  "spatial_pairs-12900-1": [
+    "pick up something with left hand",
+    "stand still"
+  ],
+  "spatial_pairs-12900-2": [
+    "stretch both arms",
+    "stand still"
+  ],
+  "spatial_pairs-12900-3": [
+    "stretch both arms",
+    "both hand horizontal movement"
+  ],
+  "spatial_pairs-12900-4": [
+    "arrange items in front with right hand",
+    "stretch both arms"
+  ],
+  "spatial_pairs-12900-5": [
+    "arrange items in front with right hand",
+    "right hand single stretch"
+  ],
+  "spatial_pairs-51-0": [
+    "both arms point forward",
+    "stand"
+  ],
+  "spatial_pairs-51-2": [
+    "stand",
+    "swim"
+  ],
+  "spatial_pairs-1551-0": [
+    "wave",
+    "stand"
+  ],
+  "spatial_pairs-10197-0": [
+    "rearrange",
+    "stand"
+  ],
+  "spatial_pairs-8407-0": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-8407-1": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-8407-2": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-8407-3": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-3133-0": [
+    "rearrange",
+    "stand"
+  ],
+  "spatial_pairs-5505-1": [
+    "lift arms",
+    "move arms to the right"
+  ],
+  "spatial_pairs-5505-2": [
+    "move arms to the right",
+    "extend arms"
+  ],
+  "spatial_pairs-6547-0": [
+    "stand up",
+    "rearrange"
+  ],
+  "spatial_pairs-4444-0": [
+    "raise left hand",
+    "sit"
+  ],
+  "spatial_pairs-4444-1": [
+    "sit",
+    "raise left hand"
+  ],
+  "spatial_pairs-4444-2": [
+    "sit",
+    "raise right hand"
+  ],
+  "spatial_pairs-4444-3": [
+    "sit",
+    "raise left hand"
+  ],
+  "spatial_pairs-4444-4": [
+    "sit",
+    "raise right hand"
+  ],
+  "spatial_pairs-4444-5": [
+    "sit",
+    "raise right hand"
+  ],
+  "spatial_pairs-4444-6": [
+    "sit",
+    "raise both hands"
+  ],
+  "spatial_pairs-4444-7": [
+    "sit",
+    "raise both hands"
+  ],
+  "spatial_pairs-4444-8": [
+    "sit",
+    "raise both hands"
+  ],
+  "spatial_pairs-4444-9": [
+    "raise both hands",
+    "sit"
+  ],
+  "spatial_pairs-4444-10": [
+    "raise left hand",
+    "sit"
+  ],
+  "spatial_pairs-4444-11": [
+    "sit",
+    "wave right hand low"
+  ],
+  "spatial_pairs-4444-12": [
+    "sit",
+    "raise left hand"
+  ],
+  "spatial_pairs-6641-0": [
+    "walk",
+    "use right hand for support"
+  ],
+  "spatial_pairs-12805-0": [
+    "pick up bottle with right hand",
+    "pick up bottle with left hand"
+  ],
+  "spatial_pairs-12805-3": [
+    "pour from bottle with left hand",
+    "pour from bottle with right hand"
+  ],
+  "spatial_pairs-12805-5": [
+    "put down bottle with right hand",
+    "put down bottle with left hand"
+  ],
+  "spatial_pairs-12805-7": [
+    "pick up bottle with left hand",
+    "hold stirrer in drink"
+  ],
+  "spatial_pairs-12805-8": [
+    "pour from bottle with left hand",
+    "hold stirrer in drink"
+  ],
+  "spatial_pairs-12805-10": [
+    "hold stirrer in drink",
+    "put down bottle with left hand"
+  ],
+  "spatial_pairs-12805-12": [
+    "put down bottle with left hand",
+    "step backwards"
+  ],
+  "spatial_pairs-7119-0": [
+    "walk with support",
+    "stand"
+  ],
+  "spatial_pairs-11594-0": [
+    "walk",
+    "right arm reach"
+  ],
+  "spatial_pairs-11594-1": [
+    "left arm reach",
+    "walk"
+  ],
+  "spatial_pairs-9937-0": [
+    "walk",
+    "use right hand for support"
+  ],
+  "spatial_pairs-9937-1": [
+    "walk",
+    "use right hand for support"
+  ],
+  "spatial_pairs-3321-0": [
+    "pick up something",
+    "bend down"
+  ],
+  "spatial_pairs-3321-2": [
+    "make gesture with right hand",
+    "pick up something"
+  ],
+  "spatial_pairs-3321-3": [
+    "make gesture with right hand",
+    "pick up something"
+  ],
+  "spatial_pairs-3321-4": [
+    "make gesture with right hand",
+    "walk"
+  ],
+  "spatial_pairs-3321-5": [
+    "make gesture with right hand",
+    "walk",
+    "bend down"
+  ],
+  "spatial_pairs-3321-6": [
+    "make gesture with right hand",
+    "bend down"
+  ],
+  "spatial_pairs-6369-0": [
+    "pick up object",
+    "lean forward on right leg"
+  ],
+  "spatial_pairs-6369-1": [
+    "carry object",
+    "walk left"
+  ],
+  "spatial_pairs-6369-2": [
+    "walk to right",
+    "carry object"
+  ],
+  "spatial_pairs-6938-0": [
+    "grab item",
+    "stand"
+  ],
+  "spatial_pairs-6938-1": [
+    "clean with right hand",
+    "stand"
+  ],
+  "spatial_pairs-6938-2": [
+    "put item back",
+    "stand"
+  ],
+  "spatial_pairs-6938-3": [
+    "step back",
+    "stand"
+  ],
+  "spatial_pairs-9455-0": [
+    "hang on to rail",
+    "walk"
+  ],
+  "spatial_pairs-4964-0": [
+    "walk with support",
+    "turn left"
+  ],
+  "spatial_pairs-9602-0": [
+    "stand",
+    "grab item with right hand"
+  ],
+  "spatial_pairs-9602-2": [
+    "hold right arm up",
+    "walk",
+    "stand"
+  ],
+  "spatial_pairs-9602-4": [
+    "turn",
+    "stand"
+  ],
+  "spatial_pairs-9602-5": [
+    "clean",
+    "stand"
+  ],
+  "spatial_pairs-9602-6": [
+    "put item away",
+    "stand"
+  ],
+  "spatial_pairs-9602-7": [
+    "walk",
+    "stand"
+  ],
+  "spatial_pairs-9602-9": [
+    "stand",
+    "put item away"
+  ],
+  "spatial_pairs-9602-10": [
+    "step back",
+    "stand"
+  ],
+  "spatial_pairs-6069-0": [
+    "walk",
+    "extend right hand toward rail"
+  ],
+  "spatial_pairs-6069-1": [
+    "walk",
+    "extend left hand toward rail"
+  ],
+  "spatial_pairs-6069-2": [
+    "walk",
+    "hold onto rail with both hands"
+  ],
+  "spatial_pairs-6069-3": [
+    "walk",
+    "hold onto rail with both hands",
+    "turn left"
+  ],
+  "spatial_pairs-843-0": [
+    "place right hand on rail",
+    "walk"
+  ],
+  "spatial_pairs-7358-0": [
+    "walk",
+    "turn around"
+  ],
+  "spatial_pairs-4571-1": [
+    "walk",
+    "turn left"
+  ],
+  "spatial_pairs-10023-0": [
+    "sit t pose",
+    "sit"
+  ],
+  "spatial_pairs-10023-3": [
+    "sit",
+    "sit t pose",
+    "sit with right hand arm extend out"
+  ],
+  "spatial_pairs-10023-4": [
+    "sit",
+    "sit with right hand arm extend out"
+  ],
+  "spatial_pairs-2972-0": [
+    "hold",
+    "sit"
+  ],
+  "spatial_pairs-2972-1": [
+    "sit",
+    "hold"
+  ],
+  "spatial_pairs-3097-0": [
+    "hold",
+    "wipe"
+  ],
+  "spatial_pairs-8431-0": [
+    "walk",
+    "turn left"
+  ],
+  "spatial_pairs-7648-0": [
+    "walk",
+    "turn around"
+  ],
+  "spatial_pairs-5316-0": [
+    "walk",
+    "turn left"
+  ],
+  "spatial_pairs-10174-0": [
+    "walk across a beam",
+    "raise hands above the head"
+  ],
+  "spatial_pairs-10174-1": [
+    "hold up hands above the head with arms bent at the elbow",
+    "walk across a beam"
+  ],
+  "spatial_pairs-9418-0": [
+    "right hand movement till neck",
+    "sit down slightly right"
+  ],
+  "spatial_pairs-9418-1": [
+    "sit down slightly right",
+    "right hand movement till chest"
+  ],
+  "spatial_pairs-9418-2": [
+    "sit down slightly right",
+    "right hand movement till neck"
+  ],
+  "spatial_pairs-9418-3": [
+    "sit down slightly right",
+    "right hand movement till chest"
+  ],
+  "spatial_pairs-9418-4": [
+    "sit down slightly right",
+    "right hand movement till neck"
+  ],
+  "spatial_pairs-1481-0": [
+    "stand",
+    "clap"
+  ],
+  "spatial_pairs-1481-1": [
+    "stretch",
+    "sit down"
+  ],
+  "spatial_pairs-1692-0": [
+    "sit down slightly to left",
+    "right leg extend forward"
+  ],
+  "spatial_pairs-1692-1": [
+    "right hand on right knee",
+    "sit down slightly to left",
+    "right leg extend forward"
+  ],
+  "spatial_pairs-1692-4": [
+    "sit down slightly to left",
+    "right leg to original position",
+    "right hand to original position"
+  ],
+  "spatial_pairs-1692-6": [
+    "both arms on respected knees",
+    "sit down slightly to left"
+  ],
+  "spatial_pairs-1692-7": [
+    "sit down slightly to left",
+    "right leg extend forward"
+  ],
+  "spatial_pairs-1692-8": [
+    "right hand on right knee",
+    "sit down slightly to left",
+    "right leg extend forward"
+  ],
+  "spatial_pairs-1692-11": [
+    "right hand to original position",
+    "sit down slightly to left",
+    "right leg to original position"
+  ],
+  "spatial_pairs-1692-13": [
+    "right leg to original position",
+    "sit down slightly to left",
+    "right arm up"
+  ],
+  "spatial_pairs-1692-14": [
+    "right leg to original position",
+    "sit down slightly to left"
+  ],
+  "spatial_pairs-1692-16": [
+    "sit down slightly to left",
+    "right hand on right knee",
+    "right leg extend forward"
+  ],
+  "spatial_pairs-1692-18": [
+    "right leg to original position",
+    "sit down slightly to left"
+  ],
+  "spatial_pairs-1692-19": [
+    "right leg to original position",
+    "sit down slightly to left",
+    "right arm up"
+  ],
+  "spatial_pairs-1692-21": [
+    "right hand to original position",
+    "right leg to original position",
+    "sit down slightly to left"
+  ],
+  "spatial_pairs-5482-0": [
+    "walk",
+    "turn left"
+  ],
+  "spatial_pairs-1023-0": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-1023-1": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-1023-2": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-7668-1": [
+    "walk forward",
+    "rotate right"
+  ],
+  "spatial_pairs-12273-0": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-12273-1": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-12273-2": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-7810-0": [
+    "lean forwards",
+    "walk forwards"
+  ],
+  "spatial_pairs-7810-1": [
+    "walk forwards",
+    "lean forwards"
+  ],
+  "spatial_pairs-7810-2": [
+    "lean forwards",
+    "walk forwards"
+  ],
+  "spatial_pairs-7810-4": [
+    "walk forwards",
+    "bend knees"
+  ],
+  "spatial_pairs-11254-0": [
+    "carry with right hand",
+    "turn right"
+  ],
+  "spatial_pairs-11254-1": [
+    "walk forward",
+    "carry with right hand"
+  ],
+  "spatial_pairs-11254-3": [
+    "carry with right hand",
+    "turn left"
+  ],
+  "spatial_pairs-11254-4": [
+    "carry with right hand",
+    "walk forward"
+  ],
+  "spatial_pairs-11254-6": [
+    "carry with right hand",
+    "walk forward"
+  ],
+  "spatial_pairs-11867-0": [
+    "walk",
+    "hold object in right hand"
+  ],
+  "spatial_pairs-11867-1": [
+    "hold object in right hand",
+    "turn left"
+  ],
+  "spatial_pairs-11867-2": [
+    "hold object in right hand",
+    "run"
+  ],
+  "spatial_pairs-11867-3": [
+    "hold object in right hand",
+    "turn right"
+  ],
+  "spatial_pairs-11867-4": [
+    "run",
+    "hold object in left hand"
+  ],
+  "spatial_pairs-11867-5": [
+    "turn left",
+    "hold object in left hand"
+  ],
+  "spatial_pairs-11867-6": [
+    "walk",
+    "hold object in left hand"
+  ],
+  "spatial_pairs-11867-7": [
+    "walk",
+    "hold object in right hand"
+  ],
+  "spatial_pairs-11867-8": [
+    "turn right",
+    "hold object in right hand"
+  ],
+  "spatial_pairs-11867-9": [
+    "run",
+    "hold object in right hand"
+  ],
+  "spatial_pairs-11867-10": [
+    "turn left",
+    "hold object in right hand"
+  ],
+  "spatial_pairs-11867-11": [
+    "run",
+    "hold object in left hand"
+  ],
+  "spatial_pairs-11867-12": [
+    "turn right",
+    "hold object in left hand"
+  ],
+  "spatial_pairs-11867-13": [
+    "hold object in left hand",
+    "walk"
+  ],
+  "spatial_pairs-8394-0": [
+    "kneel down on right knee",
+    "tie shoelace"
+  ],
+  "spatial_pairs-8394-1": [
+    "tie shoelace",
+    "kneel down on right knee"
+  ],
+  "spatial_pairs-674-0": [
+    "stand",
+    "look around"
+  ],
+  "spatial_pairs-674-1": [
+    "stand",
+    "lift right arm"
+  ],
+  "spatial_pairs-674-2": [
+    "stand",
+    "look down"
+  ],
+  "spatial_pairs-5238-2": [
+    "stops and bends down to ground at knees",
+    "stops and grabs object with right hand from ground"
+  ],
+  "spatial_pairs-5238-3": [
+    "stops and bends down to ground at knees",
+    "stops and grabs object with right hand from ground"
+  ],
+  "spatial_pairs-4414-0": [
+    "circle left arm forward",
+    "circle right arm forward"
+  ],
+  "spatial_pairs-4414-1": [
+    "circle right arm backward",
+    "circle left arm backward"
+  ],
+  "spatial_pairs-4414-2": [
+    "walk forward",
+    "circle right arm forward"
+  ],
+  "spatial_pairs-4414-3": [
+    "walk forward",
+    "circle left arm forward",
+    "circle right arm forward"
+  ],
+  "spatial_pairs-4414-5": [
+    "walk forward",
+    "circle right arm backward",
+    "circle left arm backward"
+  ],
+  "spatial_pairs-2969-0": [
+    "walk forward",
+    "turn around left"
+  ],
+  "spatial_pairs-2969-1": [
+    "walk forward",
+    "turn around right"
+  ],
+  "spatial_pairs-2969-2": [
+    "jog",
+    "turn around left"
+  ],
+  "spatial_pairs-2969-3": [
+    "jog",
+    "turn around right"
+  ],
+  "spatial_pairs-2736-15": [
+    "lift both arms",
+    "lean back"
+  ],
+  "spatial_pairs-11709-0": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-11709-1": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-11709-2": [
+    "turn right",
+    "walk"
+  ],
+  "spatial_pairs-11709-3": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-11709-4": [
+    "turn right",
+    "walk"
+  ],
+  "spatial_pairs-818-0": [
+    "turn left",
+    "carry with right hand"
+  ],
+  "spatial_pairs-818-3": [
+    "carry with right hand",
+    "turn right"
+  ],
+  "spatial_pairs-818-4": [
+    "carry with right hand",
+    "step forward"
+  ],
+  "spatial_pairs-5740-0": [
+    "bend forward",
+    "swing arms inside out"
+  ],
+  "spatial_pairs-5740-1": [
+    "walk",
+    "spin both arms forwards"
+  ],
+  "spatial_pairs-5740-2": [
+    "spin spin arms backwards",
+    "walk"
+  ],
+  "spatial_pairs-743-1": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-743-3": [
+    "turn",
+    "walk"
+  ],
+  "spatial_pairs-7820-0": [
+    "stand",
+    "moves object upwards with right hand"
+  ],
+  "spatial_pairs-7820-1": [
+    "stand",
+    "moves object downwards with right hand"
+  ],
+  "spatial_pairs-7820-2": [
+    "stand",
+    "bends down",
+    "moves object downwards with right hand"
+  ],
+  "spatial_pairs-7820-3": [
+    "stand",
+    "moves object downwards with right hand"
+  ],
+  "spatial_pairs-7820-5": [
+    "moves object downwards with right hand",
+    "stand",
+    "moves object upwards with right hand"
+  ],
+  "spatial_pairs-7820-6": [
+    "stand",
+    "moves object upwards with right hand"
+  ],
+  "spatial_pairs-9665-0": [
+    "hold face in hands",
+    "swing his torso around"
+  ],
+  "spatial_pairs-9665-1": [
+    "just stand",
+    "stand"
+  ],
+  "spatial_pairs-9665-2": [
+    "stoop to one knee",
+    "tie his shoe"
+  ],
+  "spatial_pairs-11906-0": [
+    "stretch",
+    "grab foot"
+  ],
+  "spatial_pairs-11906-1": [
+    "stand",
+    "touch nose"
+  ],
+  "spatial_pairs-6050-1": [
+    "stretch right leg",
+    "both hand on right leg",
+    "stand on left leg"
+  ],
+  "spatial_pairs-6050-2": [
+    "stretch right leg",
+    "both hand on right leg",
+    "stand on left leg",
+    "right leg stretch till head"
+  ],
+  "spatial_pairs-6050-3": [
+    "stretch right leg",
+    "both hand on right leg",
+    "stand on left leg"
+  ],
+  "spatial_pairs-6050-4": [
+    "stretch right leg",
+    "both hand on right leg",
+    "stand on left leg",
+    "right leg stretch till head"
+  ],
+  "spatial_pairs-6050-5": [
+    "stretch right leg",
+    "both hand on right leg",
+    "stand on left leg"
+  ],
+  "spatial_pairs-6050-6": [
+    "stretch right leg",
+    "both hand on right leg",
+    "stand on left leg",
+    "right leg stretch till head"
+  ],
+  "spatial_pairs-6050-7": [
+    "stretch right leg",
+    "both hand on right leg",
+    "stand on left leg"
+  ],
+  "spatial_pairs-6050-8": [
+    "both hand on right leg",
+    "stand on left leg"
+  ],
+  "spatial_pairs-2550-0": [
+    "football referee touchdown pose",
+    "squat"
+  ],
+  "spatial_pairs-2550-1": [
+    "football referee touchdown pose",
+    "squat"
+  ],
+  "spatial_pairs-8843-0": [
+    "pick up sword",
+    "bend down on left knee"
+  ],
+  "spatial_pairs-8843-1": [
+    "pick up sword",
+    "rise up"
+  ],
+  "spatial_pairs-8843-2": [
+    "step forward",
+    "swing sword"
+  ],
+  "spatial_pairs-8843-3": [
+    "step back",
+    "swing sword"
+  ],
+  "spatial_pairs-8843-4": [
+    "step forward",
+    "swing sword"
+  ],
+  "spatial_pairs-8843-5": [
+    "step back",
+    "swing sword"
+  ],
+  "spatial_pairs-8843-6": [
+    "step forward",
+    "swing sword"
+  ],
+  "spatial_pairs-8843-7": [
+    "step back",
+    "swing sword"
+  ],
+  "spatial_pairs-8843-8": [
+    "step forward",
+    "swing sword"
+  ],
+  "spatial_pairs-8843-9": [
+    "swing sword",
+    "step back"
+  ],
+  "spatial_pairs-8843-10": [
+    "swing sword",
+    "step forward"
+  ],
+  "spatial_pairs-8843-11": [
+    "swing sword",
+    "step back"
+  ],
+  "spatial_pairs-8843-12": [
+    "step forward",
+    "swing sword"
+  ],
+  "spatial_pairs-8843-13": [
+    "step back",
+    "swing sword"
+  ],
+  "spatial_pairs-8843-14": [
+    "step forward",
+    "swing sword"
+  ],
+  "spatial_pairs-8843-15": [
+    "swing sword",
+    "step back"
+  ],
+  "spatial_pairs-8843-16": [
+    "swing sword",
+    "step forward"
+  ],
+  "spatial_pairs-8843-17": [
+    "step back",
+    "swing sword"
+  ],
+  "spatial_pairs-8843-18": [
+    "swing sword",
+    "step forward"
+  ],
+  "spatial_pairs-8843-19": [
+    "step back",
+    "swing sword"
+  ],
+  "spatial_pairs-8843-20": [
+    "swing sword",
+    "step forward"
+  ],
+  "spatial_pairs-8843-21": [
+    "step back",
+    "swing sword"
+  ],
+  "spatial_pairs-8843-22": [
+    "swing sword",
+    "step forward"
+  ],
+  "spatial_pairs-8843-23": [
+    "step back",
+    "swing sword"
+  ],
+  "spatial_pairs-8843-24": [
+    "swing sword",
+    "step forward"
+  ],
+  "spatial_pairs-8843-25": [
+    "step back",
+    "swing sword"
+  ],
+  "spatial_pairs-8843-26": [
+    "swing sword",
+    "bob feet"
+  ],
+  "spatial_pairs-4486-0": [
+    "draw an object closer",
+    "sit",
+    "pick up"
+  ],
+  "spatial_pairs-4486-1": [
+    "draw an object closer",
+    "sit"
+  ],
+  "spatial_pairs-6618-0": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-6618-1": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-6618-2": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-6618-3": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-6618-4": [
+    "hang head",
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-6618-5": [
+    "hang head",
+    "walk"
+  ],
+  "spatial_pairs-6618-6": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-6618-7": [
+    "turn right",
+    "walk"
+  ],
+  "spatial_pairs-6618-8": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-6618-9": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-6618-10": [
+    "turn right",
+    "walk"
+  ],
+  "spatial_pairs-8988-0": [
+    "stand",
+    "shake hands"
+  ],
+  "spatial_pairs-8988-2": [
+    "touch head",
+    "stand"
+  ],
+  "spatial_pairs-8988-3": [
+    "touch head",
+    "squat",
+    "stand"
+  ],
+  "spatial_pairs-8988-4": [
+    "shake hands",
+    "stand"
+  ],
+  "spatial_pairs-8988-5": [
+    "point left",
+    "stand"
+  ],
+  "spatial_pairs-8988-6": [
+    "stand",
+    "point right"
+  ],
+  "spatial_pairs-8988-7": [
+    "point both arms",
+    "stand"
+  ],
+  "spatial_pairs-6107-0": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-6107-1": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-6107-2": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-6107-3": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-6107-4": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-6107-5": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-6107-6": [
+    "turn",
+    "walk"
+  ],
+  "spatial_pairs-6107-7": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-6107-8": [
+    "walk",
+    "turn"
+  ],
+  "spatial_pairs-6107-9": [
+    "turn",
+    "walk"
+  ],
+  "spatial_pairs-5171-0": [
+    "juggle",
+    "step backwards"
+  ],
+  "spatial_pairs-5156-0": [
+    "move left hand to chin",
+    "walk"
+  ],
+  "spatial_pairs-5156-1": [
+    "sprinkle with hand",
+    "walk"
+  ],
+  "spatial_pairs-11362-0": [
+    "walk",
+    "turn left"
+  ],
+  "spatial_pairs-11362-1": [
+    "turn left",
+    "walk"
+  ],
+  "spatial_pairs-11362-2": [
+    "turn left",
+    "walk"
+  ],
+  "spatial_pairs-11362-3": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-11362-4": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-11362-5": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-11362-6": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-11362-7": [
+    "walk",
+    "turn right"
+  ],
+  "spatial_pairs-11362-8": [
+    "turn right",
+    "walk"
+  ],
+  "spatial_pairs-11362-9": [
+    "turn right",
+    "walk"
+  ],
+  "spatial_pairs-11362-10": [
+    "turn right",
+    "walk"
+  ],
+  "spatial_pairs-11362-11": [
+    "turn right",
+    "walk"
+  ],
+  "spatial_pairs-11362-12": [
+    "turn right",
+    "walk"
+  ],
+  "spatial_pairs-11362-13": [
+    "turn right",
+    "walk"
+  ],
+  "spatial_pairs-11362-14": [
+    "turn right",
+    "walk"
+  ],
+  "spatial_pairs-11362-15": [
+    "turn right",
+    "walk"
+  ],
+  "spatial_pairs-11362-16": [
+    "turn right",
+    "walk"
+  ],
+  "spatial_pairs-8258-1": [
+    "spin around",
+    "jump in place"
+  ],
+  "spatial_pairs-7141-0": [
+    "spin",
+    "jump in place"
+  ],
+  "spatial_pairs-822-2": [
+    "walk",
+    "turn around"
+  ]
+}

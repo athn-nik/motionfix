@@ -1,0 +1,8 @@
+name: Globalvelandy
+_target_: sinc.transforms.rots2rfeats.Globalvelandy
+
+pose_rep: rot6d
+path: ${path.deps}/transforms/rots2rfeats/globalvelandy/${.pose_rep}/${data.dataname}/${data.dtype}
+keep_dim: false
+canonicalize: true
+normalization: true
