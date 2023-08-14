@@ -1,2 +1,0 @@
-from .distilbert_linear import DistilbertEncoderLinear
-from .distilbert_transformer import DistilbertEncoderTransformer

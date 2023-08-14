@@ -3,8 +3,8 @@ from multiprocessing.spawn import prepare
 from re import I
 import hydra
 from omegaconf import DictConfig, OmegaConf
-import sinc.launch.prepare  # noqa
-from sinc.launch.prepare import get_last_checkpoint
+import src.launch.prepare  # noqa
+from src.launch.prepare import get_last_checkpoint
 from hydra.utils import to_absolute_path
 from pathlib import Path
 from typing import Optional
@@ -63,7 +63,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     import torch
     import pytorch_lightning as pl
     from hydra.utils import instantiate
-    from sinc.logger import instantiate_logger
+    from src.logger import instantiate_logger
     # from pytorch_lightning.accelerators import find_usable_cuda_devices
     logger.info("Libraries loaded")
 
@@ -116,7 +116,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
         from mld_specifics import parse_args
         cfg_for_mld = parse_args()  # parse config file
 
-        from sinc.model.mld import MLD
+        from src.model.mld import MLD
         model = MLD(cfg_for_mld, cfg.transforms, cfg.path)
         state_dict = torch.load('/is/cluster/fast/nathanasiou/logs/sinc/sinc-arxiv/temos-bs64x1-scheduler/babel-amass/checkpoints/latest-epoch=599.ckpt', map_location='cpu')
         # extract encoder/decoder

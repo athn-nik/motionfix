@@ -5,12 +5,12 @@ import hydra
 import os
 from pathlib import Path
 from omegaconf import DictConfig, OmegaConf
-import sinc.launch.prepare  # noqa
+import src.launch.prepare  # noqa
 from tqdm import tqdm
 import torch
 
-from sinc.utils.eval_utils import sanitize, regroup_metrics
-from sinc.utils.file_io import get_samples_folder, save_metric, get_metric_paths
+from src.utils.eval_utils import sanitize, regroup_metrics
+from src.utils.file_io import get_samples_folder, save_metric, get_metric_paths
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ def eval(cfg: DictConfig) -> None:
     prevcfg = OmegaConf.load(output_dir / ".hydra/config.yaml")
     # Overload it
     cfg = OmegaConf.merge(prevcfg, cfg)
-    from sinc.utils.inference import cfg_mean_nsamples_resolution, get_path
+    from src.utils.inference import cfg_mean_nsamples_resolution, get_path
     bak_save_path = Path(output_dir) / 'metrics'
     bak_save_path.mkdir(exist_ok=True, parents=True)
     
@@ -93,13 +93,13 @@ def eval(cfg: DictConfig) -> None:
     dataset = getattr(data_module, f"{cfg.split}_dataset")
     eval_pairs = cfg.set == 'pairs'
     if cfg.set == 'submission':
-        from sinc.utils.inference import sinc_eval_set
+        from src.utils.inference import sinc_eval_set
         keyids = sinc_eval_set
     elif cfg.set == 'small':
-        from sinc.utils.inference import validation_nostand_notrain
+        from src.utils.inference import validation_nostand_notrain
         keyids = validation_nostand_notrain
     elif cfg.set == 'supmat':
-        from sinc.utils.inference import sinc_supmat
+        from src.utils.inference import sinc_supmat
         keyids = sinc_supmat
     else:
         if cfg.set == 'pairs':

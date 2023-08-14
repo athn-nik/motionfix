@@ -1,6 +1,6 @@
 hydra:
   run:
-    dir: experiments/${project}/${experiment}/${run_id}/${data.dataname}
+    dir: experiments/${project}/${experiment}/${run_id}/
   job:
     chdir: true
     env_set:
@@ -11,7 +11,7 @@ hydra:
 # Global configurations shared between different modules
 experiment: baseline
 # must be the same when you are resuming experiment
-project: sinc
+project: motion-editing
 seed: 42
 logger_level: INFO
 run_id: ${generate_id:}
@@ -23,16 +23,16 @@ devices: 1
 
 # Composing nested config with default
 defaults:
-  - data: babel-amass
-  - model: sinc_joint_single_text
+  - data: synthetic
+  - model: basic
   - machine: server
   - trainer: base
   - sampler: variable_conseq # cut it
   - logger: none # wandb
   - callback: base
   - /path@path
-  - override hydra/job_logging: custom
-  - override hydra/hydra_logging: custom
+  - override hydra/job_logging: rich
+  - override hydra/hydra_logging: rich
   - _self_
 
 data:

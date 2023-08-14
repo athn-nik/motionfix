@@ -27,7 +27,7 @@ amass_path = 'path/toprocessed-amass-data/processed_amass_smplh_male_30fps/amass
 amass_data = joblib.load(amass_path)    
 logger.info(f'Loading the dataset from {amass_path}')
 babel_path = 'path/to/babel/data/id2fname/amass-path2babel.json'
-from sinc.utils.file_io import read_json
+from src.utils.file_io import read_json
 amass2babel = read_json(babel_path)
 dataset_db_lists = {'train': [],
                     'val': []}

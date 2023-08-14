@@ -32,7 +32,7 @@ import math
 from loguru import logger
 from tqdm import tqdm
 import os.path as osp
-from sinc.transforms.smpl import get_body_model
+from src.transforms.smpl import get_body_model
 
 AMASS_DIRS = [
     'ACCAD/ACCAD', # 19 mins

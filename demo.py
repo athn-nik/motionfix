@@ -9,14 +9,14 @@ from omegaconf import OmegaConf
 import numpy as np
 import glob
 
-from sinc.render.mesh_viz import visualize_meshes
-from sinc.render import render_animation
-from sinc.render.anim import render_animation
-from sinc.render.video import save_video_samples
-import sinc.launch.prepare  # noqa
+from src.render.mesh_viz import visualize_meshes
+from src.render import render_animation
+from src.render.anim import render_animation
+from src.render.video import save_video_samples
+import src.launch.prepare  # noqa
 from tqdm import tqdm
-from sinc.utils.file_io import read_json
-from sinc.launch.prepare import get_last_checkpoint
+from src.utils.file_io import read_json
+from src.launch.prepare import get_last_checkpoint
 import torch
 
 logger = logging.getLogger(__name__)
@@ -61,8 +61,8 @@ def load_temos(cfg):
 def compute_scores(cfg, gen_samples, set_to_compute, temos_model,
                    temoscfg, on_the_fly=False):
     from hydra.utils import instantiate
-    from sinc.model.metrics import ComputeMetricsSinc
-    from sinc.utils.eval_utils import sanitize, regroup_metrics
+    from src.model.metrics import ComputeMetricsSinc
+    from src.utils.eval_utils import sanitize, regroup_metrics
     
     
     rots2joints = instantiate(temoscfg.transforms.rots2joints, jointstype='smplh')
@@ -176,26 +176,26 @@ def render(newcfg: DictConfig) -> None:
 
     # ds = model.transforms.Datastruct
     if cfg.set == 'submission':
-        from sinc.utils.inference import sinc_eval_set
+        from src.utils.inference import sinc_eval_set
         keyids = sinc_eval_set
     elif cfg.set == 'small':
-        from sinc.utils.inference import validation_nostand_notrain
+        from src.utils.inference import validation_nostand_notrain
         keyids = validation_nostand_notrain
     elif cfg.set == 'supmat':
-        from sinc.utils.inference import sinc_supmat
+        from src.utils.inference import sinc_supmat
         keyids = sinc_supmat
     elif cfg.set == 'ood3':
-        from sinc.utils.inference import sinc_ood_three
+        from src.utils.inference import sinc_ood_three
         keyids = sinc_ood_three
     elif cfg.set == 'ood2':
-        from sinc.utils.inference import sinc_ood_2
+        from src.utils.inference import sinc_ood_2
         keyids = sinc_ood_2
     elif cfg.set == 'single':
-        from sinc.utils.inference import sinc_single
+        from src.utils.inference import sinc_single
         keyids = sinc_single
     elif cfg.set == 'oodgpt':
-        from sinc.utils.inference import sinc_ood_gptfail
-        from sinc.tools.frank import text_list_to_bp
+        from src.utils.inference import sinc_ood_gptfail
+        from src.tools.frank import text_list_to_bp
         gppt_path = './deps/gpt/gpt3-labels-list.json'
         gpt_labels = read_json(gppt_path)
 
@@ -328,7 +328,7 @@ def render(newcfg: DictConfig) -> None:
                                     fps=30)
                     from space.render.video import stack_vids_moviepy
                     stack_vids_moviepy([vid_p, vid1_p, vid2_p], f'{vid_path.resolve()}-stacked.mp4')
-    from sinc.utils.file_io import write_json
+    from src.utils.file_io import write_json
     import shortuuid 
     run_gen = shortuuid.ShortUUID(alphabet=list("0123456789abcdefghijklmnopqrstuvwxyz"))
     hashcd = str(run_gen.random(6))

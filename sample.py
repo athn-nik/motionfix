@@ -4,21 +4,21 @@ import hydra
 import os
 from pathlib import Path
 from omegaconf import DictConfig, OmegaConf
-from sinc.data.tools.collate import collate_length_and_text
-import sinc.launch.prepare
-from sinc.render.mesh_viz import visualize_meshes
-from sinc.render.video import save_video_samples, stack_vids
+from src.data.tools.collate import collate_length_and_text
+import src.launch.prepare
+from src.render.mesh_viz import visualize_meshes
+from src.render.video import save_video_samples, stack_vids
 import torch
-from sinc.transforms.base import Datastruct
-from sinc.utils.inference import cfg_mean_nsamples_resolution, get_path
-from sinc.utils.file_io import read_json
+from src.transforms.base import Datastruct
+from src.utils.inference import cfg_mean_nsamples_resolution, get_path
+from src.utils.file_io import read_json
 import pytorch_lightning as pl
 import numpy as np
 from hydra.utils import instantiate
 from tqdm import tqdm
-from sinc.data.tools import collate_text_and_length
-from sinc.tools.frank import combine_motions
-from sinc.utils.inference import sinc_supmat
+from src.data.tools import collate_text_and_length
+from src.tools.frank import combine_motions
+from src.utils.inference import sinc_supmat
 
 logger = logging.getLogger(__name__)
 
@@ -71,22 +71,22 @@ def path_to_save(cur_path, split, baseline, set_to_sample, onesample, mean, fact
 
 def get_keyids(set_to_sample, data_module):
     if set_to_sample == 'submission':
-        from sinc.utils.inference import sinc_eval_set
+        from src.utils.inference import sinc_eval_set
         keyids = sinc_eval_set
     elif set_to_sample == 'supmat':
-        from sinc.utils.inference import sinc_supmat
+        from src.utils.inference import sinc_supmat
         keyids = sinc_supmat
     elif set_to_sample == 'ood':
-        from sinc.utils.inference import sinc_ood
+        from src.utils.inference import sinc_ood
         keyids = sinc_ood
     elif set_to_sample == 'ood2':
-        from sinc.utils.inference import sinc_ood_2
+        from src.utils.inference import sinc_ood_2
         keyids = sinc_ood_2
     elif set_to_sample == 'ood3':
-        from sinc.utils.inference import sinc_ood_three
+        from src.utils.inference import sinc_ood_three
         keyids = sinc_ood_three
     elif set_to_sample == 'oodgpt':
-        from sinc.utils.inference import sinc_ood_gptfail
+        from src.utils.inference import sinc_ood_gptfail
         keyids = sinc_ood_gptfail
 
     else:
@@ -143,18 +143,18 @@ def sample(newcfg: DictConfig) -> None:
 
     else:
         if cfg.set == 'ood':
-            from sinc.utils.inference import sinc_ood
+            from src.utils.inference import sinc_ood
             keyids = sinc_ood
         elif cfg.set == 'ood2':
-            from sinc.utils.inference import sinc_ood_2
+            from src.utils.inference import sinc_ood_2
             keyids = sinc_ood_2
         elif cfg.set == 'ood3':
-            from sinc.utils.inference import sinc_ood_three
+            from src.utils.inference import sinc_ood_three
             keyids = sinc_ood_three
         elif cfg.set == 'oodgpt':
-            from sinc.utils.inference import sinc_ood_gptfail
-            from sinc.utils.file_io import read_json
-            from sinc.tools.frank import text_list_to_bp
+            from src.utils.inference import sinc_ood_gptfail
+            from src.utils.file_io import read_json
+            from src.tools.frank import text_list_to_bp
             keyids = sinc_ood_gptfail
             gppt_path = './deps/gpt/gpt3-labels-list.json'
             gpt_labels = read_json(gppt_path)
