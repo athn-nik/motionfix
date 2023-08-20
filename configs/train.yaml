@@ -34,9 +34,3 @@ defaults:
   - override hydra/job_logging: rich
   - override hydra/hydra_logging: rich
   - _self_
-
-data:
-  transforms:
-    normalization: true
-
-transforms: ${data.transforms}

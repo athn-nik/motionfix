@@ -1,5 +1,5 @@
 name: actor_decoder
-_target_: sinc.model.motiondecoder.ActorAgnosticDecoder
+_target_: src.model.motiondecoder.ActorAgnosticDecoder
 
 latent_dim: ${model.latent_dim}
 

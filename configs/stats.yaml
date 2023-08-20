@@ -18,5 +18,3 @@ defaults:
 data:
   transforms:
     normalization: false
-
-transforms: ${data.transforms}

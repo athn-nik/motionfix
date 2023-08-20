@@ -1,3 +1,23 @@
+# Repo specific Ignores
+experiments
+data
+.vscode
+/outputs
+deps/*
+!deps/transforms/
+!deps/smplh/
+!deps/inference/
+!deps/gpt
+/wandb
+*.err
+*.out
+/cluster_scripts
+/condor_logs
+lightning_logs
+sinc-env
+cluster
+job_spawn
+slurm_launch
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

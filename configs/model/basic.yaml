@@ -1,9 +1,7 @@
-modelname: space
+modelname: basic
 _target_: src.model.base_diffusion.MD
 latent_dim: 256
 vae: true
-
-transforms: ${transforms}
 
 ff_size: 1024
 num_layers: 6
@@ -12,17 +10,21 @@ droupout: 0.1
 activation: "gelu"
 nvids_to_save: ${callback.render.nvids_to_save}
 lr_scheduler: null # reduceonplateau, steplr
-synthetic: ${data.synthetic}
+diff_params:
+  num_inference_steps: 100
+  eta: 40
+  guidance_scale: 7.5 #
+  guidance_uncondp: 0.1 # 0.1 0.25
 
 motion_branch: true
 teacher_forcing: false
 separate_latents: false
 
 defaults:
-  - textencoder: text_space
+  - textencoder: distilbert_enc
   - motionencoder: actor
   - motiondecoder: actor
-  - losses: sinc_joint
+  - losses: basic
   - optim: adamw
   - /model/losses/function/recons@func_recons
   - /model/losses/function/recons@func_latent

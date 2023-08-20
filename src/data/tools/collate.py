@@ -78,6 +78,7 @@ def collate_datastruct_and_multi_text(lst_elements: List) -> Dict:
 
 
 def collate_datastruct_and_text(lst_elements: List) -> Dict:
+    import ipdb; ipdb.set_trace()
     # collate_datastruct = lst_elements[0]["datastruct"].transforms.collate
     batch = {# Collate with padding for the datastruct
              "datastruct": 

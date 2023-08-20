@@ -9,27 +9,27 @@ class MLDLosses(Metric):
     MLD Loss
     """
 
-    def __init__(self, vae, mode, cfg):
-        super().__init__(dist_sync_on_step=cfg.LOSS.DIST_SYNC_ON_STEP)
+    def __init__(self, predict_epsilon, lmd_prior,
+                 lmd_kl, lmd_gen, lmd_recons,
+                 **kwargs):
+        super().__init__(dist_sync_on_step=True)
 
         # Save parameters
         # self.vae = vae
-        self.vae_type = cfg.TRAIN.ABLATION.VAE_TYPE
-        self.mode = mode
-        self.cfg = cfg
-        self.predict_epsilon = cfg.TRAIN.ABLATION.PREDICT_EPSILON
-        self.stage = cfg.TRAIN.STAGE
-
+        self.predict_epsilon = predict_epsilon
+        self.lmd_prior = lmd_prior
+        self.lmd_kl = lmd_kl
+        self.lmd_gen = lmd_gen
+        self.lmd_recons = lmd_recons
         losses = []
 
         # diffusion loss
-        if self.stage in ['diffusion', 'vae_diffusion']:
-            # instance noise loss
-            losses.append("inst_loss")
-            losses.append("x_loss")
-            if self.cfg.LOSS.LAMBDA_PRIOR != 0.0:
-                # prior noise loss
-                losses.append("prior_loss")
+        # instance noise loss
+        losses.append("inst_loss")
+        losses.append("x_loss")
+        if lmd_prior != 0.0:
+            # prior noise loss
+            losses.append("prior_loss")
 
         # if self.stage in ['vae', 'vae_diffusion']:
         #     # reconstruction loss
@@ -44,8 +44,6 @@ class MLDLosses(Metric):
         #     # KL loss
         #     losses.append("kl_motion")
 
-        if self.stage not in ['vae', 'diffusion', 'vae_diffusion']:
-            raise ValueError(f"Stage {self.stage} not supported")
 
         losses.append("total")
 
@@ -68,61 +66,40 @@ class MLDLosses(Metric):
                 self._params[loss] = 1
             elif loss.split('_')[0] == 'prior':
                 self._losses_func[loss] = nn.MSELoss(reduction='mean')
-                self._params[loss] = cfg.LOSS.LAMBDA_PRIOR
+                self._params[loss] = self.lmd_prior
             if loss.split('_')[0] == 'kl':
-                if cfg.LOSS.LAMBDA_KL != 0.0:
+                if self.lmd_kl != 0.0:
                     self._losses_func[loss] = KLLoss()
-                    self._params[loss] = cfg.LOSS.LAMBDA_KL
+                    self._params[loss] = self.lmd_kl
             elif loss.split('_')[0] == 'recons':
                 self._losses_func[loss] = torch.nn.SmoothL1Loss(
                     reduction='mean')
-                self._params[loss] = cfg.LOSS.LAMBDA_REC
+                self._params[loss] = self.lmd_recons
             elif loss.split('_')[0] == 'gen':
                 self._losses_func[loss] = torch.nn.SmoothL1Loss(
                     reduction='mean')
-                self._params[loss] = cfg.LOSS.LAMBDA_GEN
-            elif loss.split('_')[0] == 'latent':
-                self._losses_func[loss] = torch.nn.SmoothL1Loss(
-                    reduction='mean')
-                self._params[loss] = cfg.LOSS.LAMBDA_LATENT
+                self._params[loss] = self.lmd_gen
             else:
                 ValueError("This loss is not recognized.")
-            if loss.split('_')[-1] == 'joints':
-                self._params[loss] = cfg.LOSS.LAMBDA_JOINT
-
+ 
     def update(self, rs_set):
         total: float = 0.0
         # Compute the losses
         # Compute instance loss
-        if self.stage in ["vae", "vae_diffusion"]:
-            total += self._update_loss("recons_feature", rs_set['m_rst'],
-                                       rs_set['m_ref'])
-            total += self._update_loss("recons_joints", rs_set['joints_rst'],
-                                       rs_set['joints_ref'])
-            total += self._update_loss("kl_motion", rs_set['dist_m'], rs_set['dist_ref'])
 
-        if self.stage in ["diffusion", "vae_diffusion"]:
-            # predict noise
-            if self.predict_epsilon:
-                total += self._update_loss("inst_loss", rs_set['noise_pred'],
-                                           rs_set['noise'])
-            # predict x
-            else:
-                total += self._update_loss("x_loss", rs_set['pred'],
-                                           rs_set['latent'])
+        # predict noise
+        if self.predict_epsilon:
+            total += self._update_loss("inst_loss", rs_set['noise_pred'],
+                                        rs_set['noise'])
+        # predict x
+        else:
+            total += self._update_loss("x_loss", rs_set['pred'],
+                                        rs_set['latent'])
 
-            if self.cfg.LOSS.LAMBDA_PRIOR != 0.0:
-                # loss - prior loss
-                total += self._update_loss("prior_loss", rs_set['noise_prior'],
-                                           rs_set['dist_m1'])
-
-        if self.stage in ["vae_diffusion"]:
-            # loss
-            # noise+text_emb => diff_reverse => latent => decode => motion
-            total += self._update_loss("gen_feature", rs_set['gen_m_rst'],
-                                       rs_set['m_ref'])
-            total += self._update_loss("gen_joints", rs_set['gen_joints_rst'],
-                                       rs_set['joints_ref'])
+        if self.cfg.LOSS.LAMBDA_PRIOR != 0.0:
+            # loss - prior loss
+            total += self._update_loss("prior_loss", rs_set['noise_prior'],
+                                        rs_set['dist_m1'])
 
         self.total += total.detach()
         self.count += 1

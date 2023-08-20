@@ -1,4 +1,4 @@
-_target_: sinc.data.sampling.FrameSampler
+_target_: src.data.sampling.FrameSampler
 
 # For fix size data
 request_frames: 300

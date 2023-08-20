@@ -1,4 +1,4 @@
-_target_: sinc.callback.RenderCallback
+_target_: src.callback.RenderCallback
 
 every_n_epochs: 50
 num_workers: ${machine.num_workers}

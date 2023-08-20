@@ -1,1 +1,1 @@
-_target_: sinc.callback.ProgressLogger
+_target_: src.callback.ProgressLogger

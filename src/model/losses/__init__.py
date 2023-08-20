@@ -1,3 +1,1 @@
-from .actioncompute import ActionComputeLosses
-from .compute_sinc import SincLosses
-from .kl import KLLoss, KLLossMulti
+from .compute_mld import MLDLosses
