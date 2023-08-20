@@ -1,0 +1,200 @@
+defaults:
+  - _self_
+  - model: motion_prior_mlp_cvae_cond
+  - scheduler: reduce_on_plateau
+  - dataloader: amass
+model_family: "mlp"
+debug: False
+variant: "base"
+dataset: "amass"
+render_train_outputs: True
+
+# all used directories
+project_dir: "." # /data/deps/stats
+chkpnt_dir: "data/checkpoints"  # experiments
+amass_path: "data/amass/amass.pth.tar"
+smplx_models_path: "data/body_models/"
+# grab_path: "data/amass/GRAB/GRAB.pth.tar"
+grab_path: "/ps/project/datasets/GRAB"
+joints_path: "/is/cluster/fast/mdiomataris/grab_joints_new"
+
+# experiment details 
+wandb_logger:
+  # _target_: pytorch_lightning.loggers.WandbLogger
+  resume: 'allow'
+  id:
+  group:
+  tags: 
+  mode: "online"
+  # project: 'HOI-common-sense'
+  project: 'Motion_Prior-HPT'
+  save_dir: "data/wandb_logs"
+
+rendering:
+  dir: "data/rendered_outputs"
+  in_training: True
+  in_testing: True
+  every_epochs: 100
+  train_ids:
+  - 0
+  # - 10 
+  - 42
+  # - 100
+  - 200 
+  # - 300
+  # - 345
+  # - 128
+  - 333
+  # - 444
+  test_ids:
+  - 1 
+  - 2 
+  - 3 
+  - 5 
+  - 8 
+  - 13 
+  - 17 
+  - 16 
+
+exp_id: None
+
+# lightning checkpoint callback
+trainer:
+  _target_: pytorch_lightning.Trainer
+  default_root_dir: ${chkpnt_dir}
+  max_epochs: 300
+  accelerator: 'gpu'
+  devices: 1
+  fast_dev_run: False
+  overfit_batches: 0.0
+  enable_progress_bar: True
+  auto_scale_batch_size:
+  accumulate_grad_batches:
+  gradient_clip_val: 2.0
+  callbacks:
+  logger:
+  resume_from_checkpoint: 
+  
+  # precision: "bf16"
+
+batch_size: 32
+num_workers: 4
+tune: False
+
+# lightning checkpoint callback
+model_checkpoint:
+  _target_: pytorch_lightning.callbacks.ModelCheckpoint
+  dirpath:
+  filename:
+  monitor: "val/loss_monitor"
+  save_top_k: 1
+  mode: "min"
+  save_last: True
+  every_n_epochs: 5
+
+optimizer:
+  _target_: torch.optim.Adam
+  lr: 1e-4
+
+# training parameters
+monitor_loss: "loss"
+
+# preprocessing parameters
+preproc:
+  joints_dump_path: "/is/cluster/fast/mdiomataris/grab_joints_new"
+  split_seed: 0
+  calculate_minmax: True
+  generate_joint_files: True
+  use_cuda: True
+
+# dataloading parameters
+dl:
+  framerate_ratio: 4
+  chunk_duration: 8.0
+  trim_nointeractions: False
+  force_recalculate_stats: False
+
+# augmentation parameters
+aug:
+  undo_interaction_prob: 0.1
+  out_of_reach_prob: 0.1
+  min_oor_distance: 0.05
+  max_oor_distance: 0.3
+  random_rotate: False
+  random_rot_type: "3d"
+  framerate_dev: 0
+
+loss_type: "mse"
+n_body_joints: 22
+
+rot_repr: "6d"
+norm_type: "std"
+load_feats:
+- "body_transl"
+- "body_transl_delta"
+- "body_transl_delta_pelv"
+- "body_transl_delta_pelv_xy"
+- "body_transl_z"
+- "body_orient"
+- "body_pose"
+- "body_orient_delta"
+- "body_pose_delta"
+- "body_orient_xy"
+# - "body_joints"
+# - "body_joints_rel"
+# - "body_joints_vel"
+# - "object_transl"
+# - "object_transl_rel"
+# - "object_transl_vel"
+# - "object_orient"
+# - "obj_contact_bin"
+# - "hands_contact_bin"
+# - "obj_wrists_dist"
+# - "wrist_joints_transl"
+# - "wrist_joints_transl_rel"
+# - "wrist_joints_vel"
+# - "joint_global_oris"
+# - "joint_ang_vel"
+# - "wrists_ang_vel"
+# - "wrists_ang_vel_euler"
+# - "active_grasp_frames"
+# - "index_tips_vel"
+
+
+feats_dims:
+  body_transl: 3
+  body_transl_delta: 3
+  body_transl_delta_pelv: 3
+  body_transl_delta_pelv_xy: 3
+  body_transl_z: 1
+  body_orient: 6
+  body_orient_delta: 6
+  body_orient_xy: 6
+  body_pose: 126
+  body_pose_delta: 126
+  body_joints: 66
+  body_joints_rel: 66
+  body_joints_vel: 66
+  object_transl: 3
+  object_transl_rel: 3
+  object_transl_vel: 3
+  object_orient: 6
+  obj_contact_bin: 1
+  obj_wrists_dist: 6
+  wrist_joints_transl: 6
+  wrist_joints_transl_rel: 6
+  wrist_joints_vel: 6
+  index_tips_vel: 6
+  joint_ang_vel: 6
+  wrists_ang_vel: 6
+  hands_contact_bin: 2
+
+# rendering:
+#   fps: 30
+#   choose_random:
+#   indices:
+#   - 36 #-> drinking from bottle
+#   - 160 #-> headphones over head
+#   - 269 #-> airplane
+#   - 272 #-> failing case, scisors
+#   - 51 #-> good example (easy)
