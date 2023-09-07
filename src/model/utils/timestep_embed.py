@@ -72,10 +72,7 @@ class Timesteps(nn.Module):
         self.downscale_freq_shift = downscale_freq_shift
 
     def forward(self, timesteps):
-        t_emb = get_timestep_embedding(
-            timesteps,
-            self.num_channels,
-            flip_sin_to_cos=self.flip_sin_to_cos,
-            downscale_freq_shift=self.downscale_freq_shift,
-        )
+        t_emb = get_timestep_embedding(timesteps, self.num_channels,
+                                       flip_sin_to_cos=self.flip_sin_to_cos,
+                                       downscale_freq_shift=self.downscale_freq_shift,)
         return t_emb

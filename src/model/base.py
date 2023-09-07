@@ -11,7 +11,7 @@ class BaseModel(LightningModule):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.save_hyperparameters(logger=False, 
-                                  ignore=['eval_model']) # ignore TEMOS score
+                                  ignore=['eval_model','renderer']) # ignore TEMOS score
 
         # Save visuals, one validation step per validation epoch
         self.store_examples = {"train": None,
@@ -101,10 +101,9 @@ class BaseModel(LightningModule):
                      "step": float(self.trainer.global_step)})
 
         if split == "val":
-            metrics_dict = self.metrics.compute()
-            dico.update({f"Metrics/{metric}": value for metric, value in metrics_dict.items() if '_mean_' in metric})
-            if 'Temos_Score' in metrics_dict:
-                dico.update({f"Metrics/Temos_Score": metrics_dict['Temos_Score']})
+            pass
+            # metrics_dict = self.metrics.compute()
+            # dico.update({f"Metrics/{metric}": value for metric, value in metrics_dict.items() if '_mean_' in metric})
         self.log_dict(dico, on_epoch=True, sync_dist=True)
         return 
 

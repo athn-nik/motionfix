@@ -10,20 +10,35 @@ droupout: 0.1
 activation: "gelu"
 nvids_to_save: ${callback.render.nvids_to_save}
 lr_scheduler: null # reduceonplateau, steplr
+
+# diffusion related
 diff_params:
-  num_inference_steps: 100
+  num_inference_timesteps: 100
   eta: 40
   guidance_scale: 7.5 #
   guidance_uncondp: 0.1 # 0.1 0.25
+  predict_epsilon: false
 
+condition: text
 motion_branch: true
 teacher_forcing: false
 separate_latents: false
 
+# data related
+nfeats: 135
+
+
 defaults:
-  - textencoder: distilbert_enc
-  - motionencoder: actor
-  - motiondecoder: actor
+  # diffusion stuff
+  - diffusion_scheduler: scheduler
+  - noise_scheduler: noise_scheduler
+
+  - denoiser: denoiser
+
+  # vae stuff
+  - text_encoder: distilbert_enc
+  - motion_encoder: actor
+  - motion_decoder: actor
   - losses: basic
   - optim: adamw
   - /model/losses/function/recons@func_recons

@@ -45,7 +45,7 @@ class MLDLosses(Metric):
         #     losses.append("kl_motion")
 
 
-        losses.append("total")
+        losses.append("loss")
 
         for loss in losses:
             self.add_state(loss,
@@ -83,30 +83,30 @@ class MLDLosses(Metric):
                 ValueError("This loss is not recognized.")
  
     def update(self, rs_set):
-        total: float = 0.0
+        total_loss: float = 0.0
         # Compute the losses
         # Compute instance loss
 
         # predict noise
         if self.predict_epsilon:
-            total += self._update_loss("inst_loss", rs_set['noise_pred'],
+            total_loss += self._update_loss("inst_loss", rs_set['noise_pred'],
                                         rs_set['noise'])
         # predict x
         else:
-            total += self._update_loss("x_loss", rs_set['pred'],
-                                        rs_set['latent'])
+            total_loss += self._update_loss("x_loss", rs_set['pred'],
+                                        rs_set['diff_in'])
 
-        if self.cfg.LOSS.LAMBDA_PRIOR != 0.0:
+        if self.lmd_prior != 0.0:
             # loss - prior loss
-            total += self._update_loss("prior_loss", rs_set['noise_prior'],
+            total_loss += self._update_loss("prior_loss", rs_set['noise_prior'],
                                         rs_set['dist_m1'])
 
-        self.total += total.detach()
+        self.loss += total_loss
         self.count += 1
 
-        return total
+        return total_loss
 
-    def compute(self, split):
+    def compute(self):
         count = getattr(self, "count")
         return {loss: getattr(self, loss) / count for loss in self.losses}
 
@@ -119,8 +119,8 @@ class MLDLosses(Metric):
         return weighted_loss
 
     def loss2logname(self, loss: str, split: str):
-        if loss == "total":
-            log_name = f"{loss}/{split}"
+        if loss == "loss":
+            log_name = f"total_{loss}/{split}"
         else:
             loss_type, name = loss.split("_")
             log_name = f"{loss_type}/{name}/{split}"

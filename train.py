@@ -71,7 +71,6 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     logger.info(f'Loading data module: {cfg.data.dataname}')
     data_module = instantiate(cfg.data)
     logger.info(f"Data module '{cfg.data.dataname}' loaded")
-
     # in case you want to use torch.compile()
     # torch._dynamo.config.debug=True
 

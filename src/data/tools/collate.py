@@ -30,70 +30,22 @@ def collate_text_and_body_parts(lst_elements: List[Dict]) -> Dict:
     return batch
 
 
-def collate_datastruct_and_multi_text(lst_elements: List) -> Dict:
-    # TODO if needed
-    collate_datastruct = lst_elements[0]["datastruct"].transforms.collate
 
-    lst_element_pairs = [x["text"] for x in lst_elements]
-    lst_elelents_others = []
-
-    batch = {
-        "single": {
-            "datastruct":
-            collate_datastruct([el["datastruct"] for el in lst_elements]),
-            # Collate normally for the length
-            "length": [x["length"] for x in lst_elements],
-            # Collate the text
-            "text": [x["text"] for x in lst_elements]
-        },
-        "multi": {}
-    }
-
-    #     }
-    #     # train
-    #     if "seperate" in batch:
-    #         loss1 = self.compute_separete(batch["separate"])
-
-    #         loss 2=
-
-    #     if lst_elements[0] > 1:
-
-    #    else:
-
-    # batch = {
-    #     # Collate with padding for the datastruct
-    #     "datastruct": collate_datastruct([el["datastruct"] for el in lst_elements]),
-    #     # Collate normally for the length
-    #     "length": [x["length"] for x in lst_elements],
-    #     # Collate the text
-    #     "text": [x["text"] for x in lst_elements]
-    #     }
-
-    # # add keyid for example
+def collate_datastruct_and_text(lst_elements: List) -> Dict:
+    # collate_datastruct = lst_elements[0]["datastruct"].transforms.collate
+    keys_not_tensor = ['n_frames_orig', 'framerate', 'length_s', 'length_t',
+                       'text', 'filename', 'split', 'id']
+    keys_tensor = [k for k in lst_elements[0].keys() if k not in keys_not_tensor]
+                
+    batch = {# Collate with padding for the datastruct
+             k : collate_tensor_with_padding([x[k] for x in lst_elements])\
+             if k not in keys_not_tensor
+             else [x[k] for x in lst_elements]
+             for k in lst_elements[0].keys() }
+    # add keyid for example
     # otherkeys = [x for x in lst_elements[0].keys() if x not in batch]
     # for key in otherkeys:
     #     batch[key] = [x[key] for x in lst_elements]
-
-    return batch
-
-
-def collate_datastruct_and_text(lst_elements: List) -> Dict:
-    import ipdb; ipdb.set_trace()
-    # collate_datastruct = lst_elements[0]["datastruct"].transforms.collate
-    batch = {# Collate with padding for the datastruct
-             "datastruct": 
-             collate_tensor_with_padding([el["datastruct"] for el in lst_elements]),
-             # Collate normally for the length
-            #  "datastruct_a": [x["datastruct_a"] for x in lst_elements],
-            #  "datastruct_b": [x["datastruct_b"] for x in lst_elements],
-             "length": [x["length"] for x in lst_elements],
-             # Collate the text
-             "text": [x["text"] for x in lst_elements]}
-
-    # add keyid for example
-    otherkeys = [x for x in lst_elements[0].keys() if x not in batch]
-    for key in otherkeys:
-        batch[key] = [x[key] for x in lst_elements]
 
     return batch
 

@@ -7,6 +7,8 @@ hydra:
       WANDB_API_KEY: '90e13be46265667b13415a5e6d248ae91ab399fc'
       PYOPENGL_PLATFORM: 'egl'
       HYDRA_FULL_ERROR: 1
+      # WANDB__SERVICE_WAIT: 300
+
 
 # Global configurations shared between different modules
 experiment: baseline

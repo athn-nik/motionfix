@@ -20,7 +20,7 @@ from dataset.amass_dataset import AmassDataset
 
 log = logging.getLogger(__name__)
 
-@hydra.main(version_base=None, config_path="conf", config_name="config.yaml")
+@hydra.main(version_base=None, config_path="conf", config_name="stats.yaml")
 def main(cfg : DictConfig) -> None:
     if cfg.debug:
         # takes <2sec to load

@@ -1,6 +1,6 @@
 # Repo specific Ignores
-experiments
-data
+/experiments
+/data
 .vscode
 /outputs
 deps/*

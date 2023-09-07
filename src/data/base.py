@@ -1,8 +1,7 @@
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 
-from src.data.tools.collate import collate_pairs_and_text, collate_datastruct_and_text, collate_datastruct_and_multi_text
-from src.data.tools.collate import collate_text_and_body_parts
+from src.data.tools.collate import collate_pairs_and_text, collate_datastruct_and_text
 import torch
     
 
@@ -17,7 +16,6 @@ class BASEDataModule(pl.LightningDataModule):
         def set_worker_sharing_strategy(worker_id: int) -> None:
             sharing_strategy = "file_system"
             torch.multiprocessing.set_sharing_strategy(sharing_strategy)
-
         self.dataloader_options = {
             'batch_size': batch_size,
             'num_workers': num_workers,

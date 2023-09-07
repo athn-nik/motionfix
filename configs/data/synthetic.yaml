@@ -24,11 +24,11 @@ preproc:
 # Motion
 framerate: 30
 sampler: ${sampler}
+
 state_features:
 - "body_transl"
 - "body_orient"
 - "body_pose"
-
 
 delta_features:
 - "body_transl_delta_pelv_xy"

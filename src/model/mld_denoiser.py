@@ -29,24 +29,23 @@ class MldDenoiser(nn.Module):
                  guidance_scale: float = 7.5,
                  guidance_uncondp: float = 0.1,
                  text_encoded_dim: int = 768,
-                 nclasses: int = 10,
                  **kwargs) -> None:
 
         super().__init__()
 
-        self.latent_dim = latent_dim[-1]
+        self.latent_dim = latent_dim
         self.text_encoded_dim = text_encoded_dim
         self.condition = condition
         self.abl_plus = False
         self.ablation_skip_connection = False
-        self.diffusion_only = False
+        self.diffusion_only = True
         self.arch = arch
-        self.pe_type = 'actor'
+        self.pe_type = 'mld'
 
-        if self.diffusion_only:
+        # if self.diffusion_only:
             # assert self.arch == "trans_enc", "only implement encoder for diffusion-only"
-            self.pose_embd = nn.Linear(nfeats, self.latent_dim)
-            self.pose_proj = nn.Linear(self.latent_dim, nfeats)
+        self.pose_embd = nn.Linear(nfeats, self.latent_dim)
+        self.pose_proj = nn.Linear(self.latent_dim, nfeats)
 
         # emb proj
         if self.condition in ["text", "text_uncond"]:
@@ -139,14 +138,13 @@ class MldDenoiser(nn.Module):
                 emb_latent = torch.cat((time_emb, text_emb_latent), 0)
         else:
             raise TypeError(f"condition type {self.condition} not supported")
-
         # 4. transformer
         if self.arch == "trans_enc":
-            if self.diffusion_only:
-                sample = self.pose_embd(sample)
-                xseq = torch.cat((emb_latent, sample), axis=0)
-            else:
-                xseq = torch.cat((sample, emb_latent), axis=0)
+            # if self.diffusion_only:
+            sample = self.pose_embd(sample)
+            xseq = torch.cat((emb_latent, sample), axis=0)
+            # else:
+            # xseq = torch.cat((sample, emb_latent), axis=0)
 
             # if self.ablation_skip_connection:
             #     xseq = self.query_pos(xseq)
@@ -158,14 +156,14 @@ class MldDenoiser(nn.Module):
             xseq = self.query_pos(xseq)
             tokens = self.encoder(xseq)
 
-            if self.diffusion_only:
-                sample = tokens[emb_latent.shape[0]:]
-                sample = self.pose_proj(sample)
+            # if self.diffusion_only:
+            sample = tokens[emb_latent.shape[0]:]
+            sample = self.pose_proj(sample)
 
-                # zero for padded area
-                sample[~mask.T] = 0
-            else:
-                sample = tokens[:sample.shape[0]]
+            # zero for padded area
+            sample[~mask.T] = 0
+            # else:
+            #     sample = tokens[:sample.shape[0]]
 
         else:
             raise TypeError("{self.arch} is not supoorted")
