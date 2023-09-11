@@ -2,7 +2,7 @@ dataname: synthetic
 _target_: src.data.synthetic.SynthDataModule
 debug: false
 
-datapath: ${path.data}/bodilex/hml3d_v5_pos_canonica_fixed/amass_compressed.pth.tar
+datapath: ${path.data}/amass/amass_compressed.pth.tar
 
 # Amass
 smplh_path: ${path.data}/body_models
