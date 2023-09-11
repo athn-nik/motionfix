@@ -13,7 +13,7 @@ batch_size: ${machine.batch_size}
 num_workers: ${machine.num_workers}
 rot_repr: '6d'
 preproc:
-  stats_path: "deps/stats"
+  stats_path: "${path.deps}/stats"
   split_seed: 0
   calculate_minmax: True
   generate_joint_files: True

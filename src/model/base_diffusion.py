@@ -17,6 +17,7 @@ from src.data.tools import lengths_to_mask_njoints
 from torchmetrics import MetricCollection
 from src.model.losses.compute_mld import MLDLosses
 import inspect
+from src.model.utils.tools import remove_padding, pack_to_render
 
 class MD(BaseModel):
     def __init__(self, 
@@ -33,10 +34,11 @@ class MD(BaseModel):
                  latent_dim: int,
                  motion_branch: bool,
                  separate_latents: Optional[bool] = False,
-                 nvids_to_save: Optional[int] = None,
+                 render_vids_every_n_epochs: Optional[int] = None,
                  teacher_forcing: Optional[bool] = False,
                  reduce_latents: Optional[str] = None,
                  condition: Optional[str] = "text",
+                 renderer= None,
                  **kwargs):
 
         super().__init__()
@@ -46,11 +48,11 @@ class MD(BaseModel):
             self.motion_encoder = instantiate(motion_encoder, nfeats=135)
 
         self.motion_decoder = instantiate(motion_decoder, nfeats=135)
-        for k, v in self.store_examples.items():
-            self.store_examples[k] = {'ref': [], 'ref_features': [], 'keyids': []}
+        # for k, v in self.render_data_buffer.items():
+        #     self.store_examples[k] = {'ref': [], 'ref_features': [], 'keyids': []}
         self.metrics = ComputeMetrics()
-
-        self.nvids_to_save = nvids_to_save
+        
+        self.render_vids_every_n_epochs = render_vids_every_n_epochs
         # If we want to overide it at testing time
         self.sample_mean = False
         self.fact = 1.0
@@ -60,7 +62,7 @@ class MD(BaseModel):
         self.separate_latents = separate_latents
         self.latent_dim = latent_dim
         self.diff_params = diff_params
-        
+        self.renderer = renderer
         self.denoiser = instantiate(denoiser)
         if not self.diff_params.predict_epsilon:
             diffusion_scheduler['prediction_type'] = 'sample'
@@ -191,6 +193,7 @@ class MD(BaseModel):
             #                                   latents,
             #                                   **extra_step_kwargs).prev_sample
         # [batch_size, 1, latent_dim] -> [1, batch_size, latent_dim]
+
         latents = latents.permute(1, 0, 2)
         return latents
     
@@ -289,7 +292,7 @@ class MD(BaseModel):
 
         rs_set = {
             "m_rst": feats_rst,
-            # [bs, ntoken, nfeats]<= [ntoken, bs, nfeats]
+            # [bs, ntoken, nfeats] <= [ntoken, bs, nfeats]
             "lat_t": z.permute(1, 0, 2),
             "joints_rst": joints_rst,
         }
@@ -310,21 +313,21 @@ class MD(BaseModel):
         return rs_set
 
     
-    def on_train_epoch_end(self):
-        return self.allsplit_epoch_end("train")
+    # def on_train_epoch_end(self):
+    #     return self.allsplit_epoch_end("train")
 
-    def on_validation_epoch_end(self):
-        # # ToDo
-        # # re-write vislization checkpoint?
-        # # visualize validation
-        # parameters = {"xx",xx}
-        # vis_path = viz_epoch(self, dataset, epoch, parameters, module=None,
-        #                         folder=parameters["folder"], writer=None, exps=f"_{dataset_val.dataset_name}_"+val_set)
-        return self.allsplit_epoch_end("val")
+    # def on_validation_epoch_end(self):
+    #     # # ToDo
+    #     # # re-write vislization checkpoint?
+    #     # # visualize validation
+    #     # parameters = {"xx",xx}
+    #     # vis_path = viz_epoch(self, dataset, epoch, parameters, module=None,
+    #     #                         folder=parameters["folder"], writer=None, exps=f"_{dataset_val.dataset_name}_"+val_set)
+    #     return self.allsplit_epoch_end("val")
 
-    def on_test_epoch_end(self):
+    # def on_test_epoch_end(self):
 
-        return self.allsplit_epoch_end("test")
+    #     return self.allsplit_epoch_end("test")
 
     def training_step(self, batch, batch_idx):
         return self.allsplit_step("train", batch, batch_idx)
@@ -335,34 +338,55 @@ class MD(BaseModel):
     def test_step(self, batch, batch_idx):
         return self.allsplit_step("test", batch, batch_idx)
 
-    def predict_step(self, batch, batch_idx):
-        return self.forward(batch)
+    # def predict_step(self, batch, batch_idx):
+    #     return self.forward(batch)
 
-    def allsplit_epoch_end(self, split: str ):
-        dico = {}
+    # def allsplit_epoch_end(self, split: str ):
+        # dico = {}
 
-        if split in ["train", "val"]:
-            losses = self.losses[split]
-            loss_dict = losses.compute()
-            losses.reset()
-            dico.update({
-                losses.loss2logname(loss, split): value.item()
-                for loss, value in loss_dict.items() if not torch.isnan(value)
-            })
+        # if split in ["train", "val"]:
+        #     losses = self.losses[split]
+        #     loss_dict = losses.compute()
+        #     losses.reset()
+        #     dico.update({
+        #         losses.loss2logname(loss, split): value.item()
+        #         for loss, value in loss_dict.items() if not torch.isnan(value)
+        #     })
 
-        if split in ["val"]:
-            pass
-            # metrics_dict = self.metrics.compute()
+        # if split in ["val"]:
+        #     pass
+        #     # metrics_dict = self.metrics.compute()
 
-        if split != "test":
-            dico.update({
-                "epoch": float(self.trainer.current_epoch),
-                "step": float(self.trainer.current_epoch),
-            })
-        # don't write sanity check into log
-        if not self.trainer.sanity_checking:
-            self.log_dict(dico, sync_dist=True, rank_zero_only=True)
+        # if split != "test":
+        #     dico.update({
+        #         "epoch": float(self.trainer.current_epoch),
+        #         "step": float(self.trainer.current_epoch),
+        #     })
+        # # don't write sanity check into log
+        # if not self.trainer.sanity_checking:
+        #     self.log_dict(dico, sync_dist=True, rank_zero_only=True)
+    
+    def batch2motion(self, batch):
+        batch_to_cpu = { k: v.detach().cpu() for k, v in batch.items() 
+                        if torch.is_tensor(v) }
 
+        # source motion
+        source_motion_gt_pose = torch.cat([batch_to_cpu['body_orient_s'], 
+                                           batch_to_cpu['body_pose_s']],
+                                           dim=-1)
+        source_motion_gt_trans = batch_to_cpu['body_transl_s']
+        source_motion_gt = pack_to_render(rots=source_motion_gt_pose,
+                                          trans=source_motion_gt_trans)
+        # target motion
+        target_motion_gt_pose = torch.cat([batch_to_cpu['body_orient_t'], 
+                                           batch_to_cpu['body_pose_t']],
+                                           dim=-1)
+        target_motion_gt_trans = batch_to_cpu['body_transl_t']
+        target_motion_gt = pack_to_render(rots=target_motion_gt_pose,
+                                          trans=target_motion_gt_trans)
+
+        return source_motion_gt, target_motion_gt
+    
     def allsplit_step(self, split: str, batch, batch_idx):
         # bs = len(texts)
         # number of texts for each motion
@@ -386,19 +410,31 @@ class MD(BaseModel):
             # if loss is None:
             #     raise ValueError("Loss is None, this happend with torchmetrics > 0.7")
         if split == 'val':
-            uncond_tokens = [""] * len(gt_texts)
-            if self.condition == 'text':
-                uncond_tokens.extend(gt_texts)
-            elif self.condition == 'text_uncond':
-                uncond_tokens.extend(uncond_tokens)
-            texts_augm = uncond_tokens
-            text_emb = self.text_encoder.get_last_hidden_state(texts_augm)
-            diff_out = self._diffusion_reverse(text_emb, gt_lens)
+            if batch_idx == 0 and self.global_rank == 0:
+                uncond_tokens = [""] * len(gt_texts)
+                if self.condition == 'text':
+                    uncond_tokens.extend(gt_texts)
+                elif self.condition == 'text_uncond':
+                    uncond_tokens.extend(uncond_tokens)
+                texts_augm = uncond_tokens
+                text_emb = self.text_encoder.get_last_hidden_state(texts_augm)
+                diff_out = self._diffusion_reverse(text_emb, gt_lens)
+                diff_out = diff_out.permute(1, 0, 2)
+                with torch.no_grad():
+                    
+                    source_motion_gt, target_motion_gt = self.batch2motion(batch)
 
-            with torch.no_grad():
-                from src.model.utils.tools import remove_padding
-                features_gen = remove_padding(diff_out, gt_lens)
-                # datastruct_from_text = self.Datastruct(features=features_gen)
+                    render_dict = pack_to_render(rots=diff_out[..., 3:].detach().cpu(),
+                                                 trans=diff_out[..., :3].detach().cpu())
+
+
+                if batch_idx == 0 and self.global_rank == 0:
+                    source_motion_gt, target_motion_gt = self.batch2motion(batch)
+                    self.render_data_buffer[split].append({
+                        'source_motion': source_motion_gt,
+                        'target_motion': target_motion_gt,
+                        'generation': render_dict})
+
 
             # self.metrics(gt_motion_feats.detach(),
             #              datastruct_from_text.detach(),
@@ -406,4 +442,14 @@ class MD(BaseModel):
             #         #  gt_motion_feats.detach(), 
             #             gt_lens)
         # loss = self.losses[split].compute()
+        else:
+            ## SAVE DATA FOR RENDERING LATER ##
+            if batch_idx == 0 and self.global_rank == 0:
+                # convert groundtruth to render-ready
+                source_motion_gt, target_motion_gt = self.batch2motion(batch)
+                self.render_data_buffer[split].append({
+                    'source_motion': source_motion_gt,
+                    'target_motion': target_motion_gt,
+                    'generation': None})
+
         return loss

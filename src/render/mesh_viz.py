@@ -3,7 +3,6 @@ import numpy as np
 import torch
 import trimesh
 
-from aitviewer.configuration import CONFIG as C
 from aitviewer.headless import HeadlessRenderer
 from aitviewer.models.smpl import SMPLLayer
 from aitviewer.renderables.smpl import SMPLSequence
@@ -14,7 +13,7 @@ from src.tools.transforms3d import transform_body_pose
 
 
 def render_motion(renderer: HeadlessRenderer, datum: dict, 
-                  filename: str) -> None:
+                  filename: str, pose_repr='6d') -> None:
     """
     Function to render a video of a motion sequence
     renderer: aitviewer renderer
@@ -26,14 +25,21 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     assert {'body_transl', 'body_orient', 'body_pose'}.issubset(set(datum.keys()))
     # os.environ['DISPLAY'] = ":11"
     if len(datum['body_transl'].shape) > 2:
-        body_transl = rearrange(datum['body_transl'], 'f 1 d -> f d')
+        body_transl = datum['body_transl'].squeeze()
     else:
         body_transl = datum['body_transl']
     # remove singleton batch dimention and  flatten axis-angle
     if len(datum['body_orient'].shape) > 2:
-        global_orient = rearrange(global_orient, 'f 1 d -> f d')
+        global_orient = datum['body_orient'].squeeze()
     if len(datum['body_pose'].shape) > 2:
-        body_pose = rearrange(body_pose, 'f 1 d -> f d')
+        body_pose = datum['body_pose'].squeeze()
+
+    if pose_repr != 'aa':
+        global_orient = transform_body_pose(global_orient,
+                                            f"{pose_repr}->aa")
+        body_pose = transform_body_pose(body_pose,
+                                        f"{pose_repr}->aa")
+
 
     # use other information that might exist in the datum dictionary
     sbj_vtemp = None
@@ -46,19 +52,20 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     n_comps = 6  # default value of smplx
     if 'n_comps' in datum.keys():
         n_comps = datum['n_comps']
+    import sys
+    sys.stdout.flush()
+    old = os.dup(1)
+    os.close(1)
+    os.open(os.devnull, os.O_WRONLY)
 
+    smpl_layer = SMPLLayer(model_type='smplx', num_pca_comps=n_comps, 
+                           gender=gender)
+    
     smpl_template = SMPLSequence(body_pose,
-                                 SMPLLayer(model_type='smplx',
-                                           num_pca_comps=n_comps,
-                                           v_template=sbj_vtemp,
-                                           gender=gender,
-                                           device=C.device,
-                                           # model_path="/home/mdiomataris/models/smplx"
-                                           ),
+                                 smpl_layer,
                                  poses_root=global_orient,
                                  trans=body_transl,
-                                 # poses_left_hand=lhand_params['fullpose'],
-                                 # poses_right_hand=rhand_params['fullpose'],
+                                 z_up=True
                                  )
 
     renderer.scene.add(smpl_template)
@@ -67,11 +74,20 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
 
     renderer.save_video(video_dir=str(filename), output_fps=30)
     # aitviewer adds a counter to the filename, we remove it
+    # filename.split('_')[-1].replace('.mp4', '')
+    # os.rename(filename + '_0.mp4', filename[:-4] + '.mp4')
 
     # empty scene for the next rendering
     renderer.scene.remove(smpl_template)
     renderer.scene.remove(camera)
-    return None
+
+    sys.stdout.flush()
+    os.close(1)
+    os.dup(old)
+    os.close(old)
+
+
+    return f'{filename}_0.mp4'
 
 
 

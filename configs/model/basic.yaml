@@ -8,7 +8,7 @@ num_layers: 6
 num_head: ${model.num_layers}
 droupout: 0.1
 activation: "gelu"
-nvids_to_save: ${callback.render.nvids_to_save}
+render_vids_every_n_epochs: 100
 lr_scheduler: null # reduceonplateau, steplr
 
 # diffusion related

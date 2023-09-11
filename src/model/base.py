@@ -5,7 +5,9 @@ from src.model.metrics import ComputeMetrics
 from torchmetrics import MetricCollection
 import torch
 from pytorch_lightning.utilities.rank_zero import rank_zero_only
-
+from pathlib import Path
+from src.render.mesh_viz import render_motion
+import wandb
 
 class BaseModel(LightningModule):
     def __init__(self, *args, **kwargs):
@@ -14,8 +16,7 @@ class BaseModel(LightningModule):
                                   ignore=['eval_model','renderer']) # ignore TEMOS score
 
         # Save visuals, one validation step per validation epoch
-        self.store_examples = {"train": None,
-                               "val": None}
+        self.render_data_buffer = {"train": [], "val":[]}
         self.loss_dict = {'train': None,
                           'val': None,}
 
@@ -91,21 +92,47 @@ class BaseModel(LightningModule):
         # loss_tracker = self.tracker[split]
         # loss_dict = loss_tracker.compute()
         # loss_tracker.reset()
-        dico = {self.loss2logname(loss_name, split): sum(loss_value) / len(loss_value)
-                for loss_name, loss_value in self.loss_dict[split].items()}
-        # workaround for LR, assuming 1 optimizer, 1 scheduler, very weak
-        curr_lr = self.trainer.optimizers[0].param_groups[0]['lr']
-        dico.update({'Learning Rate': curr_lr})
+        dico = {}
 
-        dico.update({"epoch": float(self.trainer.current_epoch),
-                     "step": float(self.trainer.global_step)})
+        if split in ["train", "val"]:
+            losses = self.losses[split]
+            loss_dict = losses.compute()
+            losses.reset()
+            dico.update({
+                losses.loss2logname(loss, split): value.item()
+                for loss, value in loss_dict.items() if not torch.isnan(value)
+            })
 
-        if split == "val":
-            pass
-            # metrics_dict = self.metrics.compute()
-            # dico.update({f"Metrics/{metric}": value for metric, value in metrics_dict.items() if '_mean_' in metric})
-        self.log_dict(dico, on_epoch=True, sync_dist=True)
-        return 
+            if split in ["val"]:
+                pass
+                # metrics_dict = self.metrics.compute()
+
+            if split != "test":
+                dico.update({
+                    "epoch": float(self.trainer.current_epoch),
+                    "step": float(self.trainer.current_epoch),
+                })
+            # don't write sanity check into log
+            if not self.trainer.sanity_checking:
+                self.log_dict(dico, sync_dist=True, rank_zero_only=True)
+
+        # RENDER
+        if self.global_rank == 0:
+            if self.trainer.current_epoch%self.render_vids_every_n_epochs == 0:
+                video_names = self.render_buffer(self.render_data_buffer[split],
+                                                split=split)
+                # log videos to wandb
+                if self.logger is not None:
+                    log_render_dic = {}
+                    for v in video_names:
+                        logname = f'{split}_renders/' + v.replace('.mp4',
+                                                        '').split('/')[-1][4:-2]
+                        log_render_dic[logname] = wandb.Video(v, fps=30,
+                                                              format='mp4') 
+                    self.logger.experiment.log(log_render_dic, 
+                                               step=self.trainer.global_step)
+            self.render_data_buffer[split].clear()
+        return
 
     def on_train_epoch_end(self):
         return self.allsplit_epoch_end("train")
@@ -118,7 +145,8 @@ class BaseModel(LightningModule):
 
     def configure_optimizers(self):
         optim_dict = {}
-        optimizer = torch.optim.AdamW(lr=self.hparams.optim.lr, params=self.parameters())
+        optimizer = torch.optim.AdamW(lr=self.hparams.optim.lr,
+                                      params=self.parameters())
         
         optim_dict['optimizer'] = optimizer
         # if self.hparams.NAME 
@@ -130,6 +158,38 @@ class BaseModel(LightningModule):
 
         return optim_dict 
 
+    @torch.no_grad()
+    def render_buffer(self, buffer: list[dict], split=False):
+        """
+        """
+ 
+        video_names = []
+        novids = 1
+        # create videos and save full paths
+        folder = "epoch_" + str(self.trainer.current_epoch).zfill(3)
+        folder =  Path('visuals') / folder / split
+        folder.mkdir(exist_ok=True, parents=True)
+
+        for data in buffer:
+            # RUN FWD PASS
+            for k, v in data['source_motion'].items():
+                data['source_motion'][k] = v[:novids]
+            for k, v in data['target_motion'].items():
+                data['target_motion'][k] = v[:novids]
+            if data['generation'] is not None:
+                for k, v in data['generation'].items():
+                    data['generation'][k] = v[:novids]
+
+            for iid_tor in range(novids):
+
+                filename = folder / str(iid_tor).zfill(3)
+                for k, v in data.items():
+                    if v is not None:
+                        # RENDER THE MOTION
+                        fname = render_motion(self.renderer, v, f'{filename}_{k}',
+                                      pose_repr='aa')
+                        video_names.append(fname)
+        return video_names
     # might be needed not working in multi GPU --> all_split_end
     # Logging per joint things 
     

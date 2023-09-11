@@ -78,7 +78,19 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     # temos_motion_enc = deepcopy(eval_model.motionencoder)
     # #####
     # logger.info(f'Loading model {cfg.model.modelname}')
-    model = instantiate(cfg.model,
+
+    os.system("Xvfb :12 -screen 1 640x480x24 &")
+    os.environ['DISPLAY'] = ":12"
+
+    from aitviewer.configuration import CONFIG as AITVIEWER_CONFIG
+    from aitviewer.headless import HeadlessRenderer
+    
+    AITVIEWER_CONFIG.update_conf({"playback_fps": 30,
+                                   "auto_set_floor": False,
+                                   "smplx_models": f'{cfg.path.data}/body_models'})
+    renderer = HeadlessRenderer()
+
+    model = instantiate(cfg.model,renderer=renderer,
                         _recursive_=False)
 
     logger.info(f"Model '{cfg.model.modelname}' loaded")

@@ -8,9 +8,10 @@ def remove_padding(tensors, lengths):
 
 def pack_to_render(rots, trans, pose_repr='6d'):
     # make axis-angle
-    global_orient = transform_body_pose(datum['body_orient'], f"{pose_repr}->aa")
-    body_pose = transform_body_pose(datum['body_pose'], f"{pose_repr}->aa")
-    
+    # global_orient = transform_body_pose(rots, f"{pose_repr}->aa")
+    body_pose = transform_body_pose(rots, f"{pose_repr}->aa")
+
     render_d = {'body_transl': trans,
-                'body_orient': rots[..., :3],
-                'body_pose': rots[..., 3:]}
+                'body_orient': body_pose[..., :3],
+                'body_pose': body_pose[..., 3:]}
+    return render_d

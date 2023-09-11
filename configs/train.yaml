@@ -30,7 +30,7 @@ defaults:
   - machine: server
   - trainer: base
   - sampler: variable_conseq # cut it
-  - logger: none # wandb
+  - logger: wandb # wandb
   - callback: base
   - /path@path
   - override hydra/job_logging: rich

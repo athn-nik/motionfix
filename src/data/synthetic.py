@@ -416,10 +416,11 @@ class SynthDataModule(BASEDataModule):
         if not exists(stat_path):
             if not exists(stat_path):
                 log.info(f"No dataset stats found. Calculating and saving to {stat_path}")
+            
             feature_names = dataset._feat_get_methods.keys()
             feature_dict = {name: [] for name in feature_names}
 
-            for i in range(len(dataset)):
+            for i in tqdm(range(len(dataset))):
                 x = dataset.get_all_features(i)
                 for name in feature_names:
                     feature_dict[name].append(x[name])

@@ -120,15 +120,9 @@ def render(newcfg: DictConfig) -> None:
             model_out = model([text], [length])[0]
             model_out = model_out.cpu().squeeze().numpy()
             import ipdb; ipdb.set_trace()
-            motion_to_render = {
-                'body_transl': model_out[..., :3],
-                'body_orient':model_out[..., 3:9],
-                'body_pose': model_out[..., 9:],
-            }
-            
+            pack_to_render(model_out[..., 3:], model_out[..., :3])
             render_motion(aitrenderer, motion_to_render, 
-                          output_path / f"{text}_{length}.mp4", 
-                          pose_repr="6d")
+                          output_path / f"{text}_{length}.mp4")
 
 if __name__ == '__main__':
 
