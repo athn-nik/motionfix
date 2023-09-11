@@ -300,11 +300,18 @@ class SynthDataset(Dataset):
         return DotDict(data_dict)
 
     def get_all_features(self, idx):
-        # npz = self.seq_parser.parse_npz(self.file_list[idx]['filename'])
         datum = self.data[idx]
-
-        data_dict = {feat: self._feat_get_methods[feat](datum)
-                     for feat in self._feat_get_methods.keys()}
+        data_dict_source = {f'{feat}_s': self._feat_get_methods[feat](datum)
+                            for feat in self.load_feats}
+        if self.stats is not None:
+            norm_feats = {f"{feat}_norm": self.normalize_feats(data, feat)
+                          for feat, data in data_dict_source.items()
+                          if feat in self.stats.keys()}
+            # mean, var = self.stats[feats_name]['mean'], self.stats[feats_name]['var']
+            data_dict_source = {**data_dict_source, **norm_feats}
+        data_dict_target = {k.replace('_s', '_t'): v[::4] 
+                            for k, v in data_dict_source.items()}
+        data_dict = {**data_dict_source, **data_dict_target}
         return DotDict(data_dict)
 
 
@@ -425,7 +432,7 @@ class SynthDataModule(BASEDataModule):
             if not exists(stat_path):
                 log.info(f"No dataset stats found. Calculating and saving to {stat_path}")
             
-            feature_names = dataset._feat_get_methods.keys()
+            feature_names = dataset.get_all_features(0).keys()
             feature_dict = {name: [] for name in feature_names}
 
             for i in tqdm(range(len(dataset))):
