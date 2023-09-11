@@ -31,7 +31,7 @@ log = logging.getLogger(__name__)
 
 class SynthDataset(Dataset):
     def __init__(self, data: list, n_body_joints: int,
-                 stats_path: str, norm_type: str,
+                 stats_file: str, norm_type: str,
                  smplh_path: str, rot_repr: str = "6d",
                  load_feats: List[str] = None,
                  do_augmentations=False):
@@ -43,9 +43,7 @@ class SynthDataset(Dataset):
         # self.seq_parser = SequenceParserAmass(self.cfg)
         bm = smplx.create(model_path=smplh_path, model_type='smplh', ext='npz')
         self.body_chain = bm.parents
-        # stat_path = join(self.cfg.project_dir, f"statistics_{self.cfg.dataset}.npy")
-        suffix = ''
-        stat_path = join(stats_path, f"statistics_{suffix}.npy")
+        stat_path = join(stats_file)
         self.stats = None
         self.n_body_joints = n_body_joints
         self.joint_idx = {name: i for i, name in enumerate(JOINT_NAMES)}
@@ -76,7 +74,16 @@ class SynthDataset(Dataset):
             "n_frames_orig": self._get_num_frames,
             "framerate": self._get_framerate,
         }
-        
+        self.nfeats = self.get_features_dimentionality()
+
+    def get_features_dimentionality(self):
+        """
+        Get the dimentionality of the concatenated load_feats
+        """
+        item = self.__getitem__(0)
+        return sum([item[feat].shape[-1] for feat in self.load_feats
+                   if feat in self._feat_get_methods.keys()])
+
     def normalize_feats(self, feats, feats_name):
         if feats_name not in self.stats.keys():
             log.error(f"Tried to normalise {feats_name} but did not found stats \
@@ -327,7 +334,6 @@ class SynthDataModule(BASEDataModule):
         self.rot_repr = rot_repr
         self.Dataset = SynthDataset
 
-    def setup(self, stage):
         # calculate splits
         if self.debug:
             # takes <2sec to load
@@ -361,10 +367,10 @@ class SynthDataModule(BASEDataModule):
         id_split_dict = {id: split[i] for i, id in enumerate(data_ids)}
         random.random()  # restore randomness in life (maybe randomness is life)
         # calculate feature statistics
-        _ = self.calculate_feature_stats(SynthDataset([v for k, v in data_dict.items()
+        self.stats = self.calculate_feature_stats(SynthDataset([v for k, v in data_dict.items()
                                                        if id_split_dict[k] <= 1],
                                                       self.preproc.n_body_joints,
-                                                      self.preproc.stats_path,
+                                                      self.preproc.stats_file,
                                                       self.preproc.norm_type,
                                                       self.smpl_p,
                                                       self.rot_repr,
@@ -381,7 +387,7 @@ class SynthDataModule(BASEDataModule):
         self.dataset['train'], self.dataset['val'], self.dataset['test'] = (
            SynthDataset([v for k, v in data_dict.items() if id_split_dict[k] == 0],
                         self.preproc.n_body_joints,
-                        self.preproc.stats_path,
+                        self.preproc.stats_file,
                         self.preproc.norm_type,
                         self.smpl_p,
                         self.rot_repr,
@@ -389,7 +395,7 @@ class SynthDataModule(BASEDataModule):
                         do_augmentations=True), 
            SynthDataset([v for k, v in data_dict.items() if id_split_dict[k] == 1],
                         self.preproc.n_body_joints,
-                        self.preproc.stats_path,
+                        self.preproc.stats_file,
                         self.preproc.norm_type,
                         self.smpl_p,
                         self.rot_repr,
@@ -397,7 +403,7 @@ class SynthDataModule(BASEDataModule):
                         do_augmentations=True), 
            SynthDataset([v for k, v in data_dict.items() if id_split_dict[k] == 2],
                         self.preproc.n_body_joints,
-                        self.preproc.stats_path,
+                        self.preproc.stats_file,
                         self.preproc.norm_type,
                         self.smpl_p,
                         self.rot_repr,
@@ -407,11 +413,12 @@ class SynthDataModule(BASEDataModule):
         for splt in ['train', 'val', 'test']:
             log.info("Set up {} set with {} items."\
                      .format(splt, len(self.dataset[splt])))
-        # if self.cfg.dl.framerate_ratio is not None:
-        #     log.info(f"Will be subsampling frames with ratio {self.cfg.dl.framerate_ratio}")
+
+    # def setup(self, stage):
+    #     pass
 
     def calculate_feature_stats(self, dataset: SynthDataset):
-        stat_path = join(self.preproc.stats_path, f"statistics_{self.dataname}.npy")
+        stat_path = self.preproc.stats_file
 
         if not exists(stat_path):
             if not exists(stat_path):
@@ -430,6 +437,9 @@ class SynthDataModule(BASEDataModule):
                             'mean': x.mean(0).numpy(),
                             'std': x.std(0).numpy()}
                      for name, x in feature_dict.items()}
+            log.info("Calculated statistics for the following features:")
+            log.info(feature_names)
+            log.info(f"saving to {stat_path}")
             np.save(stat_path, stats)
         log.info(f"Will be loading feature stats from {stat_path}")
         stats = np.load(stat_path, allow_pickle=True)[()]

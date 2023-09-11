@@ -29,11 +29,13 @@ class dotdict(dict):
     __getattr__ = dict.get
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
-    
-def cast_dict_to_tensors(d):
+
+def cast_dict_to_tensors(d, device="cpu"):
     if isinstance(d, dict):
-        return {k: cast_dict_to_tensors(v) for k, v in d.items()}
+        return {k: cast_dict_to_tensors(v, device) for k, v in d.items()}
     elif isinstance(d, np.ndarray):
-        return torch.from_numpy(d).float()
+        return torch.from_numpy(d).float().to(device)
+    elif isinstance(d, torch.Tensor):
+        return d.to(device)
     else:
         return d

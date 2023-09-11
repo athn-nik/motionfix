@@ -13,7 +13,7 @@ batch_size: ${machine.batch_size}
 num_workers: ${machine.num_workers}
 rot_repr: '6d'
 preproc:
-  stats_path: "${path.deps}/stats"
+  stats_file: "${path.deps}/stats/statistics_${dataname}.npy"  # full path for statistics
   split_seed: 0
   calculate_minmax: True
   generate_joint_files: True
@@ -24,21 +24,6 @@ preproc:
 # Motion
 framerate: 30
 sampler: ${sampler}
-
-state_features:
-- "body_transl"
-- "body_orient"
-- "body_pose"
-
-delta_features:
-- "body_transl_delta_pelv_xy"
-- "body_orient_delta"
-- "body_pose_delta"
-
-x_features:
-- "body_transl_z"
-- "body_orient_xy"
-- "body_pose"
 
 load_feats:
 - "body_transl"
