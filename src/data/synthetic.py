@@ -81,7 +81,7 @@ class SynthDataset(Dataset):
         Get the dimentionality of the concatenated load_feats
         """
         item = self.__getitem__(0)
-        return sum([item[feat].shape[-1] for feat in self.load_feats
+        return sum([item[feat + '_s'].shape[-1] for feat in self.load_feats
                    if feat in self._feat_get_methods.keys()])
 
     def normalize_feats(self, feats, feats_name):
@@ -296,7 +296,7 @@ class SynthDataset(Dataset):
                           for feat, method in self._meta_data_get_methods.items()}
         data_dict = {**data_dict, **meta_data_dict}
         data_dict['filename'] = self.file_list[idx]['filename']
-        data_dict['split'] = self.file_list[idx]['split']
+        # data_dict['split'] = self.file_list[idx]['split']
         return DotDict(data_dict)
 
     def get_all_features(self, idx):
@@ -367,6 +367,9 @@ class SynthDataModule(BASEDataModule):
         id_split_dict = {id: split[i] for i, id in enumerate(data_ids)}
         random.random()  # restore randomness in life (maybe randomness is life)
         # calculate feature statistics
+        for k, v in data_dict.items():
+            v['id'] = k
+            v['split'] = id_split_dict[k]
         self.stats = self.calculate_feature_stats(SynthDataset([v for k, v in data_dict.items()
                                                        if id_split_dict[k] <= 1],
                                                       self.preproc.n_body_joints,
@@ -381,9 +384,6 @@ class SynthDataModule(BASEDataModule):
         # setup collate function meta parameters
         # self.collate_fn = lambda b: collate_batch(b, self.cfg.load_feats)
         # create datasets
-        for k, v in data_dict.items():
-            v['id'] = k
-            v['split'] = id_split_dict[k]
         self.dataset['train'], self.dataset['val'], self.dataset['test'] = (
            SynthDataset([v for k, v in data_dict.items() if id_split_dict[k] == 0],
                         self.preproc.n_body_joints,
@@ -413,6 +413,7 @@ class SynthDataModule(BASEDataModule):
         for splt in ['train', 'val', 'test']:
             log.info("Set up {} set with {} items."\
                      .format(splt, len(self.dataset[splt])))
+        self.nfeats = self.dataset['train'].nfeats
 
     # def setup(self, stage):
     #     pass
