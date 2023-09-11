@@ -21,7 +21,7 @@ class BASEDataModule(pl.LightningDataModule):
             'num_workers': num_workers,
             'collate_fn': collate_fn,
             'drop_last': False,
-            # 'worker_init_fn': set_worker_sharing_strategy
+            'worker_init_fn': set_worker_sharing_strategy
             # 'pin_memory': True,
             }
         # need to be overloaded:

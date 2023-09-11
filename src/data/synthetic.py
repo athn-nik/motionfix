@@ -331,7 +331,7 @@ class SynthDataModule(BASEDataModule):
         # calculate splits
         if self.debug:
             # takes <2sec to load
-            ds_db_path = Path(self.datapath).parent / 'TotalCapture/TotalCapture.pth.tar'
+            ds_db_path = Path(self.datapath).parent / 'TotalCapture.pth.tar'
         else:
             # takes ~4min to load
             ds_db_path = Path(self.datapath)

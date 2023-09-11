@@ -32,10 +32,9 @@ defaults:
   # diffusion stuff
   - diffusion_scheduler: scheduler
   - noise_scheduler: noise_scheduler
-
   - denoiser: denoiser
 
-  # vae stuff
+  # VAE stuff
   - text_encoder: distilbert_enc
   - motion_encoder: actor
   - motion_decoder: actor
