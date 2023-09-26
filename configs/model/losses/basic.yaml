@@ -4,7 +4,7 @@ _target_: src.model.losses.MLDLosses
 ## Reconstruction losses
 lmd_rfeats_recons: 1.0
 lmd_jfeats_recons: 1.0
-predict_epsilon: true
+predict_epsilon: false
 
 modelname: ${model.modelname}
 

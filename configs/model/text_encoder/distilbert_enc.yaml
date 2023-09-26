@@ -12,4 +12,3 @@ activation: ${model.activation}
 
 finetune: false
 modelpath: ${path.deps}/distilbert-base-uncased
-separate_latents: ${model.separate_latents} # 1/2 latent vectors

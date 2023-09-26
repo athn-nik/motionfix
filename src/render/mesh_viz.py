@@ -10,10 +10,10 @@ from aitviewer.renderables.smpl import SMPLSequence
 from einops import rearrange
 from scipy.spatial.transform import Rotation as R
 from src.tools.transforms3d import transform_body_pose
-
+import subprocess
 
 def render_motion(renderer: HeadlessRenderer, datum: dict, 
-                  filename: str, pose_repr='6d') -> None:
+                  filename: str, text_for_vid=None, pose_repr='6d') -> None:
     """
     Function to render a video of a motion sequence
     renderer: aitviewer renderer
@@ -31,8 +31,13 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     # remove singleton batch dimention and  flatten axis-angle
     if len(datum['body_orient'].shape) > 2:
         global_orient = datum['body_orient'].squeeze()
+    else:
+        global_orient = datum['body_orient']
+
     if len(datum['body_pose'].shape) > 2:
         body_pose = datum['body_pose'].squeeze()
+    else:
+        body_pose = datum['body_pose']
 
     if pose_repr != 'aa':
         global_orient = transform_body_pose(global_orient,
@@ -47,8 +52,10 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
         sbj_mesh = os.path.join(datum['v_template'])
         sbj_vtemp = np.array(trimesh.load(sbj_mesh).vertices)
     gender = 'neutral'
-    if 'gender' in datum.keys():
-        gender = datum['gender']
+
+    #  if 'gender' in datum.keys():
+    #  gender = datum['gender']
+
     n_comps = 6  # default value of smplx
     if 'n_comps' in datum.keys():
         n_comps = datum['n_comps']
@@ -57,16 +64,16 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     old = os.dup(1)
     os.close(1)
     os.open(os.devnull, os.O_WRONLY)
-
-    smpl_layer = SMPLLayer(model_type='smplx', num_pca_comps=n_comps, 
+    
+    smpl_layer = SMPLLayer(model_type='smplh', num_pca_comps=n_comps, 
+                           ext='npz',
                            gender=gender)
     
     smpl_template = SMPLSequence(body_pose,
                                  smpl_layer,
                                  poses_root=global_orient,
                                  trans=body_transl,
-                                 z_up=True
-                                 )
+                                 z_up=True)
 
     renderer.scene.add(smpl_template)
     # camera follows smpl sequence
@@ -86,10 +93,29 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     os.dup(old)
     os.close(old)
 
+    if text_for_vid is not None:
+        fname = put_text(text_for_vid, f'{filename}_0.mp4', f'{filename}_0_wtext.mp4')
+        os.remove(f'{filename}_0.mp4')
+    else:
+        fname = f'{filename}_0.mp4'
 
-    return f'{filename}_0.mp4'
+    return fname
 
 
+def put_text(text: str, fname: str, outf: str, v=False):
+    cmd_m = ['ffmpeg']
+    # -i inputClip.mp4 -vf f"drawtext=text='{method}':x=200:y=0:fontsize=22:fontcolor=white" -c:a copy {temp_path}.mp4
+
+    cmd_m.extend(['-i',fname, '-y', '-vf', 
+                  f"drawtext=text='{text}':x=(w-text_w)/2:y=h-th-10:fontsize=20::box=1:boxcolor=black@0.6:boxborderw=5:fontcolor=white",
+                  '-loglevel', 'quiet', '-c:a', 'copy',
+                  f'{outf}'])
+
+    if v:
+        print('Executing', ' '.join(cmd_m))
+    x = subprocess.call(cmd_m)
+
+    return outf
 
 # import numpy as np
 # import torch

@@ -1,11 +1,14 @@
 dataname: synthetic
 _target_: src.data.synthetic.SynthDataModule
-debug: false
+debug: ${debug}
 
-datapath: ${path.data}/amass/amass_compressed.pth.tar
+datapath: ${path.data}/amass_smplhn/amass.pth.tar
+debug_datapath: ${path.minidata}/amass_small.pth.tar
 
 # Amass
 smplh_path: ${path.data}/body_models
+smplh_path_dbg: ${path.minidata}/body_models
+
 load_with_rot: true
 
 # Machine
@@ -36,7 +39,7 @@ load_feats:
 - "body_orient_delta"
 - "body_pose_delta"
 - "body_orient_xy"
-# - "body_joints"
+- "body_joints"
 # - "body_joints_rel"
 # - "body_joints_vel"
 # - "object_transl"

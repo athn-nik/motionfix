@@ -1,18 +1,19 @@
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 
-from src.data.tools.collate import collate_pairs_and_text, collate_datastruct_and_text
+from src.data.tools.collate import collate_batch_last_padding, collate_datastruct_and_text
 import torch
-    
+from typing import List
 
 class BASEDataModule(pl.LightningDataModule):
     def __init__(self,
                  batch_size: int,
-                 num_workers: int):
+                 num_workers: int,
+                 load_feats: List[str]):
         super().__init__()
 
-        collate_fn = collate_datastruct_and_text
-    
+        collate_fn = lambda b: collate_batch_last_padding(b, load_feats)
+
         def set_worker_sharing_strategy(worker_id: int) -> None:
             sharing_strategy = "file_system"
             torch.multiprocessing.set_sharing_strategy(sharing_strategy)
@@ -20,7 +21,7 @@ class BASEDataModule(pl.LightningDataModule):
             'batch_size': batch_size,
             'num_workers': num_workers,
             'collate_fn': collate_fn,
-            'drop_last': False,
+            'drop_last': True,
             'worker_init_fn': set_worker_sharing_strategy
             # 'pin_memory': True,
             }

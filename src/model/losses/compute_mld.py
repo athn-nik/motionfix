@@ -113,7 +113,7 @@ class MLDLosses(Metric):
     def _update_loss(self, loss: str, outputs, inputs):
         # Update the loss
         val = self._losses_func[loss](outputs, inputs)
-        getattr(self, loss).__iadd__(val.detach())
+        getattr(self, loss).__iadd__(val)
         # Return a weighted sum
         weighted_loss = self._params[loss] * val
         return weighted_loss

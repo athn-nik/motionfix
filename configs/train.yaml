@@ -1,27 +1,34 @@
 hydra:
   run:
-    dir: experiments/${project}/${experiment}/${run_id}/
+    dir: ${expdir}/${project}/${experiment}/${run_id}/
   job:
     chdir: true
     env_set:
       WANDB_API_KEY: '90e13be46265667b13415a5e6d248ae91ab399fc'
       PYOPENGL_PLATFORM: 'egl'
       HYDRA_FULL_ERROR: 1
-      # WANDB__SERVICE_WAIT: 300
+      WANDB__SERVICE_WAIT: 300
 
+debug: false
 
 # Global configurations shared between different modules
+expdir: ${get_expdir:${debug}}
 experiment: baseline
 # must be the same when you are resuming experiment
 project: motion-editing
 seed: 42
 logger_level: INFO
 run_id: ${generate_id:}
-
 # For finetuning
 resume: null
 resume_ckpt_name: null
 devices: 1
+
+
+statistics_file: statistics_synthetic.npy
+# statistics_file: "statistics_amass_circle.py"
+statistics_path: ${path.deps}/stats/${statistics_file}
+
 
 # Composing nested config with default
 defaults:

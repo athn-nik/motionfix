@@ -8,9 +8,24 @@ from pytorch_lightning.utilities.rank_zero import rank_zero_only
 from pathlib import Path
 from src.render.mesh_viz import render_motion
 import wandb
+from einops import rearrange, reduce
+from torch import Tensor
+from typing import List, Union
+from src.utils.genutils import freeze
+import smplx
+from os.path import exists, join
+from src.utils.genutils import cast_dict_to_tensors
+
+
+# Monkey patch SMPLH faster
+from src.model.utils.smpl_fast import smpl_forward_fast
+
 
 class BaseModel(LightningModule):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, statistics_path: str, nfeats: int, norm_type: str,
+                 input_feats: List[str], dim_per_feat: List[int],
+                 smpl_path: str, 
+                 *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.save_hyperparameters(logger=False, 
                                   ignore=['eval_model','renderer']) # ignore TEMOS score
@@ -19,6 +34,21 @@ class BaseModel(LightningModule):
         self.render_data_buffer = {"train": [], "val":[]}
         self.loss_dict = {'train': None,
                           'val': None,}
+        self.stats = self.load_norm_statistics(statistics_path, self.device)
+        self.nfeats = nfeats
+        self.dim_per_feat = dim_per_feat
+        self.norm_type = norm_type
+        self.first_pose_feats_dims = [3, 6, 21*6]
+        self.first_pose_feats = ['body_transl', 'body_orient', 'body_pose']
+        self.input_feats_dims = list(dim_per_feat)
+        self.input_feats = list(input_feats)
+        self.body_model = smplx.SMPLHLayer(f'{smpl_path}/smplh', model_type='smplh',
+                                           gender='neutral',
+                                           ext='npz').to(self.device).eval();
+        setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
+        freeze(self.body_model)
+
+
 
         # Need to define:
         # forward
@@ -35,6 +65,26 @@ class BaseModel(LightningModule):
                 nontrainable += np.prod(p.size())
         self.hparams.n_params_trainable = trainable
         self.hparams.n_params_nontrainable = nontrainable
+
+    def load_norm_statistics(self, path, device):
+        assert exists(path)
+        stats = np.load(path, allow_pickle=True)[()]
+        return cast_dict_to_tensors(stats, device=device)
+
+    def run_smpl_fwd(self, body_transl, body_orient, body_pose):
+        if len(body_transl.shape) > 2:
+            body_transl = body_transl.flatten(0, 1)
+            body_orient = body_orient.flatten(0, 1)
+            body_pose = body_pose.flatten(0, 1)
+  
+        batch_size = body_transl.shape[0]
+        from src.tools.transforms3d import transform_body_pose
+        self.body_model.batch_size = batch_size
+        return self.body_model.smpl_forward_fast(transl=body_transl,
+                               body_pose=transform_body_pose(body_pose,
+                                                             'aa->rot'),
+                               global_orient=transform_body_pose(body_orient,
+                                                                 'aa->rot'))
 
 
     def training_step(self, batch, batch_idx):
@@ -88,50 +138,149 @@ class BaseModel(LightningModule):
             log_name = f"{loss_type}/{name}/{split}"
         return log_name
 
+
+    def norm_and_cat(self, batch, features_types):
+        """
+        turn batch data into the format the forward() function expects
+        """
+        seq_first = lambda t: rearrange(t, 'b s ... -> s b ...') 
+
+        ## PREPARE INPUT ##
+        for mot in ['source', 'target']:
+            
+            list_of_feat_tensors = [seq_first(batch[f'{feat_type}_{mot}']) 
+                                    for feat_type in features_types]
+            # normalise and cat to a unified feature vector
+            list_of_feat_tensors_normed = self.norm_inputs(list_of_feat_tensors,
+                                                           features_types)
+
+            x_norm, _ = self.cat_inputs(list_of_feat_tensors_normed)
+            batch[f'{mot}_motion'] = x_norm[1:]
+        return batch
+    
+    def append_first_frame(self, batch, which_motion):
+
+        seq_first = lambda t: rearrange(t, 'b s ... -> s b ...') 
+        list_of_feat_tensors = [seq_first(batch[f'{feat_type}_{which_motion}']) 
+                                for feat_type in self.first_pose_feats]
+        seqlen, bsz = list_of_feat_tensors[0].shape[:2]
+        norm_pose_smpl = self.norm_inputs(list_of_feat_tensors,
+                                     self.first_pose_feats)
+        norm_pose_smpl = torch.cat(norm_pose_smpl, dim=-1)
+        ## PAD THE INITIAL POSE ##
+        padding_sz = np.sum(self.input_feats_dims) - np.sum(self.first_pose_feats_dims)
+        norm_pose_smpl_pad = torch.zeros(1, bsz,
+                                    batch[f'{which_motion}_motion'].shape[-1],
+                                    device=self.device)
+        norm_pose_smpl_pad[:, :, :norm_pose_smpl.shape[-1]] = norm_pose_smpl[:1]
+        batch[f'{which_motion}_motion'] = torch.cat([norm_pose_smpl_pad,
+                                                    batch[f'{which_motion}_motion']
+                                                    ],
+                                                    dim=0)
+
+        return batch
+
+    def norm(self, x, stats):
+        if self.norm_type == "standardize":
+            mean = stats['mean'].to(self.device)
+            std = stats['std'].to(self.device)
+            return (x - mean) / (std + 1e-5)
+        elif self.norm_type == "min_max":
+            max = stats['max'].to(self.device)
+            min = stats['min'].to(self.device)
+            assert ((x - min) / (max - min + 1e-5)).min() >= 0
+            assert ((x - min) / (max - min + 1e-5)).max() <= 1
+            return (x - min) / (max - min + 1e-5)
+
+    def unnorm(self, x, stats):
+        if self.norm_type == "standardize":
+            mean = stats['mean'].to(self.device)
+            std = stats['std'].to(self.device)
+            return x * (std + 1e-5) + mean
+        elif self.norm_type == "min_max":
+            max = stats['max'].to(self.device)
+            min = stats['min'].to(self.device)
+            return x * (max - min + 1e-5) + min
+
+    def unnorm_state(self, state_norm: Tensor) -> Tensor:
+        # unnorm state
+        return self.cat_inputs(
+            self.unnorm_inputs(self.uncat_inputs(state_norm, self.first_pose_feats_dims),
+                               self.first_pose_feats))[0]
+        
+    def unnorm_delta(self, delta_norm: Tensor) -> Tensor:
+        # unnorm delta
+        return self.cat_inputs(
+            self.unnorm_inputs(self.uncat_inputs(delta_norm,
+                                                 self.input_feats_dims),
+                               self.input_feats))[0]
+
+    def norm_state(self, state:Tensor) -> Tensor:
+        # normalise state
+        return self.cat_inputs(
+            self.norm_inputs(self.uncat_inputs(state, 
+                                               self.first_pose_feats_dims),
+                             self.first_pose_feats))[0]
+
+    def norm_delta(self, delta:Tensor) -> Tensor:
+        # normalise delta
+        return self.cat_inputs(
+            self.norm_inputs(self.uncat_inputs(delta, self.input_feats_dims),
+                             self.input_feats))[0]
+
+    def cat_inputs(self, x_list: List[Tensor]):
+        """
+        cat the inputs to a unified vector and return their lengths in order
+        to un-cat them later
+        """
+        return torch.cat(x_list, dim=-1), [x.shape[-1] for x in x_list]
+    
+    def uncat_inputs(self, x: Tensor, lengths: List[int]):
+        """
+        split the unified feature vector back to its original parts
+        """
+        return torch.split(x, lengths, dim=-1)
+    
+    def norm_inputs(self, x_list: List[Tensor], names: List[str]):
+        """
+        Normalise inputs using the self.stats metrics
+        """
+        x_norm = []
+        for x, name in zip(x_list, names):
+            x_norm.append(self.norm(x, self.stats[name]))
+        return x_norm
+
+    def unnorm_inputs(self, x_list: List[Tensor], names: List[str]):
+        """
+        Un-normalise inputs using the self.stats metrics
+        """
+        x_unnorm = []
+        for x, name in zip(x_list, names):
+            x_unnorm.append(self.unnorm(x, self.stats[name]))
+        return x_unnorm
+
     def allsplit_epoch_end(self, split: str):
-        # loss_tracker = self.tracker[split]
-        # loss_dict = loss_tracker.compute()
-        # loss_tracker.reset()
-        dico = {}
 
-        if split in ["train", "val"]:
-            losses = self.losses[split]
-            loss_dict = losses.compute()
-            losses.reset()
-            dico.update({
-                losses.loss2logname(loss, split): value.item()
-                for loss, value in loss_dict.items() if not torch.isnan(value)
-            })
-
-            if split in ["val"]:
-                pass
-                # metrics_dict = self.metrics.compute()
-
-            if split != "test":
-                dico.update({
-                    "epoch": float(self.trainer.current_epoch),
-                    "step": float(self.trainer.current_epoch),
-                })
-            # don't write sanity check into log
-            if not self.trainer.sanity_checking:
-                self.log_dict(dico, sync_dist=True, rank_zero_only=True)
-
+        video_names = []
         # RENDER
-        if self.global_rank == 0:
-            if self.trainer.current_epoch%self.render_vids_every_n_epochs == 0:
+        if self.global_rank == 0 and self.trainer.current_epoch != 0:
+            if split == 'train':
+                if self.trainer.current_epoch%self.render_vids_every_n_epochs == 0:
+                    video_names = self.render_buffer(self.render_data_buffer[split],
+                                                    split=split)
+            else:
                 video_names = self.render_buffer(self.render_data_buffer[split],
-                                                split=split)
+                                                    split=split)
                 # log videos to wandb
-                if self.logger is not None:
-                    log_render_dic = {}
-                    for v in video_names:
-                        logname = f'{split}_renders/' + v.replace('.mp4',
-                                                        '').split('/')[-1][4:-2]
-                        log_render_dic[logname] = wandb.Video(v, fps=30,
-                                                              format='mp4') 
-                    self.logger.experiment.log(log_render_dic, 
-                                               step=self.trainer.global_step)
-            self.render_data_buffer[split].clear()
+            if self.logger is not None and video_names:
+                log_render_dic = {}
+                for v in video_names:
+                    logname = f'{split}_renders/' + v.replace('.mp4',
+                                                    '').split('/')[-1][4:-2]
+                    log_render_dic[logname] = wandb.Video(v, fps=30,
+                                                            format='mp4') 
+                self.logger.experiment.log(log_render_dic)
+        self.render_data_buffer[split].clear()
         return
 
     def on_train_epoch_end(self):
@@ -162,7 +311,6 @@ class BaseModel(LightningModule):
     def render_buffer(self, buffer: list[dict], split=False):
         """
         """
- 
         video_names = []
         novids = 1
         # create videos and save full paths
@@ -172,16 +320,11 @@ class BaseModel(LightningModule):
 
         for data in buffer:
             # RUN FWD PASS
-            for k, v in data['source_motion'].items():
-                data['source_motion'][k] = v[:novids]
-            for k, v in data['target_motion'].items():
-                data['target_motion'][k] = v[:novids]
-            if data['generation'] is not None:
-                for k, v in data['generation'].items():
-                    data['generation'][k] = v[:novids]
+            for motion_type in data.keys():
+                for body_repr_name,body_repr_data in data[motion_type].items():            
+                    data[motion_type][body_repr_name] = body_repr_data[:novids]
 
             for iid_tor in range(novids):
-
                 filename = folder / str(iid_tor).zfill(3)
                 for k, v in data.items():
                     if v is not None:

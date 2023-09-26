@@ -137,7 +137,7 @@ class PositionEmbeddingSine1D(nn.Module):
 
 class PositionEmbeddingLearned1D(nn.Module):
 
-    def __init__(self, d_model, max_len=500, batch_first=False):
+    def __init__(self, d_model, max_len=1500, batch_first=False):
         super().__init__()
         self.batch_first = batch_first
         # self.dropout = nn.Dropout(p=dropout)

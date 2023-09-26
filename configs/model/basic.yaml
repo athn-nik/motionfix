@@ -4,29 +4,39 @@ latent_dim: 256
 vae: true
 
 ff_size: 1024
-num_layers: 6
-num_head: ${model.num_layers}
+num_layers: 9
+num_head: 4
 droupout: 0.1
 activation: "gelu"
 render_vids_every_n_epochs: 100
 lr_scheduler: null # reduceonplateau, steplr
 
+# normalization
+statistics_path: ${statistics_path}
+norm_type: standardize # min_max
+
 # diffusion related
 diff_params:
   num_inference_timesteps: 100
   eta: 40
-  guidance_scale: 7.5 #
-  guidance_uncondp: 0.1 # 0.1 0.25
+  guidance_scale: 0 #
+  guidance_uncondp: 1 # 0.1 0.25
   predict_epsilon: false
 
 condition: text
-motion_branch: true
-teacher_forcing: false
-separate_latents: false
+smpl_path: ${data.smplh_path}
 
-# data related
 nfeats: 135
-
+dim_per_feat: [135]
+# data related
+input_feats:
+- "body_transl_delta_pelv_xy"
+- "body_transl_z"
+- "body_orient_delta"
+- "body_pose_delta"
+# - "body_orient"
+# - "body_pose"
+# - "body_transl"
 
 defaults:
   # diffusion stuff

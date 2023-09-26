@@ -1,5 +1,7 @@
 # path to additional modules
 deps: ${code_path:./deps}
 data: ${code_path:./data}
+minidata: ${code_path:./minidata}
 code_dir: ${code_path:}
 working_dir: ${working_path:""}
+minilog: ${code_path:./miniexperiments}

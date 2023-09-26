@@ -51,7 +51,11 @@ def _train(cfg: DictConfig):
 
 def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     import os
+    import torch 
     os.environ['HYDRA_FULL_ERROR'] = '1'
+    os.system("Xvfb :12 -screen 1 640x480x24 &")
+    os.environ['DISPLAY'] = ":12"
+    torch.autograd.set_detect_anomaly(True)
 
     # import multiprocessing
     # multiprocessing.set_start_method('spawn')
@@ -80,18 +84,26 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     # #####
     # logger.info(f'Loading model {cfg.model.modelname}')
 
-    os.system("Xvfb :12 -screen 1 640x480x24 &")
-    os.environ['DISPLAY'] = ":12"
-
     from aitviewer.configuration import CONFIG as AITVIEWER_CONFIG
     from aitviewer.headless import HeadlessRenderer
-    
+    body_models_path = f'{cfg.path.data}/body_models' if not cfg.data.debug else f'{cfg.path.minidata}/body_models'
+
     AITVIEWER_CONFIG.update_conf({"playback_fps": 30,
                                    "auto_set_floor": False,
-                                   "smplx_models": f'{cfg.path.data}/body_models'})
+                                   "smplx_models": body_models_path})
     renderer = HeadlessRenderer()
+    list_of_all_feats = data_module.nfeats
+    idx_for_inputs = [cfg.data.load_feats.index(infeat) 
+                      for infeat in cfg.model.input_feats]
+    total_feats_dim = [list_of_all_feats[i] 
+                      for i in idx_for_inputs]
+    nfeats = sum(total_feats_dim) 
 
-    model = instantiate(cfg.model,renderer=renderer,
+    cfg.model.nfeats = nfeats
+    cfg.model.dim_per_feat = total_feats_dim
+    
+    model = instantiate(cfg.model,
+                        renderer=renderer,
                         _recursive_=False)
 
     logger.info(f"Model '{cfg.model.modelname}' loaded")
@@ -148,7 +160,6 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
 
     # train_logger.end(checkpoint_folder)
     logger.info(f"Training done. Reminder, the outputs are stored in:\n{working_dir}")
-
 
 if __name__ == '__main__':
     _train()

@@ -6,6 +6,14 @@ import logging
 import os
 import random
 from einops import rearrange
+def freeze(model) -> None:
+    r"""
+    Freeze all params for inference.
+    """
+    for param in model.parameters():
+        param.requires_grad = False
+
+    model.eval()
 
 # A logger for this file
 log = logging.getLogger(__name__)

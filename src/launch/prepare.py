@@ -39,28 +39,24 @@ def get_samples_folder(path):
     samples_path = output_dir / "samples"
     return str(samples_path)
 
-
-def get_kitname(load_amass_data: bool, load_with_rot: bool):
-    if not load_amass_data:
-        return "kit-mmm-xyz"
-    if load_amass_data and not load_with_rot:
-        return "kit-amass-xyz"
-    if load_amass_data and load_with_rot:
-        return "kit-amass-rot"
+def get_expdir(debug):
+    if debug:
+        return 'miniexperiments'
+    else:
+        return 'experiments'
 
 # this has to run -- pytorch memory leak in the dataloader associated with #973 pytorch issues
 #import resource
 #rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 #resource.setrlimit(resource.RLIMIT_NOFILE, (12000, rlimit[1]))
 # Solutions summarized in --> https://github.com/Project-MONAI/MONAI/issues/701
-
+OmegaConf.register_new_resolver("get_expdir", get_expdir)
 OmegaConf.register_new_resolver("code_path", code_path)
 OmegaConf.register_new_resolver("working_path", working_path)
 OmegaConf.register_new_resolver("generate_id", generate_id)
 OmegaConf.register_new_resolver("absolute_path", hydra.utils.to_absolute_path)
 OmegaConf.register_new_resolver("get_last_checkpoint", get_last_checkpoint)
 OmegaConf.register_new_resolver("get_samples_folder", get_samples_folder)
-OmegaConf.register_new_resolver("get_kitname", get_kitname)
 
 
 # Remove warnings

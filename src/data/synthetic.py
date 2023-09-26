@@ -11,6 +11,7 @@ from omegaconf import DictConfig
 import smplx
 import torch
 from einops import rearrange
+from src import data
 from src.tools.geometry import matrix_to_euler_angles, matrix_to_rotation_6d
 from pytorch_lightning import LightningDataModule
 from smplx.joint_names import JOINT_NAMES
@@ -40,6 +41,7 @@ class SynthDataset(Dataset):
         self.rot_repr = rot_repr
         self.load_feats = load_feats
         self.do_augmentations = do_augmentations
+        
         # self.seq_parser = SequenceParserAmass(self.cfg)
         bm = smplx.create(model_path=smplh_path, model_type='smplh', ext='npz')
         self.body_chain = bm.parents
@@ -71,7 +73,6 @@ class SynthDataset(Dataset):
             "wrists_ang_vel_euler": self._get_wrists_angular_velocity_euler,
         }
         self._meta_data_get_methods = {
-            "n_frames_orig": self._get_num_frames,
             "framerate": self._get_framerate,
         }
         self.nfeats = self.get_features_dimentionality()
@@ -81,8 +82,9 @@ class SynthDataset(Dataset):
         Get the dimentionality of the concatenated load_feats
         """
         item = self.__getitem__(0)
-        return sum([item[feat + '_s'].shape[-1] for feat in self.load_feats
-                   if feat in self._feat_get_methods.keys()])
+
+        return [item[feat + '_source'].shape[-1] for feat in self.load_feats
+                if feat in self._feat_get_methods.keys()]
 
     def normalize_feats(self, feats, feats_name):
         if feats_name not in self.stats.keys():
@@ -175,10 +177,7 @@ class SynthDataset(Dataset):
 
     def _get_body_transl_z(self, data):
         """get body pelvis tranlation"""
-        return to_tensor(data['trans'])[..., 2]
-        # body.translation is NOT the same as the pelvis translation
-        # TODO: figure out why
-        # return to_tensor(data.body.params.transl)
+        return to_tensor(data['trans'])[..., 2:] # only z
 
     def _get_body_transl_delta(self, data):
         """get body pelvis tranlation delta"""
@@ -194,7 +193,7 @@ class SynthDataset(Dataset):
         """
         trans = to_tensor(data['trans'])
         trans_vel = trans - trans.roll(1, 0)  # shift one right and subtract
-        pelvis_orient =transform_body_pose(to_tensor(data['rots'][..., :3]), "aa->rot")
+        pelvis_orient = transform_body_pose(to_tensor(data['rots'][..., :3]), "aa->rot")
         trans_vel_pelv = change_for(trans_vel, pelvis_orient.roll(1, 0))
         trans_vel_pelv[0] = 0  # zero out velocity of first frame
         return trans_vel_pelv
@@ -235,7 +234,8 @@ class SynthDataset(Dataset):
         """get global body orientation delta"""
         # default is axis-angle representation
         pelvis_orient = to_tensor(data['rots'][..., :3])
-        pelvis_orient_delta = rot_diff(pelvis_orient, in_format="aa", out_format=self.rot_repr)
+        pelvis_orient_delta = rot_diff(pelvis_orient, in_format="aa",
+                                       out_format=self.rot_repr)
         return pelvis_orient_delta
 
     def _get_body_pose(self, data):
@@ -261,7 +261,7 @@ class SynthDataset(Dataset):
         # perform augmentations except when in test mode
         # if self.do_augmentations:
         #     datum = self.seq_parser.augment_npz(datum)
-        data_dict_source = {f'{feat}_s': self._feat_get_methods[feat](datum)
+        data_dict_source = {f'{feat}_source': self._feat_get_methods[feat](datum)
                             for feat in self.load_feats}
         if self.stats is not None:
             norm_feats = {f"{feat}_norm": self.normalize_feats(data, feat)
@@ -269,13 +269,13 @@ class SynthDataset(Dataset):
                           if feat in self.stats.keys()}
             # mean, var = self.stats[feats_name]['mean'], self.stats[feats_name]['var']
             data_dict_source = {**data_dict_source, **norm_feats}
-        data_dict_target = {k.replace('_s', '_t'): v[::4] 
+        data_dict_target = {k.replace('_source', '_target'): v[:30] 
                             for k, v in data_dict_source.items()}
         meta_data_dict = {feat: method(datum)
                           for feat, method in self._meta_data_get_methods.items()}
         data_dict = {**data_dict_source, **data_dict_target, **meta_data_dict}
-        data_dict['length_s'] = duration
-        data_dict['length_t'] = duration
+        data_dict['length_source'] = len(data_dict['body_pose_source'])
+        data_dict['length_target'] = len(data_dict['body_pose_target'])
         data_dict['text'] = 'faster'
         data_dict['filename'] = datum['fname']
         data_dict['split'] = datum['split']
@@ -301,7 +301,7 @@ class SynthDataset(Dataset):
 
     def get_all_features(self, idx):
         datum = self.data[idx]
-        data_dict_source = {f'{feat}_s': self._feat_get_methods[feat](datum)
+        data_dict_source = {f'{feat}_source': self._feat_get_methods[feat](datum)
                             for feat in self.load_feats}
         if self.stats is not None:
             norm_feats = {f"{feat}_norm": self.normalize_feats(data, feat)
@@ -309,9 +309,10 @@ class SynthDataset(Dataset):
                           if feat in self.stats.keys()}
             # mean, var = self.stats[feats_name]['mean'], self.stats[feats_name]['var']
             data_dict_source = {**data_dict_source, **norm_feats}
-        data_dict_target = {k.replace('_s', '_t'): v[::4] 
+        data_dict_target = {k.replace('_source', '_target'): v[::4] 
                             for k, v in data_dict_source.items()}
         data_dict = {**data_dict_source, **data_dict_target}
+        
         return DotDict(data_dict)
 
 
@@ -323,28 +324,33 @@ class SynthDataModule(BASEDataModule):
                  num_workers: int = 16,
                  datapath: str = "",
                  debug: bool = False,
+                 debug_datapath: str = "",
                  preproc: DictConfig = None,
                  smplh_path: str = "",
                  dataname: str = "",
                  rot_repr: str = "6d",
                  **kwargs):
         super().__init__(batch_size=batch_size,
-                         num_workers=num_workers)
+                         num_workers=num_workers,
+                         load_feats=load_feats)
         self.dataname = dataname
         self.batch_size = batch_size
+
         self.datapath = datapath
+        self.debug_datapath = debug_datapath
+
         self.load_feats = load_feats
         self.debug = debug
         self.dataset = {}
         self.preproc = preproc
-        self.smpl_p = smplh_path
+        self.smpl_p = smplh_path if not debug else kwargs['smplh_path_dbg']
         self.rot_repr = rot_repr
         self.Dataset = SynthDataset
-
         # calculate splits
         if self.debug:
             # takes <2sec to load
-            ds_db_path = Path(self.datapath).parent / 'TotalCapture.pth.tar'
+            ds_db_path = Path(self.debug_datapath)
+            
         else:
             # takes ~4min to load
             ds_db_path = Path(self.datapath)
@@ -357,15 +363,24 @@ class SynthDataModule(BASEDataModule):
         #     yield {k:data[k] for k in islice(it, SIZE)}
         # and then process with the AmassDataset as you like
         # pass this or split for dataloading into sets
-        data_dict = cast_dict_to_tensors(joblib.load(ds_db_path))
+        dataset_dict_raw = joblib.load(ds_db_path)
+        for k, v in dataset_dict_raw.items():
+            dataset_dict_raw[k]['rots'] = v['rots'].flatten(-2).float()
+        data_dict = cast_dict_to_tensors(dataset_dict_raw)
+
         # add id fiels in order to turn the dict into a list without loosing it
         random.seed(self.preproc.split_seed)
         data_ids = list(data_dict.keys())
         data_ids.sort()
         random.shuffle(data_ids)
-        # 70-10-20% train-val-test for each sequence
-        num_train = int(len(data_ids) * 0.7)
-        num_val = int(len(data_ids) * 0.1)
+        if self.debug:
+            # 70-10-20% train-val-test for each sequence
+            num_train = int(len(data_ids) * 0.8)
+            num_val = int(len(data_ids) * 0.1)
+        else:
+            # 70-10-20% train-val-test for each sequence
+            num_train = int(len(data_ids) * 0.7)
+            num_val = int(len(data_ids) * 0.1)
         # give ids to data sets--> 0:train, 1:val, 2:test
 
         split = np.zeros(len(data_ids))
@@ -429,22 +444,30 @@ class SynthDataModule(BASEDataModule):
         stat_path = self.preproc.stats_file
 
         if not exists(stat_path):
-            if not exists(stat_path):
-                log.info(f"No dataset stats found. Calculating and saving to {stat_path}")
+            log.info(f"No dataset stats found. Calculating and saving to {stat_path}")
             
             feature_names = dataset.get_all_features(0).keys()
-            feature_dict = {name: [] for name in feature_names}
+            feature_dict = {name.replace('_source', ''): [] for name in feature_names
+                            if '_target' not in name}
 
             for i in tqdm(range(len(dataset))):
                 x = dataset.get_all_features(i)
                 for name in feature_names:
-                    feature_dict[name].append(x[name])
-            feature_dict = {name: torch.cat(feature_dict[name], dim=0) for name in feature_names}
+                    x_new = x[name]
+                    name = name.replace('_source', '')
+                    name = name.replace('_target', '')
+                    feature_dict[name].append(x_new)
+            feature_dict = {name: torch.cat(feature_dict[name],
+                                            dim=0) for name in feature_dict.keys()}
             stats = {name: {'max': x.max(0)[0].numpy(),
                             'min': x.min(0)[0].numpy(),
                             'mean': x.mean(0).numpy(),
                             'std': x.std(0).numpy()}
                      for name, x in feature_dict.items()}
+            
+            # stats_source = {f'{name}_source': v for name, v in stats.items()}
+            # stats_target = {f'{name}_target': v for name, v in stats.items()}
+            # stats_dup = stats_source | stats_target
             log.info("Calculated statistics for the following features:")
             log.info(feature_names)
             log.info(f"saving to {stat_path}")

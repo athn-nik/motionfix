@@ -22,7 +22,6 @@ class MldDenoiser(nn.Module):
                  normalize_before: bool = False,
                  activation: str = "gelu",
                  flip_sin_to_cos: bool = True,
-                 return_intermediate_dec: bool = False,
                  position_embedding: str = "learned",
                  arch: str = "trans_enc",
                  freq_shift: int = 0,
@@ -46,6 +45,8 @@ class MldDenoiser(nn.Module):
             # assert self.arch == "trans_enc", "only implement encoder for diffusion-only"
         self.pose_embd = nn.Linear(nfeats, self.latent_dim)
         self.pose_proj = nn.Linear(self.latent_dim, nfeats)
+        self.first_pose_proj = nn.Linear(self.latent_dim, nfeats-1)
+
 
         # emb proj
         if self.condition in ["text", "text_uncond"]:
@@ -100,24 +101,23 @@ class MldDenoiser(nn.Module):
                                                     num_layers=num_layers)
 
     def forward(self,
-                sample,
+                noised_motion,
                 timestep,
                 encoder_hidden_states,
                 lengths=None,
                 **kwargs):
         # 0.  dimension matching
-        # sample [latent_dim[0], batch_size, latent_dim] <= [batch_size, latent_dim[0], latent_dim[1]]
-        sample = sample.permute(1, 0, 2)
-
+        # noised_motion [latent_dim[0], batch_size, latent_dim] <= [batch_size, latent_dim[0], latent_dim[1]]
+        noised_motion = noised_motion.permute(1, 0, 2)
         # 0. check lengths for no vae (diffusion only)
         if lengths not in [None, []]:
-            mask = lengths_to_mask(lengths, sample.device)
+            mask = lengths_to_mask([x for x in lengths], noised_motion.device)
 
         # 1. time_embedding
         # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
-        timesteps = timestep.expand(sample.shape[1]).clone()
+        timesteps = timestep.expand(noised_motion.shape[1]).clone()
         time_emb = self.time_proj(timesteps)
-        time_emb = time_emb.to(dtype=sample.dtype)
+        time_emb = time_emb.to(dtype=noised_motion.dtype)
         # [1, bs, latent_dim] <= [bs, latent_dim]
         time_emb = self.time_embedding(time_emb).unsqueeze(0)
 
@@ -141,8 +141,8 @@ class MldDenoiser(nn.Module):
         # 4. transformer
         if self.arch == "trans_enc":
             # if self.diffusion_only:
-            sample = self.pose_embd(sample)
-            xseq = torch.cat((emb_latent, sample), axis=0)
+            proj_noised_motion = self.pose_embd(noised_motion)
+            xseq = torch.cat((emb_latent, proj_noised_motion), axis=0)
             # else:
             # xseq = torch.cat((sample, emb_latent), axis=0)
 
@@ -157,11 +157,19 @@ class MldDenoiser(nn.Module):
             tokens = self.encoder(xseq)
 
             # if self.diffusion_only:
-            sample = tokens[emb_latent.shape[0]:]
-            sample = self.pose_proj(sample)
-
+            denoised_motion_proj = tokens[emb_latent.shape[0]:]
+            denoised_first_pose = self.first_pose_proj(denoised_motion_proj[:1,
+                                                                            :])
+            
+            denoised_motion_only = self.pose_proj(denoised_motion_proj[1:, 
+                                                                       :])
             # zero for padded area
-            sample[~mask.T] = 0
+            denoised_motion_only[~mask.T] = 0
+
+            denoised_motion = torch.zeros_like(noised_motion)
+
+            denoised_motion[1:] = denoised_motion_only
+            denoised_motion[0, :, :-1] = denoised_first_pose
             # else:
             #     sample = tokens[:sample.shape[0]]
 
@@ -169,6 +177,6 @@ class MldDenoiser(nn.Module):
             raise TypeError("{self.arch} is not supoorted")
 
         # 5. [batch_size, latent_dim[0], latent_dim[1]] <= [latent_dim[0], batch_size, latent_dim[1]]
-        sample = sample.permute(1, 0, 2)
+        denoised_motion = denoised_motion.permute(1, 0, 2)
 
-        return (sample, )
+        return (denoised_motion, )

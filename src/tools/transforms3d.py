@@ -105,6 +105,9 @@ def change_for(p, R, T=0, forward=True):
     p: vector in original coordinate frame
     R: rotation matrix of new coordinate frame ([x, y, z] format)
     T: translation of new coordinate frame
+    Let angle R by a.
+    forward: rotates the coordinate frame by -a (True) or rotate the point
+    by +a.
     """
     if forward:  # R.T @ (p_global - pelvis_translation)
         return torch.einsum('...di,...d->...i', R, p - T)

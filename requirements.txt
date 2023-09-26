@@ -4,6 +4,7 @@ aiosignal==1.2.0
 antlr4-python3-runtime==4.9.3
 asttokens==2.0.5
 async-timeout==4.0.2
+aitviewer==1.11.0
 attrs==21.4.0
 backcall==0.2.0
 blis==0.7.9
@@ -19,7 +20,7 @@ confection==0.0.4
 cymem==2.0.7
 decorator==4.4.2
 docker-pycreds==0.4.0
-einops==0.4.1
+einops==0.6.1
 en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.5.0/en_core_web_sm-3.5.0-py3-none-any.whl
 executing==0.8.3
 filelock==3.6.0
@@ -58,6 +59,11 @@ multidict==6.0.2
 murmurhash==1.0.9
 networkx==2.7.1
 numpy==1.22.3
+pytorch-lightning==2.0.6
+torch==2.0.1
+torchaudio==2.0.2
+torchmetrics==1.0.3
+torchvision==0.15.2
 nvidia-cublas-cu11==11.10.3.66
 nvidia-cuda-cupti-cu11==11.7.101
 nvidia-cuda-nvrtc-cu11==11.7.99
