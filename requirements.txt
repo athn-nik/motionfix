@@ -151,3 +151,5 @@ Werkzeug==2.0.3
 yarl==1.7.2
 yaspin==2.1.0
 zipp==3.7.0
+rich==13.5.3
+diffusers=0.21.2

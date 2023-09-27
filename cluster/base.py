@@ -89,8 +89,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
     no_gpus = 1
 
     if mode == "train":
-        for experiment in configs:
-            import ipdb; ipdb.set_trace()
+        for experiment in configs: 
             expname = experiment["expname"]
             run_id = experiment["run_id"]
             extra_args = experiment["args"]
