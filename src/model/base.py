@@ -260,7 +260,6 @@ class BaseModel(LightningModule):
         return x_unnorm
 
     def allsplit_epoch_end(self, split: str):
-
         video_names = []
         # RENDER
         if self.global_rank == 0 and self.trainer.current_epoch != 0:
@@ -272,6 +271,9 @@ class BaseModel(LightningModule):
                 video_names = self.render_buffer(self.render_data_buffer[split],
                                                     split=split)
                 # log videos to wandb
+                self.render_buffer(self.render_data_buffer[split],split=split)
+
+    
             if self.logger is not None and video_names:
                 log_render_dic = {}
                 for v in video_names:

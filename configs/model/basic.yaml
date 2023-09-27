@@ -31,7 +31,7 @@ dim_per_feat: [135]
 # data related
 input_feats:
 - "body_transl_delta_pelv_xy"
-- "body_transl_z"
+# - "body_transl_z"
 - "body_orient_delta"
 - "body_pose_delta"
 # - "body_orient"

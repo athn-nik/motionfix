@@ -12,6 +12,7 @@ import smplx
 import torch
 from einops import rearrange
 from src import data
+from src.data.tools.collate import collate_tensor_with_padding
 from src.tools.geometry import matrix_to_euler_angles, matrix_to_rotation_6d
 from pytorch_lightning import LightningDataModule
 from smplx.joint_names import JOINT_NAMES
@@ -25,6 +26,7 @@ from src.utils.genutils import DotDict, cast_dict_to_tensors, to_tensor
 from src.tools.transforms3d import (
     change_for, local_to_global_orient, transform_body_pose, remove_z_rot,
     rot_diff, get_z_rot)
+from src.tools.transforms3d import canonicalize_rotations
 
 # A logger for this file
 log = logging.getLogger(__name__)
@@ -205,7 +207,7 @@ class SynthDataset(Dataset):
         """
         trans = to_tensor(data['trans'])
         trans_vel = trans - trans.roll(1, 0)  # shift one right and subtract
-        pelvis_orient =to_tensor(data['rots'][..., :3])
+        pelvis_orient = to_tensor(data['rots'][..., :3])
         R_z = get_z_rot(pelvis_orient, in_format="aa")
         # rotate -R_z
         trans_vel_pelv = change_for(trans_vel, R_z.roll(1, 0), forward=True)
@@ -255,12 +257,40 @@ class SynthDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
+    def _canonica_facefront(self, rotations, translation):
+        rots_motion = rotations
+        trans_motion = translation
+        datum_len = rotations.shape[0]
+        rots_motion_rotmat = transform_body_pose(rots_motion.reshape(datum_len,
+                                                           -1, 3),
+                                                           'aa->rot')
+        orient_R_can, trans_can = canonicalize_rotations(rots_motion_rotmat[:,
+                                                                             0],
+                                                         trans_motion)            
+        rots_motion_rotmat_can = rots_motion_rotmat
+        rots_motion_rotmat_can[:, 0] = orient_R_can
+        translation_can = trans_can - trans_can[0]
+        rots_motion_aa_can = transform_body_pose(rots_motion_rotmat_can,
+                                                 'rot->aa')
+        rots_motion_aa_can = rearrange(rots_motion_aa_can, 'F J d -> F (J d)',
+                                       d=3)
+        return rots_motion_aa_can, translation_can
+
+
     def __getitem__(self, idx):
         datum = self.data[idx]
         duration = len(datum['rots'])
         # perform augmentations except when in test mode
         # if self.do_augmentations:
         #     datum = self.seq_parser.augment_npz(datum)
+
+        # CANONICALIZE MOTION AND BRING IT TO 0
+        rots_can, trans_can = self._canonica_facefront(datum['rots'],
+                                                       datum['trans'])
+
+        datum['rots'] = rots_can
+        datum['trans'] = trans_can
+
         data_dict_source = {f'{feat}_source': self._feat_get_methods[feat](datum)
                             for feat in self.load_feats}
         if self.stats is not None:
@@ -301,6 +331,11 @@ class SynthDataset(Dataset):
 
     def get_all_features(self, idx):
         datum = self.data[idx]
+        rots_can, trans_can = self._canonica_facefront(datum['rots'],
+                                                       datum['trans'])
+        datum['rots'] = rots_can
+        datum['trans'] = trans_can
+
         data_dict_source = {f'{feat}_source': self._feat_get_methods[feat](datum)
                             for feat in self.load_feats}
         if self.stats is not None:
@@ -309,7 +344,7 @@ class SynthDataset(Dataset):
                           if feat in self.stats.keys()}
             # mean, var = self.stats[feats_name]['mean'], self.stats[feats_name]['var']
             data_dict_source = {**data_dict_source, **norm_feats}
-        data_dict_target = {k.replace('_source', '_target'): v[::4] 
+        data_dict_target = {k.replace('_source', '_target'): v[:30] 
                             for k, v in data_dict_source.items()}
         data_dict = {**data_dict_source, **data_dict_target}
         
@@ -442,6 +477,8 @@ class SynthDataModule(BASEDataModule):
 
     def calculate_feature_stats(self, dataset: SynthDataset):
         stat_path = self.preproc.stats_file
+        if self.debug:
+            stat_path = stat_path.replace('.npy', '_debug.npy')
 
         if not exists(stat_path):
             log.info(f"No dataset stats found. Calculating and saving to {stat_path}")

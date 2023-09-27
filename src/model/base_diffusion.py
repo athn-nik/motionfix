@@ -331,7 +331,7 @@ class MD(BaseModel):
         # diffusion process return with noise and noise_pred
         visual = False
         if batch_idx == 0:
-            visual = True
+            visual = False
         n_set = self._diffusion_process(feats_ref,
                                         cond_emb, lengths=lengths, viz=visual)
         return {**n_set}
@@ -469,7 +469,7 @@ class MD(BaseModel):
 
             data_loss = loss_func_data(out_dict['pred'],
                                        out_dict['diff_in'])
-            first_pose_loss = data_loss[:, 0, :-1].mean(-1)
+            first_pose_loss = data_loss[:, 0].mean(-1)
             first_pose_loss = first_pose_loss.mean()
 
             deltas_pose = data_loss[:, 1:]
@@ -477,16 +477,13 @@ class MD(BaseModel):
             trans_loss = deltas_pose[..., :lparts[0]].mean(-1)*pad_mask
             trans_loss = trans_loss.sum() / pad_mask.sum()
 
-            z_loss = deltas_pose[..., lparts[0]:lparts[1]].mean(-1)*pad_mask
-            z_loss = z_loss.sum() / pad_mask.sum()            
-
-            orient_loss = deltas_pose[..., lparts[1]:lparts[2]].mean(-1)*pad_mask
+            orient_loss = deltas_pose[..., lparts[0]:lparts[1]].mean(-1)*pad_mask
             orient_loss = orient_loss.sum() / pad_mask.sum()
 
-            pose_loss = deltas_pose[..., lparts[2]:lparts[3]].mean(-1)*pad_mask
+            pose_loss = deltas_pose[..., lparts[1]:lparts[2]].mean(-1)*pad_mask
             pose_loss = pose_loss.sum() / pad_mask.sum()            
 
-            total_loss = z_loss + pose_loss + trans_loss + orient_loss + first_pose_loss
+            total_loss = pose_loss + trans_loss + orient_loss + first_pose_loss
         
             # total_loss = first_pose_loss
         
@@ -503,8 +500,7 @@ class MD(BaseModel):
                                                pad_mask_jts_pos)
         total_loss = total_loss + loss_joints
 
-        return total_loss, {'loss': total_loss, 
-                            'z_root': z_loss,
+        return total_loss, {'loss': total_loss,
                             'pose': pose_loss,
                             'orientation': orient_loss,
                             'translation': trans_loss,
@@ -567,7 +563,7 @@ class MD(BaseModel):
 
         # apply rotational deltas
         new_state_rot = apply_rot_delta(first_pose[..., 3:].squeeze(), 
-                                        delta_motion[..., 4:],
+                                        delta_motion[..., 3:],
                                         in_format="6d", out_format="6d")
 
         # cat and normalise the result
@@ -577,7 +573,7 @@ class MD(BaseModel):
 
     def diffout2motion(self, diffout):
         # FIRST POSE FOR GENERATION & DELTAS FOR INTEGRATION
-        first_pose = diffout[:, :1, :-1]
+        first_pose = diffout[:, :1,]
         delta_feats = diffout[:, 1:]
 
         # FORWARD PASS 

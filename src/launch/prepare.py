@@ -45,11 +45,18 @@ def get_expdir(debug):
     else:
         return 'experiments'
 
+def get_debug(debug):
+    if debug:
+        return '_debug'
+    else:
+        return ''
+    
 # this has to run -- pytorch memory leak in the dataloader associated with #973 pytorch issues
 #import resource
 #rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 #resource.setrlimit(resource.RLIMIT_NOFILE, (12000, rlimit[1]))
 # Solutions summarized in --> https://github.com/Project-MONAI/MONAI/issues/701
+OmegaConf.register_new_resolver("get_debug", get_debug)
 OmegaConf.register_new_resolver("get_expdir", get_expdir)
 OmegaConf.register_new_resolver("code_path", code_path)
 OmegaConf.register_new_resolver("working_path", working_path)

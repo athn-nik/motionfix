@@ -45,7 +45,7 @@ class MldDenoiser(nn.Module):
             # assert self.arch == "trans_enc", "only implement encoder for diffusion-only"
         self.pose_embd = nn.Linear(nfeats, self.latent_dim)
         self.pose_proj = nn.Linear(self.latent_dim, nfeats)
-        self.first_pose_proj = nn.Linear(self.latent_dim, nfeats-1)
+        self.first_pose_proj = nn.Linear(self.latent_dim, nfeats)
 
 
         # emb proj
@@ -169,7 +169,7 @@ class MldDenoiser(nn.Module):
             denoised_motion = torch.zeros_like(noised_motion)
 
             denoised_motion[1:] = denoised_motion_only
-            denoised_motion[0, :, :-1] = denoised_first_pose
+            denoised_motion[0] = denoised_first_pose
             # else:
             #     sample = tokens[:sample.shape[0]]
 
