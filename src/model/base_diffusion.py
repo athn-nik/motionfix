@@ -623,7 +623,8 @@ class MD(BaseModel):
         # - "body_transl_z"
         # - "body_orient_xy"
         # - "body_pose"
-
+        self.diff_params.guidance_scale = 0
+        
         batch = self.norm_and_cat(batch, self.input_feats)
 
         batch = self.append_first_frame(batch, which_motion='target')
