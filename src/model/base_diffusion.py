@@ -548,7 +548,7 @@ class MD(BaseModel):
     
     
     
-    def visualize_diffusion(self, dif_out):       
+    def visualize_diffusion(self, dif_out, target_lens):       
         ##### DEBUG THE MODEL #####
         import os
         curdir = f'debug/epoch-{self.trainer.current_epoch}'
@@ -558,13 +558,19 @@ class MD(BaseModel):
         timesteps = dif_out['timesteps']
         noisy_motion = dif_out['noised_motion_feats']
         diffusion_fw_out = dif_out['pred_motion_feats']
+        # integrate all motions
+        mot_from_deltas = self.diffout2motion(input_motion_feats.detach())
+        noisy_mot_from_deltas = self.diffout2motion(noisy_motion.detach())
+        denois_mot_deltas = self.diffout2motion(diffusion_fw_out.detach())
         
+        mot_from_deltas = mot_from_deltas.permute(1, 0, 2)
+        noisy_mot_from_deltas = noisy_mot_from_deltas.permute(1, 0, 2)
+        denois_mot_deltas = denois_mot_deltas.permute(1, 0, 2)
+
         for idx in range(dif_out['input_motion_feats'].shape[0]-2):
             from src.render.mesh_viz import render_motion
 
-            mot_from_deltas = self.diffout2motion(input_motion_feats.detach())
-            mot_from_deltas = mot_from_deltas.permute(1, 0, 2)
-            mot_from_deltas = mot_from_deltas[idx]
+            mot_from_deltas = mot_from_deltas[idx, :target_lens[idx]]
             uno_vid = pack_to_render(rots=mot_from_deltas[...,
                                                         3:].detach().cpu(),
                                         trans=mot_from_deltas[...,
@@ -575,9 +581,7 @@ class MD(BaseModel):
                         pose_repr='aa')
 
 
-            noisy_mot_from_deltas = self.diffout2motion(noisy_motion.detach())
-            noisy_mot_from_deltas = noisy_mot_from_deltas.permute(1, 0, 2)
-            noisy_mot_from_deltas = noisy_mot_from_deltas[idx]
+            noisy_mot_from_deltas = noisy_mot_from_deltas[idx, :target_lens[idx]]
             no_vid = pack_to_render(rots=noisy_mot_from_deltas[...,
                                                         3:].detach().cpu(),
                                         trans=noisy_mot_from_deltas[...,
@@ -588,11 +592,7 @@ class MD(BaseModel):
                         text_for_vid=str(timesteps[idx].item()),
                         pose_repr='aa')
 
-
-
-            denois_mot_deltas = self.diffout2motion(diffusion_fw_out.detach())
-            denois_mot_deltas = denois_mot_deltas.permute(1, 0, 2)
-            denois_mot_deltas = denois_mot_deltas[idx]
+            denois_mot_deltas = denois_mot_deltas[idx, :target_lens[idx]]
             deno_vid = pack_to_render(rots=denois_mot_deltas[...,
                                                         3:].detach().cpu(),
                                         trans=denois_mot_deltas[...,
@@ -633,6 +633,7 @@ class MD(BaseModel):
         gt_lens = batch['length_target']
         gt_texts = batch['text']
         self.batch_size = len(gt_texts)
+        actual_target_lens = [leng + 1 for leng in batch['length_target']]
         # batch['source_motion'] = batch['source_motion'].permute(1, 0, 2)
         # batch['target_motion'] = batch['target_motion'].permute(1, 0, 2)
         # batch.clear()
@@ -642,7 +643,7 @@ class MD(BaseModel):
             
             dif_dict = self.train_diffusion_forward(batch, batch_idx)
             if self.trainer.current_epoch % 10 == 0 and split=='train':
-                self.visualize_diffusion(dif_dict)
+                self.visualize_diffusion(dif_dict, actual_target_lens)
             # rs_set Bx(S+1)xN --> first pose included 
             total_loss, loss_dict = self.compute_losses(dif_dict,
                                                         batch['body_joints_target'],
@@ -661,11 +662,13 @@ class MD(BaseModel):
             with torch.no_grad():
                 motion_out = self.generate_motion(gt_texts, gt_lens)
                 motion_unnorm = self.diffout2motion(motion_out)
+                
                 # do something with the full motion
                 gen_to_render = pack_to_render(rots=motion_unnorm[...,
                                                                     3:].detach().cpu(),
                                                     trans=motion_unnorm[...,
                                                                 :3].detach().cpu())
+                
             self.render_data_buffer[split].append({
                 # 'source_motion': source_motion_gt,
                 'target_motion': target_motion_gt,
