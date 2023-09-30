@@ -89,7 +89,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     body_models_path = f'{cfg.path.data}/body_models' if not cfg.data.debug else f'{cfg.path.minidata}/body_models'
 
     AITVIEWER_CONFIG.update_conf({"playback_fps": 30,
-                                   "auto_set_floor": False,
+                                   "auto_set_floor": True,
                                    "smplx_models": body_models_path})
     renderer = HeadlessRenderer()
     list_of_all_feats = data_module.nfeats
