@@ -8,7 +8,7 @@ deps/*
 !deps/transforms/
 !deps/smplh/
 !deps/inference/
-!deps/gpt
+!deps/stats
 /wandb
 *.err
 *.out

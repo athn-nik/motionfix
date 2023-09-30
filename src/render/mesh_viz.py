@@ -83,6 +83,7 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     # aitviewer adds a counter to the filename, we remove it
     # filename.split('_')[-1].replace('.mp4', '')
     # os.rename(filename + '_0.mp4', filename[:-4] + '.mp4')
+    os.rename(filename + '_0.mp4', filename + '.mp4')
 
     # empty scene for the next rendering
     renderer.scene.remove(smpl_template)
@@ -94,10 +95,10 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     os.close(old)
 
     if text_for_vid is not None:
-        fname = put_text(text_for_vid, f'{filename}_0.mp4', f'{filename}_0_wtext.mp4')
-        os.remove(f'{filename}_0.mp4')
+        fname = put_text(text_for_vid, f'{filename}.mp4', f'{filename}_ts.mp4')
+        os.remove(f'{filename}.mp4')
     else:
-        fname = f'{filename}_0.mp4'
+        fname = f'{filename}.mp4'
 
     return fname
 

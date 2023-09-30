@@ -55,6 +55,8 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     os.environ['HYDRA_FULL_ERROR'] = '1'
     os.system("Xvfb :12 -screen 1 640x480x24 &")
     os.environ['DISPLAY'] = ":12"
+    os.environ['WANDB_SILENT']="true"
+
     torch.autograd.set_detect_anomaly(True)
 
     # import multiprocessing
@@ -89,8 +91,9 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     body_models_path = f'{cfg.path.data}/body_models' if not cfg.data.debug else f'{cfg.path.minidata}/body_models'
 
     AITVIEWER_CONFIG.update_conf({"playback_fps": 30,
-                                   "auto_set_floor": False,
-                                   "smplx_models": body_models_path})
+                                   "auto_set_floor": True,
+                                   "smplx_models": body_models_path,
+                                   "z_up": True})
     renderer = HeadlessRenderer()
     list_of_all_feats = data_module.nfeats
     idx_for_inputs = [cfg.data.load_feats.index(infeat) 

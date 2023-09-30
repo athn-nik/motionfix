@@ -41,7 +41,7 @@ def get_samples_folder(path):
 
 def get_expdir(debug):
     if debug:
-        return 'miniexperiments'
+        return 'experiments'
     else:
         return 'experiments'
 

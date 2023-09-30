@@ -37,7 +37,7 @@ def rotate_trans(trans, rotZ, inverse=False):
 
 
 
-def canonicalize_rotations(global_orient, trans, angle=-3*torch.pi/4):
+def canonicalize_rotations(global_orient, trans, angle=torch.pi/4):
     global_euler = matrix_to_euler_angles(global_orient, "ZYX")
     anglesZ, anglesY, anglesX = torch.unbind(global_euler, -1)
 

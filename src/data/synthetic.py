@@ -299,7 +299,7 @@ class SynthDataset(Dataset):
                           if feat in self.stats.keys()}
             # mean, var = self.stats[feats_name]['mean'], self.stats[feats_name]['var']
             data_dict_source = {**data_dict_source, **norm_feats}
-        data_dict_target = {k.replace('_source', '_target'): v[:30] 
+        data_dict_target = {k.replace('_source', '_target'): v[::2]
                             for k, v in data_dict_source.items()}
         meta_data_dict = {feat: method(datum)
                           for feat, method in self._meta_data_get_methods.items()}
