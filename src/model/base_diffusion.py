@@ -452,7 +452,7 @@ class MD(BaseModel):
         J = 22
         joints_gt = rearrange(joints_gt, 'b s (j d) -> b s j d', j=J)
 
-        loss_joints = self.compute_joints_loss(out_dict['pred_motion_feats'],
+        loss_joints = self.compute_joints_loss(out_dict,
                                                joints_gt, 
                                                pad_mask_jts_pos)
         total_loss = total_loss + loss_joints
@@ -559,7 +559,7 @@ class MD(BaseModel):
         noisy_motion = dif_out['noised_motion_feats']
         diffusion_fw_out = dif_out['pred_motion_feats']
         
-        for idx in range(dif_out['input_motion_feats'].shape[0]-2):
+        for idx in range(2):
             from src.render.mesh_viz import render_motion
 
             mot_from_deltas = self.diffout2motion(input_motion_feats.detach())
