@@ -400,7 +400,10 @@ class SynthDataModule(BASEDataModule):
         # pass this or split for dataloading into sets
         dataset_dict_raw = joblib.load(ds_db_path)
         for k, v in dataset_dict_raw.items():
-            dataset_dict_raw[k]['rots'] = v['rots'].flatten(-2).float()
+            if len(dataset_dict_raw[k]['rots']) > 30*8:
+                dataset_dict_raw[k]['rots'] = v['rots']['rots'][:30*8]
+            if v['rots'] > 2:
+                dataset_dict_raw[k]['rots'] = v['rots'].flatten(-2).float()
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
 
         # add id fiels in order to turn the dict into a list without loosing it
