@@ -4,14 +4,14 @@ import time
 import subprocess
 
 cmd_train = ['python', 'cluster/single_run.py',
-             '--expname', 'debug',
+             '--expname', 'large-grid-search',
              '--mode', 'train',
-             '--bid', '20',
+             '--bid', '40',
              '--run-id', 'RUNID',
-             '--gpus', '1',
+             '--gpus', '2',
              '--extras']
 
-batch_sizes = [2, 4]
+batch_sizes = [16, 32]
 lrs = [8e-4, 3e-4, 4e-4, 1e-3, 1e-5]
 
 # the list() things is a hack to avoid by reference assignment
@@ -32,7 +32,7 @@ for bs in batch_sizes:
         idx_of_runid = cur_cmd.index("--run-id")
         cur_cmd[idx_of_runid + 1] = f'BatchSize{bs}_LR{cur_lr:.1e}'
 
-        list_of_args = [f'machine.batch_size={bs} model.optim.lr={cur_lr} debug=true trainer.log_every_n_steps=5']
+        list_of_args = [f'machine.batch_size={bs} model.optim.lr={cur_lr}']
         cur_cmd.extend(list_of_args)
         run(cur_cmd)
         time.sleep(5)
