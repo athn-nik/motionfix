@@ -403,6 +403,8 @@ class SynthDataModule(BASEDataModule):
             if len(dataset_dict_raw[k]['rots']) > 30*8:
                 dataset_dict_raw[k]['rots'] = v['rots'][:30*8]
                 dataset_dict_raw[k]['trans'] = v['trans'][:30*8]
+                dataset_dict_raw[k]['joint_positions'] = v['joint_positions'][:30*8]
+
             if len(v['rots'].shape) > 2:
                 dataset_dict_raw[k]['rots'] = v['rots'].flatten(-2).float()
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
