@@ -401,8 +401,8 @@ class SynthDataModule(BASEDataModule):
         dataset_dict_raw = joblib.load(ds_db_path)
         for k, v in dataset_dict_raw.items():
             if len(dataset_dict_raw[k]['rots']) > 30*8:
-                dataset_dict_raw[k]['rots'] = v['rots']['rots'][:30*8]
-            if v['rots'] > 2:
+                dataset_dict_raw[k]['rots'] = v['rots'][:30*8]
+            if len(v['rots'].shape) > 2:
                 dataset_dict_raw[k]['rots'] = v['rots'].flatten(-2).float()
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
 
