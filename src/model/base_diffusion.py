@@ -449,12 +449,12 @@ class MD(BaseModel):
             prior_loss = loss_func_prior(out_dict['noise_prior'],
                                          out_dict['dist_m1'])
         loss_joints = 0
-        J = 22
-        joints_gt = rearrange(joints_gt, 'b s (j d) -> b s j d', j=J)
-
-        loss_joints = self.compute_joints_loss(out_dict,
-                                               joints_gt, 
-                                               pad_mask_jts_pos)
+        # J = 22
+        # joints_gt = rearrange(joints_gt, 'b s (j d) -> b s j d', j=J)
+        
+        # loss_joints = self.compute_joints_loss(out_dict,
+        #                                        joints_gt, 
+        #                                        pad_mask_jts_pos)
         total_loss = total_loss + loss_joints
 
         return total_loss, {'loss': total_loss,
@@ -548,12 +548,11 @@ class MD(BaseModel):
     
     
     
-    def visualize_diffusion(self, dif_out, target_lens):       
+    def visualize_diffusion(self, dif_out, target_lens, keyids):       
         ##### DEBUG THE MODEL #####
         import os
         curdir = f'debug/epoch-{self.trainer.current_epoch}'
         os.makedirs(curdir, exist_ok=True)
-        cur_ep = self.trainer.current_epoch
         input_motion_feats = dif_out['input_motion_feats']
         timesteps = dif_out['timesteps']
         noisy_motion = dif_out['noised_motion_feats']
@@ -566,43 +565,41 @@ class MD(BaseModel):
         mot_from_deltas = mot_from_deltas.permute(1, 0, 2)
         noisy_mot_from_deltas = noisy_mot_from_deltas.permute(1, 0, 2)
         denois_mot_deltas = denois_mot_deltas.permute(1, 0, 2)
-
         for idx in range(2):
             from src.render.mesh_viz import render_motion
-
-            mot_from_deltas = mot_from_deltas[idx, :target_lens[idx]]
-            uno_vid = pack_to_render(rots=mot_from_deltas[...,
+            one_mot_from_deltas = mot_from_deltas[idx, :target_lens[idx]]
+            uno_vid = pack_to_render(rots=one_mot_from_deltas[...,
                                                         3:].detach().cpu(),
-                                        trans=mot_from_deltas[...,
+                                        trans=one_mot_from_deltas[...,
                                                     :3].detach().cpu())
             render_motion(self.renderer, uno_vid, 
-                            f'{curdir}/input_{idx}', 
-                        text_for_vid=str(timesteps[idx].item()), 
-                        pose_repr='aa')
+                          f'{curdir}/input_{keyids[idx]}', 
+                          text_for_vid=str(timesteps[idx].item()), 
+                          pose_repr='aa')
 
-
-            noisy_mot_from_deltas = noisy_mot_from_deltas[idx, :target_lens[idx]]
-            no_vid = pack_to_render(rots=noisy_mot_from_deltas[...,
+            one_noisy_mot_from_deltas = noisy_mot_from_deltas[idx, :target_lens[idx]]
+            no_vid = pack_to_render(rots=one_noisy_mot_from_deltas[...,
                                                         3:].detach().cpu(),
-                                        trans=noisy_mot_from_deltas[...,
+                                        trans=one_noisy_mot_from_deltas[...,
                                                     :3].detach().cpu())
 
 
-            render_motion(self.renderer, no_vid, f'{curdir}/noised_{idx}',
-                        text_for_vid=str(timesteps[idx].item()),
-                        pose_repr='aa')
+            render_motion(self.renderer, no_vid,
+                          f'{curdir}/noised_{keyids[idx]}',
+                          text_for_vid=str(timesteps[idx].item()),
+                          pose_repr='aa')
 
-            denois_mot_deltas = denois_mot_deltas[idx, :target_lens[idx]]
-            deno_vid = pack_to_render(rots=denois_mot_deltas[...,
+            one_denois_mot_deltas = denois_mot_deltas[idx, :target_lens[idx]]
+            deno_vid = pack_to_render(rots=one_denois_mot_deltas[...,
                                                         3:].detach().cpu(),
-                                        trans=denois_mot_deltas[...,
+                                        trans=one_denois_mot_deltas[...,
                                                     :3].detach().cpu())
 
 
-            render_motion(self.renderer, deno_vid, f'{curdir}/denoised_{idx}',
-                        text_for_vid=str(timesteps[idx].item()),
-                        pose_repr='aa')
-
+            render_motion(self.renderer, deno_vid, 
+                          f'{curdir}/denoised_{keyids[idx]}',
+                          text_for_vid=str(timesteps[idx].item()),
+                          pose_repr='aa')
         ##### DEBUG THE MODEL #####
 
 
@@ -633,19 +630,25 @@ class MD(BaseModel):
 
         gt_lens = batch['length_target']
         gt_texts = batch['text']
+        gt_keyids = batch['id']
         self.batch_size = len(gt_texts)
         actual_target_lens = [leng + 1 for leng in batch['length_target']]
         # batch['source_motion'] = batch['source_motion'].permute(1, 0, 2)
         # batch['target_motion'] = batch['target_motion'].permute(1, 0, 2)
         # batch.clear()
         # bs = len(gt_lens)
+
+
+
         if split in ['train',
                      'val']:
-            
+
             dif_dict = self.train_diffusion_forward(batch, batch_idx)
+
             if self.trainer.current_epoch % 10 == 0 and split=='train':
-                self.visualize_diffusion(dif_dict, actual_target_lens)
+                self.visualize_diffusion(dif_dict, actual_target_lens, gt_keyids)
             # rs_set Bx(S+1)xN --> first pose included 
+
             total_loss, loss_dict = self.compute_losses(dif_dict,
                                                         batch['body_joints_target'],
                                                         gt_lens)

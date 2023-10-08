@@ -330,7 +330,7 @@ class SynthDataset(Dataset):
         return DotDict(data_dict)
 
     def get_all_features(self, idx):
-        datum = self.data[idx]
+        datum = self.data[idx]        
         rots_can, trans_can = self._canonica_facefront(datum['rots'],
                                                        datum['trans'])
         datum['rots'] = rots_can
@@ -344,10 +344,11 @@ class SynthDataset(Dataset):
                           if feat in self.stats.keys()}
             # mean, var = self.stats[feats_name]['mean'], self.stats[feats_name]['var']
             data_dict_source = {**data_dict_source, **norm_feats}
-        data_dict_target = {k.replace('_source', '_target'): v[:30] 
+        data_dict_target = {k.replace('_source', '_target'): v[::2]
                             for k, v in data_dict_source.items()}
-        data_dict = {**data_dict_source, **data_dict_target}
-        
+        meta_data_dict = {feat: method(datum)
+                          for feat, method in self._meta_data_get_methods.items()}
+        data_dict = {**data_dict_source, **data_dict_target, **meta_data_dict}
         return DotDict(data_dict)
 
 
@@ -492,16 +493,17 @@ class SynthDataModule(BASEDataModule):
             feature_names = dataset.get_all_features(0).keys()
             feature_dict = {name.replace('_source', ''): [] for name in feature_names
                             if '_target' not in name}
-
             for i in tqdm(range(len(dataset))):
                 x = dataset.get_all_features(i)
                 for name in feature_names:
                     x_new = x[name]
                     name = name.replace('_source', '')
                     name = name.replace('_target', '')
-                    feature_dict[name].append(x_new)
+                    if torch.is_tensor(x_new):
+                        feature_dict[name].append(x_new)
             feature_dict = {name: torch.cat(feature_dict[name],
-                                            dim=0) for name in feature_dict.keys()}
+                                            dim=0).float()
+                                             for name in feature_dict.keys()}
             stats = {name: {'max': x.max(0)[0].numpy(),
                             'min': x.min(0)[0].numpy(),
                             'mean': x.mean(0).numpy(),
