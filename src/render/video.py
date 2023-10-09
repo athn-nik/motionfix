@@ -39,7 +39,7 @@ def stack_vids_moviepy(video_lst, dur, savepath=None):
         final_clip.duration = dur
         final_clip.write_videofile(f'{savepath}',  **mpy_conf)
     # needs ImageMagick
-    return final_clip
+    return final_clip, savepath
 
 
 def add_text_moviepy(video, text, position='bottom', fontsize=25):
@@ -142,6 +142,7 @@ def stack_vids(vids_to_stack: List[str], fname: str, orient='v', v=False):
     if v:
         print('Executing', ' '.join(cmd_m))
     x = subprocess.call(cmd_m)
+    return fname
 
 def put_text(text: str, fname: str, outf: str, v=False):
     cmd_m = ['ffmpeg']

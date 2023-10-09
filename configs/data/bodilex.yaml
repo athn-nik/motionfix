@@ -1,8 +1,8 @@
-dataname: synthetic
-_target_: src.data.synthetic.SynthDataModule
+dataname: bodilex
+_target_: src.data.bodilex.BodilexDataModule
 debug: ${debug}
 
-datapath: ${path.data}/amass_smplhn/amass.pth.tar
+datapath: ${path.data}/amass_bodilex.pth.tar
 debug_datapath: ${path.minidata}/amass_small.pth.tar
 
 # Amass

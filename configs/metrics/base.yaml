@@ -1,0 +1,3 @@
+_target_: src.metrics.BaseMetric
+
+smpl_path: ${data.smplh_path}

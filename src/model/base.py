@@ -270,15 +270,16 @@ class BaseModel(LightningModule):
             else:
                 video_names = self.render_buffer(self.render_data_buffer[split],
                                                     split=split)
-                # log videos to wandb
-                self.render_buffer(self.render_data_buffer[split],split=split)
+                # # log videos to wandb
+                # self.render_buffer(self.render_data_buffer[split],split=split)
 
     
             if self.logger is not None and video_names:
                 log_render_dic = {}
                 for v in video_names:
                     logname = f'{split}_renders/' + v.replace('.mp4',
-                                                    '').split('/')[-1][4:-2]
+                                                    '').split('/')[-1][4:-4]
+                    logname = f'{logname}_kid'
                     log_render_dic[logname] = wandb.Video(v, fps=30,
                                                             format='mp4') 
                 self.logger.experiment.log(log_render_dic)
@@ -313,28 +314,48 @@ class BaseModel(LightningModule):
     def render_buffer(self, buffer: list[dict], split=False):
         """
         """
-        video_names = []
-        novids = 1
+        from src.render.video import stack_vids
+
+        novids = 3
         # create videos and save full paths
         folder = "epoch_" + str(self.trainer.current_epoch).zfill(3)
         folder =  Path('visuals') / folder / split
         folder.mkdir(exist_ok=True, parents=True)
 
+        stacked_videos = []
+
         for data in buffer:
             # RUN FWD PASS
-            for motion_type in data.keys():
-                for body_repr_name,body_repr_data in data[motion_type].items():            
-                    data[motion_type][body_repr_name] = body_repr_data[:novids]
+            for k in data.keys():
+                if isinstance(data[k], dict):
+                    motion_type = k
+                    for body_repr_name, body_repr_data in data[motion_type].items():            
+                        data[motion_type][body_repr_name] = body_repr_data[:novids]
+                else:
+                    data[k] = data[k][:novids]
 
             for iid_tor in range(novids):
-                filename = folder / str(iid_tor).zfill(3)
+                flname = folder / str(iid_tor).zfill(3)
+                video_names = []
+                cur_text = data['text_diff'][iid_tor]
+                cur_key = data['keyids'][iid_tor]
+
                 for k, v in data.items():
-                    if v is not None:
+                    if isinstance(v, dict):
+                        mot_to_rend = {k2: v2[iid_tor] for k2, v2 in v.items()}
                         # RENDER THE MOTION
-                        fname = render_motion(self.renderer, v, f'{filename}_{k}',
-                                      pose_repr='aa')
+                        fname = render_motion(self.renderer, mot_to_rend,
+                                                f'{flname}_{k}_{cur_key}',
+                                                text_for_vid=cur_text,
+                                                pose_repr='aa')
+                        
                         video_names.append(fname)
-        return video_names
+
+                stacked_fname = stack_vids(video_names, 
+                                           fname=f'{flname}_{cur_key}_stk.mp4',
+                                           orient='h')
+                stacked_videos.append(stacked_fname)
+        return stacked_videos
     # might be needed not working in multi GPU --> all_split_end
     # Logging per joint things 
     

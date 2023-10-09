@@ -23,7 +23,7 @@ from src.tools.transforms3d import change_for, transform_body_pose, get_z_rot
 from src.tools.transforms3d import apply_rot_delta
 from einops import rearrange, reduce
 from torch.nn.functional import l1_loss, mse_loss
-
+import wandb
 
 class MD(BaseModel):
     def __init__(self, 
@@ -449,12 +449,12 @@ class MD(BaseModel):
             prior_loss = loss_func_prior(out_dict['noise_prior'],
                                          out_dict['dist_m1'])
         loss_joints = 0
-        # J = 22
-        # joints_gt = rearrange(joints_gt, 'b s (j d) -> b s j d', j=J)
+        J = 22
+        joints_gt = rearrange(joints_gt, 'b s (j d) -> b s j d', j=J)
         
-        # loss_joints = self.compute_joints_loss(out_dict,
-        #                                        joints_gt, 
-        #                                        pad_mask_jts_pos)
+        loss_joints = self.compute_joints_loss(out_dict,
+                                               joints_gt, 
+                                               pad_mask_jts_pos)
         total_loss = total_loss + loss_joints
 
         return total_loss, {'loss': total_loss,
@@ -547,11 +547,11 @@ class MD(BaseModel):
         return full_motion_unnorm
     
     
-    
-    def visualize_diffusion(self, dif_out, target_lens, keyids):       
+    def visualize_diffusion(self, dif_out, target_lens, keyids, texts_diff):       
         ##### DEBUG THE MODEL #####
         import os
-        curdir = f'debug/epoch-{self.trainer.current_epoch}'
+        cur_epoch = self.trainer.current_epoch
+        curdir = f'debug/epoch-{cur_epoch}'
         os.makedirs(curdir, exist_ok=True)
         input_motion_feats = dif_out['input_motion_feats']
         timesteps = dif_out['timesteps']
@@ -565,17 +565,22 @@ class MD(BaseModel):
         mot_from_deltas = mot_from_deltas.permute(1, 0, 2)
         noisy_mot_from_deltas = noisy_mot_from_deltas.permute(1, 0, 2)
         denois_mot_deltas = denois_mot_deltas.permute(1, 0, 2)
-        for idx in range(2):
+        log_render_dic_debug = {}
+
+        for idx in range(4):
+            keyid_ts_str = f'{keyids[idx]}_ts_{str(timesteps[idx].item())}'
             from src.render.mesh_viz import render_motion
+            from src.render.video import stack_vids
+
             one_mot_from_deltas = mot_from_deltas[idx, :target_lens[idx]]
             uno_vid = pack_to_render(rots=one_mot_from_deltas[...,
                                                         3:].detach().cpu(),
                                         trans=one_mot_from_deltas[...,
                                                     :3].detach().cpu())
-            render_motion(self.renderer, uno_vid, 
-                          f'{curdir}/input_{keyids[idx]}', 
-                          text_for_vid=str(timesteps[idx].item()), 
-                          pose_repr='aa')
+            in_fl = render_motion(self.renderer, uno_vid, 
+                                  f'{curdir}/input_{keyid_ts_str}', 
+                                  text_for_vid=texts_diff[idx], 
+                                  pose_repr='aa')
 
             one_noisy_mot_from_deltas = noisy_mot_from_deltas[idx, :target_lens[idx]]
             no_vid = pack_to_render(rots=one_noisy_mot_from_deltas[...,
@@ -584,10 +589,10 @@ class MD(BaseModel):
                                                     :3].detach().cpu())
 
 
-            render_motion(self.renderer, no_vid,
-                          f'{curdir}/noised_{keyids[idx]}',
-                          text_for_vid=str(timesteps[idx].item()),
-                          pose_repr='aa')
+            noised_fl = render_motion(self.renderer, no_vid,
+                                      f'{curdir}/noised_{keyid_ts_str}',
+                                      text_for_vid=texts_diff[idx],
+                                      pose_repr='aa')
 
             one_denois_mot_deltas = denois_mot_deltas[idx, :target_lens[idx]]
             deno_vid = pack_to_render(rots=one_denois_mot_deltas[...,
@@ -596,10 +601,20 @@ class MD(BaseModel):
                                                     :3].detach().cpu())
 
 
-            render_motion(self.renderer, deno_vid, 
-                          f'{curdir}/denoised_{keyids[idx]}',
-                          text_for_vid=str(timesteps[idx].item()),
-                          pose_repr='aa')
+            denoised_fl = render_motion(self.renderer, deno_vid, 
+                                        f'{curdir}/denoised_{keyid_ts_str}',
+                                        text_for_vid=texts_diff[idx],
+                                        pose_repr='aa')
+            fname_for_stack = f'{curdir}/stak_{keyid_ts_str}_{idx}.mp4'
+            stacked_name = stack_vids([in_fl, noised_fl, denoised_fl],
+                                      fname=fname_for_stack,
+                                      orient='h')
+            logname = f'debug_renders/' + f'ep-{cur_epoch}_{idx}_{keyids[idx]}'
+            log_render_dic_debug[logname] = wandb.Video(stacked_name, fps=30,
+                                                        format='mp4') 
+
+        self.logger.experiment.log(log_render_dic_debug)
+
         ##### DEBUG THE MODEL #####
 
 
@@ -620,38 +635,33 @@ class MD(BaseModel):
         # - "body_transl_z"
         # - "body_orient_xy"
         # - "body_pose"
-        self.diff_params.guidance_scale = 0
-        
+
         batch = self.norm_and_cat(batch, self.input_feats)
 
         batch = self.append_first_frame(batch, which_motion='target')
         batch['length_target'] = [leng - 1 for leng in batch['length_target']]
-        batch['text'] = ['']*len(batch['text'])
+        # batch['text'] = ['']*len(batch['text'])
 
         gt_lens = batch['length_target']
         gt_texts = batch['text']
         gt_keyids = batch['id']
         self.batch_size = len(gt_texts)
         actual_target_lens = [leng + 1 for leng in batch['length_target']]
-        # batch['source_motion'] = batch['source_motion'].permute(1, 0, 2)
-        # batch['target_motion'] = batch['target_motion'].permute(1, 0, 2)
-        # batch.clear()
-        # bs = len(gt_lens)
-
-
 
         if split in ['train',
-                     'val']:
+                    'val']:
 
             dif_dict = self.train_diffusion_forward(batch, batch_idx)
 
-            if self.trainer.current_epoch % 10 == 0 and split=='train':
-                self.visualize_diffusion(dif_dict, actual_target_lens, gt_keyids)
+            if self.trainer.current_epoch % 10 == 0 and split=='train' and batch_idx == 0:
+                self.visualize_diffusion(dif_dict, actual_target_lens, 
+                                         gt_keyids, gt_texts)
             # rs_set Bx(S+1)xN --> first pose included 
 
             total_loss, loss_dict = self.compute_losses(dif_dict,
                                                         batch['body_joints_target'],
                                                         gt_lens)
+
 
             # self.losses[split](rs_set)
             # if loss is None:
@@ -659,14 +669,14 @@ class MD(BaseModel):
             loss_dict_to_log = {f'losses/{split}/{k}': v for k, v in 
                                 loss_dict.items()}
             self.log_dict(loss_dict_to_log, on_epoch=True,
-                           batch_size=self.batch_size)
+                        batch_size=self.batch_size)
     
-        if batch_idx == 0 and self.global_rank == 0 and split == 'val':
+        if batch_idx == 0 and self.global_rank == 0:
             source_motion_gt, target_motion_gt = self.batch2motion(batch)
             with torch.no_grad():
                 motion_out = self.generate_motion(gt_texts, gt_lens)
                 motion_unnorm = self.diffout2motion(motion_out)
-                
+                motion_unnorm = motion_unnorm.permute(1, 0, 2)
                 # do something with the full motion
                 gen_to_render = pack_to_render(rots=motion_unnorm[...,
                                                                     3:].detach().cpu(),
@@ -674,8 +684,9 @@ class MD(BaseModel):
                                                                 :3].detach().cpu())
 
             self.render_data_buffer[split].append({
-                # 'source_motion': source_motion_gt,
+                'source_motion': source_motion_gt,
                 'target_motion': target_motion_gt,
-                'generation': gen_to_render})
-
+                'generation': gen_to_render,
+                'text_diff': gt_texts,
+                'keyids': gt_keyids})
         return total_loss
