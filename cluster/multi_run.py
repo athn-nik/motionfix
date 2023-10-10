@@ -4,11 +4,11 @@ import time
 import subprocess
 
 cmd_train = ['python', 'cluster/single_run.py',
-             '--expname', 'large-grid-search',
+             '--expname', 'bodilex-large-grid-search',
              '--mode', 'train',
-             '--bid', '40',
+             '--bid', '30',
              '--run-id', 'RUNID',
-             '--gpus', '2',
+             '--gpus', '1',
              '--extras']
 
 batch_sizes = [16, 32]
@@ -32,7 +32,7 @@ for bs in batch_sizes:
         idx_of_runid = cur_cmd.index("--run-id")
         cur_cmd[idx_of_runid + 1] = f'BatchSize{bs}_LR{cur_lr:.1e}'
 
-        list_of_args = [f'machine.batch_size={bs} model.optim.lr={cur_lr}']
+        list_of_args = [f'data=bodilex machine.batch_size={bs} model.optim.lr={cur_lr}']
         cur_cmd.extend(list_of_args)
         run(cur_cmd)
         time.sleep(5)
