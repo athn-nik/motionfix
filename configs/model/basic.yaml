@@ -9,6 +9,7 @@ num_head: 4
 droupout: 0.1
 activation: "gelu"
 render_vids_every_n_epochs: 20
+num_vids_to_render: 2
 lr_scheduler: null # reduceonplateau, steplr
 
 # normalization
@@ -17,7 +18,7 @@ norm_type: standardize # min_max
 
 # diffusion related
 diff_params:
-  num_inference_timesteps: 100
+  num_inference_timesteps: 10
   eta: 40
   guidance_scale: 0 #
   guidance_uncondp: 1 # 0.1 0.25
