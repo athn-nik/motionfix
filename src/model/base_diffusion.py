@@ -583,10 +583,10 @@ class MD(BaseModel):
 
         for idx in range(2):
             keyid_ts_str = f'{keyids[idx]}_ts_{str(timesteps[idx].item())}'
-            tstep = f'{str(timesteps[idx].item())}'
+            tstep = f'timestep: {str(timesteps[idx].item())}'
             from src.render.mesh_viz import render_motion
             from src.render.video import stack_vids
-            text_vid = f'{texts_diff[idx]}_t.s.:{tstep}'
+            text_vid = f'{texts_diff[idx]}'
 
             one_mot_from_deltas = mot_from_deltas[idx, :target_lens[idx]]
             uno_vid = pack_to_render(rots=one_mot_from_deltas[...,
@@ -627,7 +627,8 @@ class MD(BaseModel):
                                       orient='h')
             logname = f'debug_renders/' + f'ep-{cur_epoch}_{keyids[idx]}_{idx}'
             log_render_dic_debug[logname] = wandb.Video(stacked_name, fps=30,
-                                                        format='mp4') 
+                                                        format='mp4',
+                                                        caption=tstep) 
 
         self.logger.experiment.log(log_render_dic_debug)
 
