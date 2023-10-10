@@ -6,6 +6,8 @@ import logging
 import os
 import random
 from einops import rearrange
+
+
 def freeze(model) -> None:
     r"""
     Freeze all params for inference.
@@ -31,6 +33,10 @@ def DotDict(in_dict):
         if isinstance(v,dict):
             out_dict[k] = DotDict(v)
     return dotdict(out_dict)
+
+
+def dict_to_device(tensor_dict, device):
+    return {k: v.to(device) for k, v in tensor_dict.items()}
 
 class dotdict(dict):
     """dot.notation access to dictionary attributes"""

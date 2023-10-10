@@ -24,7 +24,7 @@ from src.model.utils.smpl_fast import smpl_forward_fast
 class BaseModel(LightningModule):
     def __init__(self, statistics_path: str, nfeats: int, norm_type: str,
                  input_feats: List[str], dim_per_feat: List[int],
-                 smpl_path: str, 
+                 smpl_path: str, num_vids_to_render: str,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.save_hyperparameters(logger=False, 
@@ -42,6 +42,7 @@ class BaseModel(LightningModule):
         self.first_pose_feats = ['body_transl', 'body_orient', 'body_pose']
         self.input_feats_dims = list(dim_per_feat)
         self.input_feats = list(input_feats)
+        self.num_vids_to_render = num_vids_to_render
         self.body_model = smplx.SMPLHLayer(f'{smpl_path}/smplh', model_type='smplh',
                                            gender='neutral',
                                            ext='npz').to(self.device).eval();
@@ -284,6 +285,13 @@ class BaseModel(LightningModule):
                                                             format='mp4') 
                 self.logger.experiment.log(log_render_dic)
         self.render_data_buffer[split].clear()
+
+        if split == "val":
+            metrics_dict = self.metrics.compute()
+            metrics_dict = {f"Metrics/{metric}": value for metric, value in metrics_dict.items()}
+            metrics_dict.update({"epoch": float(self.trainer.current_epoch)})
+            self.log_dict(metrics_dict)
+
         return
 
     def on_train_epoch_end(self):
@@ -316,7 +324,7 @@ class BaseModel(LightningModule):
         """
         from src.render.video import stack_vids
 
-        novids = 3
+        novids = self.num_vids_to_render
         # create videos and save full paths
         folder = "epoch_" + str(self.trainer.current_epoch).zfill(3)
         folder =  Path('visuals') / folder / split
