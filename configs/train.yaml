@@ -32,7 +32,7 @@ statistics_path: ${path.deps}/stats/${statistics_file}
 
 # Composing nested config with default
 defaults:
-  - data: synthetic
+  - data: bodilex
   - model: basic
   - machine: server
   - trainer: base
