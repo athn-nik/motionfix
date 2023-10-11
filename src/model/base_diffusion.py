@@ -404,15 +404,16 @@ class MD(BaseModel):
                                                                               63)).joints
         pred_joints = rearrange(pred_joints[:, :22], '(b s) ... -> b s ...',
                                 s=S, b=B)
-        loss_joints = mse_loss(pred_joints, joints_gt, reduction='none')
+        loss_joints = mse_loss(pred_joints * 100, joints_gt * 100, reduction='none')
         loss_joints = reduce(loss_joints, 's b j d -> s b', 'mean')
         loss_joints = (loss_joints * padding_mask).sum() / padding_mask.sum()
         # import numpy as np
         # np.save('gt.npz',joints_gt[0].detach().cpu().numpy())  
         # np.save('pred.npz', pred_joints[0].detach().cpu().numpy())
-        return loss_joints
 
-    def compute_losses(self, out_dict, joints_gt, lengths):
+        return loss_joints, pred_smpl_params
+
+    def compute_losses(self, out_dict, joints_gt, tgt_smpl_params, lengths):
         from torch import nn
         from src.data.tools.tensors import lengths_to_mask
 
@@ -459,17 +460,29 @@ class MD(BaseModel):
         J = 22
         joints_gt = rearrange(joints_gt, 'b s (j d) -> b s j d', j=J)
         
-        loss_joints = self.compute_joints_loss(out_dict,
-                                               joints_gt, 
-                                               pad_mask_jts_pos)
-        total_loss = total_loss + loss_joints
+        loss_joints, pred_smpl = self.compute_joints_loss(out_dict, joints_gt, 
+                                                          pad_mask_jts_pos)
+        
+        from src.tools.transforms3d import transform_body_pose
+
+        pred_smpl_params = transform_body_pose(torch.cat(
+                                                    [pred_smpl['body_orient'],
+                                                     pred_smpl['body_pose']],
+                                                     dim=-1), "aa->6d")
+
+        gt_pose_loss_non_deltas = loss_func_data(pred_smpl_params, 
+                                                 tgt_smpl_params)
+        gt_pose_loss_non_deltas = gt_pose_loss_non_deltas.mean(-1)
+        gt_pose_loss_non_deltas = gt_pose_loss_non_deltas.sum() / pad_mask.sum()
+        total_loss = total_loss + loss_joints + gt_pose_loss_non_deltas
 
         return total_loss, {'total_loss': total_loss,
                             'pose_deltas': pose_loss,
                             'orientation_deltas': orient_loss,
                             'translation_deltas': trans_loss,
                             'first_pose_loss': first_pose_loss,
-                            'global_joints_loss': loss_joints}
+                            'global_joints_loss': loss_joints,
+                            '6d_loss': gt_pose_loss_non_deltas}
 
     def batch2motion(self, batch, slice_til=None):
         batch_to_cpu = { k: v.detach().cpu() for k, v in batch.items() 
@@ -654,10 +667,12 @@ class MD(BaseModel):
         # - "body_pose"
 
         batch = self.norm_and_cat(batch, self.input_feats)
-
+        
         batch = self.append_first_frame(batch, which_motion='target')
         batch['length_target'] = [leng - 1 for leng in batch['length_target']]
         # batch['text'] = ['']*len(batch['text'])
+
+
 
         gt_lens_tgt = batch['length_target']
         gt_lens_src = batch['length_source']
@@ -675,9 +690,13 @@ class MD(BaseModel):
             self.visualize_diffusion(dif_dict, actual_target_lens, 
                                      gt_keyids, gt_texts)
         # rs_set Bx(S+1)xN --> first pose included 
+        target_smpl = torch.cat([batch['body_orient_target'], 
+                                                batch['body_pose_target']],
+                                                dim=-1)
 
         total_loss, loss_dict = self.compute_losses(dif_dict,
                                                     batch['body_joints_target'],
+                                                    target_smpl,
                                                     gt_lens_tgt)
 
 

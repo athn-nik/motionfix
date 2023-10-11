@@ -401,6 +401,18 @@ class BodilexDataModule(BASEDataModule):
             if len(v['motion_target']['rots'].shape) > 2:
                 rots_flat_tgt = v['motion_target']['rots'].flatten(-2).float()
                 dataset_dict_raw[k]['motion_target']['rots'] = rots_flat_tgt
+        
+        subkeys = list(dataset_dict_raw.keys())[:20]
+        dataset_dict_raw = { k: v for k, v in dataset_dict_raw.items()
+                             if k in subkeys }
+        for k in dataset_dict_raw.keys():
+            dataset_dict_raw[k]['motion_source']['rots'] = dataset_dict_raw[k]['motion_source']['rots'][:60]
+            dataset_dict_raw[k]['motion_source']['trans'] = dataset_dict_raw[k]['motion_source']['trans'][:60] 
+            dataset_dict_raw[k]['motion_source']['joint_positions'] = dataset_dict_raw[k]['motion_source']['joint_positions'][:60] 
+
+            dataset_dict_raw[k]['motion_target']['rots'] = dataset_dict_raw[k]['motion_target']['rots'][:60]
+            dataset_dict_raw[k]['motion_target']['trans'] = dataset_dict_raw[k]['motion_target']['trans'][:60] 
+            dataset_dict_raw[k]['motion_target']['joint_positions'] = dataset_dict_raw[k]['motion_target']['joint_positions'][:60] 
 
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
 
