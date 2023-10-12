@@ -141,6 +141,7 @@ def rot_diff(rots1, rots2=None, in_format="6d", out_format="6d"):
     """
     dim 0 is considered to be the time dimention, this is where the shift will happen
     """
+    self_diff = False
     if in_format == "aa":
         j = rots1.shape[-1] / 3
     elif in_format == "6d":
@@ -151,12 +152,14 @@ def rot_diff(rots1, rots2=None, in_format="6d", out_format="6d"):
     if rots2 is not None:
         rots2 = transform_body_pose(rots2, f"{in_format}->rot")
     else:
+        self_diff = True
         rots2 = rots1
-        rots1 =  rots1.roll(1, 0)
+        rots1 = rots1.roll(1, 0)
         
     rots_diff = torch.einsum("...ij,...ik->...jk", rots1, rots2)  # Ri.T@R_i+1
-    if rots2 is None:
+    if self_diff:
         rots_diff[0, ..., :, :] = torch.eye(3, device=rots1.device)
+
     rots_diff = transform_body_pose(rots_diff, f"rot->{out_format}")
     if j > 1:
         rots_diff = rearrange(rots_diff, '... j d -> ... (j d)')

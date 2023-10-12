@@ -39,7 +39,7 @@ class MldDenoiser(nn.Module):
         self.ablation_skip_connection = False
         self.diffusion_only = True
         self.arch = arch
-        self.pe_type = 'mld'
+        self.pe_type = position_embedding
 
         # if self.diffusion_only:
             # assert self.arch == "trans_enc", "only implement encoder for diffusion-only"
@@ -108,10 +108,11 @@ class MldDenoiser(nn.Module):
                 **kwargs):
         # 0.  dimension matching
         # noised_motion [latent_dim[0], batch_size, latent_dim] <= [batch_size, latent_dim[0], latent_dim[1]]
+        bs = noised_motion.shape[0]
         noised_motion = noised_motion.permute(1, 0, 2)
         # 0. check lengths for no vae (diffusion only)
         if lengths not in [None, []]:
-            mask = lengths_to_mask([x for x in lengths], noised_motion.device)
+            mask = lengths_to_mask([x+1 for x in lengths], noised_motion.device)
 
         # 1. time_embedding
         # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
@@ -154,7 +155,13 @@ class MldDenoiser(nn.Module):
             #     # [seqlen+1, bs, d]
             #     # todo change to query_pos_decoder
             xseq = self.query_pos(xseq)
-            tokens = self.encoder(xseq)
+            token_mask = torch.ones((bs, 
+                                     text_emb_latent.shape[0] + time_emb.shape[0]),
+                                     dtype=bool, device=xseq.device)
+            aug_mask = torch.cat((token_mask, mask), 1)
+
+            tokens = self.encoder(xseq,
+                                  src_key_padding_mask=~aug_mask)
 
             # if self.diffusion_only:
             denoised_motion_proj = tokens[emb_latent.shape[0]:]
@@ -164,7 +171,7 @@ class MldDenoiser(nn.Module):
             denoised_motion_only = self.pose_proj(denoised_motion_proj[1:, 
                                                                        :])
             # zero for padded area
-            denoised_motion_only[~mask.T] = 0
+            denoised_motion_only[~mask.T[1:]] = 0
 
             denoised_motion = torch.zeros_like(noised_motion)
 

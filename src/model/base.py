@@ -166,7 +166,7 @@ class BaseModel(LightningModule):
                                 for feat_type in self.first_pose_feats]
         seqlen, bsz = list_of_feat_tensors[0].shape[:2]
         norm_pose_smpl = self.norm_inputs(list_of_feat_tensors,
-                                     self.first_pose_feats)
+                                          self.first_pose_feats)
         norm_pose_smpl = torch.cat(norm_pose_smpl, dim=-1)
         ## PAD THE INITIAL POSE ##
         padding_sz = np.sum(self.input_feats_dims) - np.sum(self.first_pose_feats_dims)

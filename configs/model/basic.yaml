@@ -20,8 +20,8 @@ norm_type: standardize # min_max
 diff_params:
   num_inference_timesteps: 10
   eta: 40
-  guidance_uncondp: 1 # 0.1 0.25
-  guidance_scale: 0 #
+  guidance_uncondp: 0.1 # 0.1 0.25
+  guidance_scale: 7.5 #
   predict_epsilon: false
 
 condition: text
