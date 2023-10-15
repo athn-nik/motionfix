@@ -1,4 +1,4 @@
-import torch
+`import torch
 import torch.nn as nn
 from torch import  nn
 from src.model.utils.timestep_embed import TimestepEmbedding, Timesteps
@@ -28,10 +28,11 @@ class MldDenoiser(nn.Module):
                  guidance_scale: float = 7.5,
                  guidance_uncondp: float = 0.1,
                  text_encoded_dim: int = 768,
+                 use_deltas: bool = False,
                  **kwargs) -> None:
 
         super().__init__()
-
+        self.use_deltas = use_deltas
         self.latent_dim = latent_dim
         self.text_encoded_dim = text_encoded_dim
         self.condition = condition
@@ -88,7 +89,7 @@ class MldDenoiser(nn.Module):
             )
             encoder_norm = nn.LayerNorm(self.latent_dim)
             self.encoder = SkipTransformerEncoder(encoder_layer,
-                                                    num_layers, encoder_norm)
+                                                  num_layers, encoder_norm)
         else:
             # use torch transformer
             encoder_layer = nn.TransformerEncoderLayer(
@@ -98,7 +99,7 @@ class MldDenoiser(nn.Module):
                 dropout=dropout,
                 activation=activation)
             self.encoder = nn.TransformerEncoder(encoder_layer,
-                                                    num_layers=num_layers)
+                                                 num_layers=num_layers)
 
     def forward(self,
                 noised_motion,
@@ -112,7 +113,7 @@ class MldDenoiser(nn.Module):
         noised_motion = noised_motion.permute(1, 0, 2)
         # 0. check lengths for no vae (diffusion only)
         if lengths not in [None, []]:
-            mask = lengths_to_mask([x+1 for x in lengths], noised_motion.device)
+            mask = lengths_to_mask([x for x in lengths], noised_motion.device)
 
         # 1. time_embedding
         # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
@@ -162,21 +163,21 @@ class MldDenoiser(nn.Module):
 
             tokens = self.encoder(xseq,
                                   src_key_padding_mask=~aug_mask)
-
+                
             # if self.diffusion_only:
             denoised_motion_proj = tokens[emb_latent.shape[0]:]
-            denoised_first_pose = self.first_pose_proj(denoised_motion_proj[:1,
-                                                                            :])
-            
-            denoised_motion_only = self.pose_proj(denoised_motion_proj[1:, 
-                                                                       :])
+            if self.use_deltas:
+
+                denoised_first_pose = self.first_pose_proj(denoised_motion_proj[:1])            
+                denoised_motion_only = self.pose_proj(denoised_motion_proj[1:])
+                denoised_motion_only[~mask.T[1:]] = 0
+                denoised_motion = torch.zeros_like(noised_motion)
+                denoised_motion[1:] = denoised_motion_only
+                denoised_motion[0] = denoised_first_pose
+            else:
+                denoised_motion = self.pose_proj(denoised_motion_proj)
+                denoised_motion[~mask.T] = 0
             # zero for padded area
-            denoised_motion_only[~mask.T[1:]] = 0
-
-            denoised_motion = torch.zeros_like(noised_motion)
-
-            denoised_motion[1:] = denoised_motion_only
-            denoised_motion[0] = denoised_first_pose
             # else:
             #     sample = tokens[:sample.shape[0]]
 
@@ -186,4 +187,4 @@ class MldDenoiser(nn.Module):
         # 5. [batch_size, latent_dim[0], latent_dim[1]] <= [latent_dim[0], batch_size, latent_dim[1]]
         denoised_motion = denoised_motion.permute(1, 0, 2)
 
-        return (denoised_motion, )
+        return denoised_motion

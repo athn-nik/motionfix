@@ -22,7 +22,7 @@ preproc:
   generate_joint_files: True
   use_cuda: True
   n_body_joints: 22
-  norm_type: std # norm
+  norm_type: std # norm or std
 
 # Motion
 framerate: 30

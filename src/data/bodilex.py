@@ -97,6 +97,9 @@ class BodilexDataset(Dataset):
             return (feats - mean) / (std + 1e-5)
         elif self.norm_type == "norm":
             max, min = self.stats[feats_name]['max'].to(feats.device), self.stats[feats_name]['min'].to(feats.device)
+            
+            if (feats - min) / (max - min + 1e-5) >= 1.05 and (feats - min) / (max - min + 1e-5) <= -0.01:
+                print("asdasdasdasd")
             return (feats - min) / (max - min + 1e-5)
 
     def _get_body_joints(self, data):
@@ -428,7 +431,7 @@ class BodilexDataModule(BASEDataModule):
         else:
             # 70-10-20% train-val-test for each sequence
             num_train = int(len(data_ids) * 0.7)
-            num_val = int(len(data_ids) * 0.1)
+            num_val = int(len(data_ids) * 0.2)
         # give ids to data sets--> 0:train, 1:val, 2:test
 
         split = np.zeros(len(data_ids))

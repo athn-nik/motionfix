@@ -136,7 +136,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     logger.info("Callbacks initialized")
 
     logger.info("Loading trainer")
-    if cfg.devices > 1:
+    if int(cfg.devices) > 1:
         cfg.trainer.strategy = "ddp_find_unused_parameters_true"
         # cfg.trainer.strategy = "ddp"
         logger.info("Force ddp strategy for more than one gpu.")

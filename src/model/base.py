@@ -145,7 +145,7 @@ class BaseModel(LightningModule):
         turn batch data into the format the forward() function expects
         """
         seq_first = lambda t: rearrange(t, 'b s ... -> s b ...') 
-
+        input_batch = {}
         ## PREPARE INPUT ##
         for mot in ['source', 'target']:
             
@@ -156,8 +156,8 @@ class BaseModel(LightningModule):
                                                            features_types)
 
             x_norm, _ = self.cat_inputs(list_of_feat_tensors_normed)
-            batch[f'{mot}_motion'] = x_norm[1:]
-        return batch
+            input_batch[mot] = x_norm
+        return input_batch
     
     def append_first_frame(self, batch, which_motion):
 

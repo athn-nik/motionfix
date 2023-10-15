@@ -14,12 +14,12 @@ lr_scheduler: null # reduceonplateau, steplr
 
 # normalization
 statistics_path: ${statistics_path}
-norm_type: standardize # min_max
+norm_type: standardize # min_max standardize
 
 # diffusion related
 diff_params:
-  num_inference_timesteps: 10
-  eta: 40
+  num_inference_timesteps: 2
+  # eta: 40
   guidance_uncondp: 0.1 # 0.1 0.25
   guidance_scale: 7.5 #
   predict_epsilon: false
@@ -31,13 +31,12 @@ nfeats: 135
 dim_per_feat: [135]
 # data related
 input_feats:
-- "body_transl_delta_pelv_xy"
-# - "body_transl_z"
-- "body_orient_delta"
-- "body_pose_delta"
-# - "body_orient"
-# - "body_pose"
-# - "body_transl"
+# - "body_transl_delta_pelv_xy"
+# - "body_orient_delta"
+# - "body_pose_delta"
+- "body_transl"
+- "body_orient"
+- "body_pose"
 
 defaults:
   # diffusion stuff

@@ -51,7 +51,9 @@ class MD(BaseModel):
 
         super().__init__(statistics_path, nfeats, norm_type, input_feats,
                          dim_per_feat, smpl_path, num_vids_to_render)
-        self.condition = condition    
+        if set(self.input_feats) == set(['body_transl', 'body_orient', 'body_pose']):
+            self.input_deltas = False
+        self.condition = condition
         self.text_encoder = instantiate(text_encoder)
         # from torch import nn
         # self.condition_encoder = nn.Linear()
@@ -72,6 +74,7 @@ class MD(BaseModel):
         self.reduce_latents = reduce_latents
         self.latent_dim = latent_dim
         self.diff_params = diff_params
+        denoiser['use_deltas'] = self.input_deltas
         self.denoiser = instantiate(denoiser)
         if not self.diff_params.predict_epsilon:
             diffusion_scheduler['prediction_type'] = 'sample'
@@ -154,7 +157,7 @@ class MD(BaseModel):
         assert lengths is not None, "no vae (diffusion only) need lengths for diffusion"
 
         latents = torch.randn(
-            (bsz, max(lengths) + 1, self.nfeats),
+            (bsz, max(lengths), self.nfeats),
             device=encoder_hidden_states.device,
             dtype=torch.float,
         )
@@ -185,7 +188,7 @@ class MD(BaseModel):
             noise_pred = self.denoiser(noised_motion=latent_model_input,
                                        timestep=t,
                                        encoder_hidden_states=encoder_hidden_states,
-                                       lengths=lengths_reverse)[0]
+                                       lengths=lengths_reverse)
 
             # perform guidance
             noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
@@ -246,7 +249,7 @@ class MD(BaseModel):
         diffusion_fw_out = self.denoiser(noised_motion=noisy_motion,
                                          timestep=timesteps,
                                          encoder_hidden_states=text_encoded,
-                                         lengths=lengths, return_dict=False,)[0]
+                                         lengths=lengths, return_dict=False,)
 
 
         # Chunk the noise and noise_pred into two parts and compute the loss on each part separately.
@@ -391,8 +394,13 @@ class MD(BaseModel):
         # if not self.trainer.sanity_checking:
         #     self.log_dict(dico, sync_dist=True, rank_zero_only=True)
     def compute_joints_loss(self, out_motion, joints_gt, padding_mask):
-        motion_unnorm = self.diffout2motion(out_motion['pred_motion_feats'])
-        motion_unnorm = motion_unnorm.permute(1, 0, 2)
+
+        if self.input_deltas:
+            motion_unnorm = self.diffout2motion(out_motion['pred_motion_feats'])
+            motion_unnorm = motion_unnorm.permute(1, 0, 2)
+
+        else:
+            motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
         pred_smpl_params = pack_to_render(rots=motion_unnorm[..., 3:],
                                           trans=motion_unnorm[...,:3])
 
@@ -418,8 +426,11 @@ class MD(BaseModel):
         from src.data.tools.tensors import lengths_to_mask
 
         pad_mask = lengths_to_mask(lengths, self.device)
-        pad_mask_jts_pos = lengths_to_mask([ll+1 for ll in lengths] , self.device)
+        if self.input_deltas:
 
+            pad_mask_jts_pos = lengths_to_mask([ll+1 for ll in lengths] , self.device)
+        else:
+            pad_mask_jts_pos = pad_mask
         lparts = np.cumsum(self.input_feats_dims)
         if self.loss_params['predict_epsilon']:
             loss_func_noise = nn.MSELoss(reduction='mean')
@@ -431,11 +442,13 @@ class MD(BaseModel):
 
             data_loss = loss_func_data(out_dict['pred_motion_feats'],
                                        out_dict['input_motion_feats'])
-            first_pose_loss = data_loss[:, 0].mean(-1)
-            first_pose_loss = first_pose_loss.mean()
-
-            deltas_pose = data_loss[:, 1:]
-
+            if self.input_deltas:
+                first_pose_loss = data_loss[:, 0].mean(-1)
+                first_pose_loss = first_pose_loss.mean()
+                deltas_pose = data_loss[:, 1:]
+            else:
+                first_pose_loss = 0.0
+                deltas_pose = data_loss
             trans_loss = deltas_pose[..., :lparts[0]].mean(-1)*pad_mask
             trans_loss = trans_loss.sum() / pad_mask.sum()
 
@@ -541,7 +554,8 @@ class MD(BaseModel):
         R_z = get_z_rot(pelvis_orient, in_format="6d")
  
         # rotate R_z
-        root_vel = change_for(delta_motion[..., :3], R_z.squeeze(), forward=False)
+        root_vel = change_for(delta_motion[..., :3],
+                              R_z.squeeze(), forward=False)
 
         new_state_pos = first_pose[..., :3].squeeze() + root_vel
 
@@ -584,14 +598,21 @@ class MD(BaseModel):
         timesteps = dif_out['timesteps']
         noisy_motion = dif_out['noised_motion_feats']
         diffusion_fw_out = dif_out['pred_motion_feats']
-        # integrate all motions
-        mot_from_deltas = self.diffout2motion(input_motion_feats.detach())
-        noisy_mot_from_deltas = self.diffout2motion(noisy_motion.detach())
-        denois_mot_deltas = self.diffout2motion(diffusion_fw_out.detach())
-        
-        mot_from_deltas = mot_from_deltas.permute(1, 0, 2)
-        noisy_mot_from_deltas = noisy_mot_from_deltas.permute(1, 0, 2)
-        denois_mot_deltas = denois_mot_deltas.permute(1, 0, 2)
+        if self.input_deltas:
+            # integrate all motions
+            mot_from_deltas = self.diffout2motion(input_motion_feats.detach())
+            noisy_mot_from_deltas = self.diffout2motion(noisy_motion.detach())
+            denois_mot_deltas = self.diffout2motion(diffusion_fw_out.detach())
+            mot_from_deltas = mot_from_deltas.permute(1, 0, 2)
+            noisy_mot_from_deltas = noisy_mot_from_deltas.permute(1, 0, 2)
+            denois_mot_deltas = denois_mot_deltas.permute(1, 0, 2)
+
+        else:
+            # integrate all motions
+            mot_from_deltas = self.unnorm_delta(input_motion_feats.detach())
+            noisy_mot_from_deltas = self.unnorm_delta(noisy_motion.detach())
+            denois_mot_deltas = self.unnorm_delta(diffusion_fw_out.detach())
+
         log_render_dic_debug = {}
 
         for idx in range(2):
@@ -665,14 +686,21 @@ class MD(BaseModel):
         # - "body_transl_z"
         # - "body_orient_xy"
         # - "body_pose"
-
-        batch = self.norm_and_cat(batch, self.input_feats)
         
-        batch = self.append_first_frame(batch, which_motion='target')
-        batch['length_target'] = [leng - 1 for leng in batch['length_target']]
+        input_batch = self.norm_and_cat(batch, self.input_feats)
+        for k, v in input_batch.items():
+            if self.input_deltas:
+                batch[f'{k}_motion'] = v[1:]
+            else:
+                batch[f'{k}_motion'] = v
+
+        if self.input_deltas:
+            batch = self.append_first_frame(batch, which_motion='target')
+            batch['length_target'] = [leng - 1 for leng in batch['length_target']]
+            actual_target_lens = [leng + 1 for leng in batch['length_target']]
+        else:
+            actual_target_lens = batch['length_target']
         # batch['text'] = ['']*len(batch['text'])
-
-
 
         gt_lens_tgt = batch['length_target']
         gt_lens_src = batch['length_source']
@@ -680,7 +708,6 @@ class MD(BaseModel):
         gt_texts = batch['text']
         gt_keyids = batch['id']
         self.batch_size = len(gt_texts)
-        actual_target_lens = [leng + 1 for leng in batch['length_target']]
 
 
         dif_dict = self.train_diffusion_forward(batch, batch_idx)
@@ -691,8 +718,8 @@ class MD(BaseModel):
                                      gt_keyids, gt_texts)
         # rs_set Bx(S+1)xN --> first pose included 
         target_smpl = torch.cat([batch['body_orient_target'], 
-                                                batch['body_pose_target']],
-                                                dim=-1)
+                                 batch['body_pose_target']],
+                                 dim=-1)
 
         total_loss, loss_dict = self.compute_losses(dif_dict,
                                                     batch['body_joints_target'],
@@ -711,7 +738,11 @@ class MD(BaseModel):
             source_motion_gt, target_motion_gt = self.batch2motion(batch)
             with torch.no_grad():
                 motion_out = self.generate_motion(gt_texts, gt_lens_tgt)
-                motion_unnorm = self.diffout2motion(motion_out)
+                if self.input_deltas:
+                    motion_unnorm = self.diffout2motion(motion_out)
+                else:
+                    motion_unnorm = self.unnorm_delta(motion_out)
+
                 motion_unnorm = motion_unnorm.permute(1, 0, 2)
                 # do something with the full motion
                 gen_to_render = pack_to_render(rots=motion_unnorm[...,
@@ -730,7 +761,11 @@ class MD(BaseModel):
                                                                 slice_til=nvds)
             motion_out = self.generate_motion(gt_texts[:nvds],
                                               gt_lens_tgt[:nvds])
-            motion_unnorm = self.diffout2motion(motion_out)
+            if self.input_deltas:
+
+                motion_unnorm = self.diffout2motion(motion_out)
+            else:
+                motion_unnorm = self.unnorm_delta(motion_out)
 
             motion_unnorm = motion_unnorm.permute(1, 0, 2)
 
