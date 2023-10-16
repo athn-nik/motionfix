@@ -27,6 +27,8 @@ from src.tools.transforms3d import (
     change_for, local_to_global_orient, transform_body_pose, remove_z_rot,
     rot_diff, get_z_rot)
 from src.tools.transforms3d import canonicalize_rotations
+from src.model.utils.smpl_fast import smpl_forward_fast
+from src.utils.genutils import freeze
 
 # A logger for this file
 log = logging.getLogger(__name__)
@@ -46,6 +48,16 @@ class BodilexDataset(Dataset):
         
         # self.seq_parser = SequenceParserAmass(self.cfg)
         bm = smplx.create(model_path=smplh_path, model_type='smplh', ext='npz')
+
+
+
+        self.body_model = smplx.SMPLHLayer(f'{smplh_path}/smplh',
+                                           model_type='smplh',
+                                           gender='neutral',
+                                           ext='npz').eval();
+        setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
+        freeze(self.body_model)
+
         self.body_chain = bm.parents
         stat_path = join(stats_file)
         self.stats = None
@@ -287,14 +299,14 @@ class BodilexDataset(Dataset):
         #     datum = self.seq_parser.augment_npz(datum)
 
         # CANONICALIZE MOTION AND BRING IT TO 0
-        for mtype in ['motion_source', 'motion_target']:
+        # for mtype in ['motion_source', 'motion_target']:
             
-            rots_can, trans_can = self._canonica_facefront(datum[mtype]['rots'],
-                                                           datum[mtype]['trans']
-                                                           )
+        #     rots_can, trans_can = self._canonica_facefront(datum[mtype]['rots'],
+        #                                                    datum[mtype]['trans']
+        #                                                    )
 
-            datum[mtype]['rots'] = rots_can
-            datum[mtype]['trans'] = trans_can
+        #     datum[mtype]['rots'] = rots_can
+        #     datum[mtype]['trans'] = trans_can
 
         data_dict_source = {f'{feat}_source': self._feat_get_methods[feat](datum['motion_source'])
                             for feat in self.load_feats}
@@ -328,15 +340,15 @@ class BodilexDataset(Dataset):
         return DotDict(data_dict)
 
     def get_all_features(self, idx):
-        datum = self.data[idx]        
-        for mtype in ['motion_source', 'motion_target']:
+        datum = self.data[idx]
+        # for mtype in ['motion_source', 'motion_target']:
             
-            rots_can, trans_can = self._canonica_facefront(datum[mtype]['rots'],
-                                                           datum[mtype]['trans']
-                                                           )
+        #     rots_can, trans_can = self._canonica_facefront(datum[mtype]['rots'],
+        #                                                    datum[mtype]['trans']
+        #                                                    )
 
-            datum[mtype]['rots'] = rots_can
-            datum[mtype]['trans'] = trans_can
+        #     datum[mtype]['rots'] = rots_can
+        #     datum[mtype]['trans'] = trans_can
 
         data_dict_source = {f'{feat}_source': self._feat_get_methods[feat](datum['motion_source'])
                             for feat in self.load_feats}
@@ -379,6 +391,13 @@ class BodilexDataModule(BASEDataModule):
         self.rot_repr = rot_repr
         self.Dataset = BodilexDataset
         # calculate splits
+        self.body_model = smplx.SMPLHLayer(f'{smplh_path}/smplh',
+                                           model_type='smplh',
+                                           gender='neutral',
+                                           ext='npz').eval();
+        setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
+        freeze(self.body_model)
+
         if self.debug:
             # takes <2sec to load
             ds_db_path = Path(self.debug_datapath)
@@ -396,6 +415,7 @@ class BodilexDataModule(BASEDataModule):
         # and then process with the AmassDataset as you like
         # pass this or split for dataloading into sets
         dataset_dict_raw = joblib.load(ds_db_path)
+        dataset_dict_raw = cast_dict_to_tensors(dataset_dict_raw)
         for k, v in dataset_dict_raw.items():
             
             if len(v['motion_source']['rots'].shape) > 2:
@@ -404,18 +424,40 @@ class BodilexDataModule(BASEDataModule):
             if len(v['motion_target']['rots'].shape) > 2:
                 rots_flat_tgt = v['motion_target']['rots'].flatten(-2).float()
                 dataset_dict_raw[k]['motion_target']['rots'] = rots_flat_tgt
-        
-        subkeys = list(dataset_dict_raw.keys())[:20]
-        dataset_dict_raw = { k: v for k, v in dataset_dict_raw.items()
-                             if k in subkeys }
-        for k in dataset_dict_raw.keys():
-            dataset_dict_raw[k]['motion_source']['rots'] = dataset_dict_raw[k]['motion_source']['rots'][:60]
-            dataset_dict_raw[k]['motion_source']['trans'] = dataset_dict_raw[k]['motion_source']['trans'][:60] 
-            dataset_dict_raw[k]['motion_source']['joint_positions'] = dataset_dict_raw[k]['motion_source']['joint_positions'][:60] 
 
-            dataset_dict_raw[k]['motion_target']['rots'] = dataset_dict_raw[k]['motion_target']['rots'][:60]
-            dataset_dict_raw[k]['motion_target']['trans'] = dataset_dict_raw[k]['motion_target']['trans'][:60] 
-            dataset_dict_raw[k]['motion_target']['joint_positions'] = dataset_dict_raw[k]['motion_target']['joint_positions'][:60] 
+            for mtype in ['motion_source', 'motion_target']:
+            
+                rots_can, trans_can = self._canonica_facefront(v[mtype]['rots'],
+                                                               v[mtype]['trans']
+                                                               )
+                dataset_dict_raw[k][mtype]['rots'] = rots_can
+                dataset_dict_raw[k][mtype]['trans'] = trans_can
+                seqlen, jts_no = rots_can.shape[:2]
+                
+                rots_can_rotm=transform_body_pose(rots_can,
+                                                  'aa->rot')
+                # self.body_model.batch_size = seqlen * jts_no
+
+                jts_can_ds = self.body_model.smpl_forward_fast(transl=trans_can,
+                                                 body_pose=rots_can_rotm[:, 1:],
+                                             global_orient=rots_can_rotm[:, :1])
+
+                jts_can = jts_can_ds.joints[:, :22]
+                dataset_dict_raw[k][mtype]['joint_positions'] = jts_can
+
+        # debug overfitting
+        # less frames less motions
+        # subkeys = list(dataset_dict_raw.keys())[:20]
+        # dataset_dict_raw = { k: v for k, v in dataset_dict_raw.items()
+        #                      if k in subkeys }
+        # for k in dataset_dict_raw.keys():
+        #     dataset_dict_raw[k]['motion_source']['rots'] = dataset_dict_raw[k]['motion_source']['rots'][:60]
+        #     dataset_dict_raw[k]['motion_source']['trans'] = dataset_dict_raw[k]['motion_source']['trans'][:60] 
+        #     dataset_dict_raw[k]['motion_source']['joint_positions'] = dataset_dict_raw[k]['motion_source']['joint_positions'][:60] 
+
+        #     dataset_dict_raw[k]['motion_target']['rots'] = dataset_dict_raw[k]['motion_target']['rots'][:60]
+        #     dataset_dict_raw[k]['motion_target']['trans'] = dataset_dict_raw[k]['motion_target']['trans'][:60] 
+        #     dataset_dict_raw[k]['motion_target']['joint_positions'] = dataset_dict_raw[k]['motion_target']['joint_positions'][:60] 
 
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
 
@@ -490,6 +532,26 @@ class BodilexDataModule(BASEDataModule):
 
     # def setup(self, stage):
     #     pass
+
+    def _canonica_facefront(self, rotations, translation):
+        rots_motion = rotations
+        trans_motion = translation
+        datum_len = rotations.shape[0]
+        rots_motion_rotmat = transform_body_pose(rots_motion.reshape(datum_len,
+                                                           -1, 3),
+                                                           'aa->rot')
+        orient_R_can, trans_can = canonicalize_rotations(rots_motion_rotmat[:,
+                                                                             0],
+                                                         trans_motion)            
+        rots_motion_rotmat_can = rots_motion_rotmat
+        rots_motion_rotmat_can[:, 0] = orient_R_can
+        translation_can = trans_can - trans_can[0]
+        rots_motion_aa_can = transform_body_pose(rots_motion_rotmat_can,
+                                                 'rot->aa')
+        rots_motion_aa_can = rearrange(rots_motion_aa_can, 'F J d -> F (J d)',
+                                       d=3)
+        return rots_motion_aa_can, translation_can
+
 
     def calculate_feature_stats(self, dataset: BodilexDataset):
         stat_path = self.preproc.stats_file

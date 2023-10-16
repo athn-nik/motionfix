@@ -1,4 +1,4 @@
-`import torch
+import torch
 import torch.nn as nn
 from torch import  nn
 from src.model.utils.timestep_embed import TimestepEmbedding, Timesteps
@@ -113,7 +113,10 @@ class MldDenoiser(nn.Module):
         noised_motion = noised_motion.permute(1, 0, 2)
         # 0. check lengths for no vae (diffusion only)
         if lengths not in [None, []]:
-            mask = lengths_to_mask([x for x in lengths], noised_motion.device)
+            if self.use_deltas:
+                mask = lengths_to_mask([x+1 for x in lengths], noised_motion.device)
+            else:
+                mask = lengths_to_mask([x for x in lengths], noised_motion.device)
 
         # 1. time_embedding
         # broadcast to batch dimension in a way that's compatible with ONNX/Core ML

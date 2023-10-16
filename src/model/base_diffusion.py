@@ -46,6 +46,8 @@ class MD(BaseModel):
                  num_vids_to_render: Optional[int] = None,
                  reduce_latents: Optional[str] = None,
                  condition: Optional[str] = "text",
+                 motion_condition: Optional[str] = "source",
+                 loss_on_positions: Optional[bool] = False,
                  renderer= None,
                  **kwargs):
 
@@ -53,8 +55,12 @@ class MD(BaseModel):
                          dim_per_feat, smpl_path, num_vids_to_render)
         if set(self.input_feats) == set(['body_transl', 'body_orient', 'body_pose']):
             self.input_deltas = False
+        else:
+            self.input_deltas = True
         self.condition = condition
+        self.motion_condition = motion_condition
         self.text_encoder = instantiate(text_encoder)
+        self.loss_on_positions = loss_on_positions
         # from torch import nn
         # self.condition_encoder = nn.Linear()
 
@@ -155,15 +161,17 @@ class MD(BaseModel):
         bsz = encoder_hidden_states.shape[0]
         bsz = bsz // 2
         assert lengths is not None, "no vae (diffusion only) need lengths for diffusion"
-
+        len_to_gen = max(lengths) if not self.input_deltas else max(lengths) + 1
         latents = torch.randn(
-            (bsz, max(lengths), self.nfeats),
+            (bsz, len_to_gen, self.nfeats),
             device=encoder_hidden_states.device,
             dtype=torch.float,
         )
 
         # scale the initial noise by the standard deviation required by the scheduler
+
         latents = latents * self.scheduler.init_noise_sigma
+
         # set timesteps
         self.scheduler.set_timesteps(
             self.diff_params.num_inference_timesteps)
@@ -275,8 +283,10 @@ class MD(BaseModel):
 
 
     def train_diffusion_forward(self, batch, batch_idx):
-        
-        feats_ref = batch['target_motion']
+        if self.motion_condition == 'source':
+            feats_ref = batch['source_motion']
+        else:
+            feats_ref = batch['target_motion']
         lengths = batch['length_target']
         # motion encode
         # with torch.no_grad():
@@ -447,7 +457,7 @@ class MD(BaseModel):
                 first_pose_loss = first_pose_loss.mean()
                 deltas_pose = data_loss[:, 1:]
             else:
-                first_pose_loss = 0.0
+                first_pose_loss = torch.tensor(0.0)
                 deltas_pose = data_loss
             trans_loss = deltas_pose[..., :lparts[0]].mean(-1)*pad_mask
             trans_loss = trans_loss.sum() / pad_mask.sum()
@@ -469,33 +479,34 @@ class MD(BaseModel):
             loss_func_prior = nn.MSELoss(reduction='mean')
             prior_loss = loss_func_prior(out_dict['noise_prior'],
                                          out_dict['dist_m1'])
-        loss_joints = 0
-        J = 22
-        joints_gt = rearrange(joints_gt, 'b s (j d) -> b s j d', j=J)
+
+        loss_joints = torch.tensor(0.0)                                 
+        if self.loss_on_positions:
+            J = 22
+            joints_gt = rearrange(joints_gt, 'b s (j d) -> b s j d', j=J)
+            loss_joints, _ = self.compute_joints_loss(out_dict, joints_gt, 
+                                                      pad_mask_jts_pos)
         
-        loss_joints, pred_smpl = self.compute_joints_loss(out_dict, joints_gt, 
-                                                          pad_mask_jts_pos)
+        # from src.tools.transforms3d import transform_body_pose
+
+        # pred_smpl_params = transform_body_pose(torch.cat(
+        #                                             [pred_smpl['body_orient'],
+        #                                              pred_smpl['body_pose']],
+        #                                              dim=-1), "aa->6d")
+
+        # gt_pose_loss_non_deltas = loss_func_data(pred_smpl_params, 
+        #                                          tgt_smpl_params)
+        # gt_pose_loss_non_deltas = gt_pose_loss_non_deltas.mean(-1)
+        # gt_pose_loss_non_deltas = gt_pose_loss_non_deltas.sum() / pad_mask.sum()
+        total_loss = total_loss + loss_joints
         
-        from src.tools.transforms3d import transform_body_pose
-
-        pred_smpl_params = transform_body_pose(torch.cat(
-                                                    [pred_smpl['body_orient'],
-                                                     pred_smpl['body_pose']],
-                                                     dim=-1), "aa->6d")
-
-        gt_pose_loss_non_deltas = loss_func_data(pred_smpl_params, 
-                                                 tgt_smpl_params)
-        gt_pose_loss_non_deltas = gt_pose_loss_non_deltas.mean(-1)
-        gt_pose_loss_non_deltas = gt_pose_loss_non_deltas.sum() / pad_mask.sum()
-        total_loss = total_loss + loss_joints + gt_pose_loss_non_deltas
-
         return total_loss, {'total_loss': total_loss,
-                            'pose_deltas': pose_loss,
-                            'orientation_deltas': orient_loss,
-                            'translation_deltas': trans_loss,
+                            self.input_feats[2]: pose_loss,
+                            self.input_feats[1]: orient_loss,
+                            self.input_feats[0]: trans_loss,
                             'first_pose_loss': first_pose_loss,
                             'global_joints_loss': loss_joints,
-                            '6d_loss': gt_pose_loss_non_deltas}
+                            }
 
     def batch2motion(self, batch, slice_til=None):
         batch_to_cpu = { k: v.detach().cpu() for k, v in batch.items() 
@@ -712,7 +723,7 @@ class MD(BaseModel):
 
         dif_dict = self.train_diffusion_forward(batch, batch_idx)
 
-        if self.trainer.current_epoch % 10 == 0 and self.global_rank == 0 \
+        if self.trainer.current_epoch % 50 == 0 and self.global_rank == 0 \
             and split=='train' and batch_idx == 0:
             self.visualize_diffusion(dif_dict, actual_target_lens, 
                                      gt_keyids, gt_texts)
@@ -742,8 +753,7 @@ class MD(BaseModel):
                     motion_unnorm = self.diffout2motion(motion_out)
                 else:
                     motion_unnorm = self.unnorm_delta(motion_out)
-
-                motion_unnorm = motion_unnorm.permute(1, 0, 2)
+                    motion_unnorm = motion_unnorm.permute(1, 0, 2)
                 # do something with the full motion
                 gen_to_render = pack_to_render(rots=motion_unnorm[...,
                                                     3:].detach().cpu(),
@@ -762,12 +772,10 @@ class MD(BaseModel):
             motion_out = self.generate_motion(gt_texts[:nvds],
                                               gt_lens_tgt[:nvds])
             if self.input_deltas:
-
                 motion_unnorm = self.diffout2motion(motion_out)
             else:
                 motion_unnorm = self.unnorm_delta(motion_out)
-
-            motion_unnorm = motion_unnorm.permute(1, 0, 2)
+                motion_unnorm = motion_unnorm.permute(1, 0, 2)
 
             gen_to_render = pack_to_render(rots=motion_unnorm[...,
                                                             3:].detach().cpu(),

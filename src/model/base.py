@@ -1,4 +1,5 @@
 import numpy as np
+import logging
 from pytorch_lightning import LightningModule
 from hydra.utils import instantiate
 from src.model.metrics import ComputeMetrics
@@ -16,6 +17,8 @@ import smplx
 from os.path import exists, join
 from src.utils.genutils import cast_dict_to_tensors
 
+# A logger for this file
+log = logging.getLogger(__name__)
 
 # Monkey patch SMPLH faster
 from src.model.utils.smpl_fast import smpl_forward_fast
@@ -48,8 +51,7 @@ class BaseModel(LightningModule):
                                            ext='npz').to(self.device).eval();
         setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
         freeze(self.body_model)
-
-
+        log.info(f'Training using these features: {self.input_feats}')
 
         # Need to define:
         # forward
