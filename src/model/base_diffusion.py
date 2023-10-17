@@ -1,7 +1,5 @@
 from os import times
 from typing import List, Optional, Union
-from matplotlib import scale
-
 import numpy as np
 import torch
 from hydra.utils import instantiate
