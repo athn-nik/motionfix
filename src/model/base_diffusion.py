@@ -405,45 +405,60 @@ class MD(BaseModel):
         #     self.log_dict(dico, sync_dist=True, rank_zero_only=True)
     def compute_joints_loss(self, out_motion, joints_gt, padding_mask):
 
-        # from src.render.mesh_viz import render_skeleton, render_motion
-        # from src.model.utils.tools import remove_padding, pack_to_render
-        # from src.render.video import get_offscreen_renderer
-        # r1 = get_offscreen_renderer(self.smpl_path)
+        from src.render.mesh_viz import render_skeleton, render_motion
+        from src.model.utils.tools import remove_padding, pack_to_render
+        from src.render.video import get_offscreen_renderer
+        r1 = get_offscreen_renderer(self.smpl_path)
         if self.input_deltas:
             motion_unnorm = self.diffout2motion(out_motion['pred_motion_feats'])
             motion_unnorm = motion_unnorm.permute(1, 0, 2)
         else:
             # motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
             motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
-            # motion_norm = out_motion['pred_motion_feats']
-        # motion_unnorm = pack_to_render(rots=motion_unnorm[..., 3:],
-        #                                   trans=motion_unnorm[...,:3])
-        # motion_norm = pack_to_render(rots=motion_norm[..., 3:],
-        #                                   trans=motion_norm[...,:3])
+            motion_norm = out_motion['pred_motion_feats']
 
-        # B, S = motion_norm['body_transl'].shape[:2]
-        # jts_norm = self.run_smpl_fwd(motion_norm['body_transl'],
-        #                                 motion_norm['body_orient'],
-        #                                 motion_norm['body_pose'].reshape(B,
-        #                                                                       S, 
-        #                                                                       63)).joints
-        # jts_norm = rearrange(jts_norm[:, :22], '(b s) ... -> b s ...',
-        #                         s=S, b=B)
+        if self.trainer.current_epoch % 20 == 0:
+            iid = f'epoch-{self.trainer.current_epoch}'
+            motion_unnorm_rd = pack_to_render(rots=motion_unnorm[..., 3:],
+                                           trans=motion_unnorm[..., :3])
+            motion_norm_rd = pack_to_render(rots=motion_norm[..., 3:],
+                                         trans=motion_norm[..., :3])
 
-        # jts_unnorm = self.run_smpl_fwd(motion_unnorm['body_transl'],
-        #                                 motion_unnorm['body_orient'],
-        #                                 motion_unnorm['body_pose'].reshape(B,
-        #                                                                       S, 
-        #                                                                       63)).joints
-        # jts_unnorm = rearrange(jts_unnorm[:, :22], '(b s) ... -> b s ...',
-        #                         s=S, b=B)
-        # render_skeleton(r1, positions=jts_unnorm[0].detach().cpu().numpy(),
-        #                 filename=f'jts_unnorm')
+            B, S = motion_norm['body_transl'].shape[:2]
+            jts_norm = self.run_smpl_fwd(motion_norm_rd['body_transl'],
+                                            motion_norm_rd['body_orient'],
+                                            motion_norm_rd['body_pose'].reshape(B,
+                                                                                S, 
+                                                                                63)).joints
+            jts_norm = rearrange(jts_norm[:, :22], '(b s) ... -> b s ...',
+                                    s=S, b=B)
+            render_skeleton(r1, positions=jts_norm[0].detach().cpu().numpy(),
+                            filename=f'jts_norm_0{iid}')
+            render_skeleton(r1, positions=jts_norm[1].detach().cpu().numpy(),
+                            filename=f'jts_norm_1{iid}')
+
+
+            jts_unnorm = self.run_smpl_fwd(motion_unnorm_rd['body_transl'],
+                                            motion_unnorm_rd['body_orient'],
+                                            motion_unnorm_rd['body_pose'].reshape(B,
+                                                                                S, 
+                                                                                63)).joints
+            jts_unnorm = rearrange(jts_unnorm[:, :22], '(b s) ... -> b s ...',
+                                    s=S, b=B)
+            
+            render_skeleton(r1, positions=jts_unnorm[0].detach().cpu().numpy(),
+                            filename=f'jts_unnorm_0{iid}')
+            render_skeleton(r1, positions=jts_unnorm[1].detach().cpu().numpy(),
+                            filename=f'jts_unnorm_1{iid}')
+
+            render_skeleton(r1, positions=joints_gt[0].detach().cpu().numpy(),
+                            filename=f'jts_gt_0{iid}')
+            render_skeleton(r1, positions=joints_gt[1].detach().cpu().numpy(),
+                            filename=f'jts_gt_1{iid}')
 
         pred_smpl_params = pack_to_render(rots=motion_unnorm[..., 3:],
                                           trans=motion_unnorm[...,:3])
 
-        B, S = pred_smpl_params['body_transl'].shape[:2]
         pred_joints = self.run_smpl_fwd(pred_smpl_params['body_transl'],
                                         pred_smpl_params['body_orient'],
                                         pred_smpl_params['body_pose'].reshape(B,
