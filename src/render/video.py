@@ -17,6 +17,15 @@ mpy_conf = {"codec": "libx264",
             "logger": None,
             "fps": 30}
 
+def get_offscreen_renderer(path_tobody_models):
+    from aitviewer.configuration import CONFIG as AITVIEWER_CONFIG
+    from aitviewer.headless import HeadlessRenderer
+    AITVIEWER_CONFIG.update_conf({"playback_fps": 30,
+                                    "auto_set_floor": True,
+                                    "smplx_models": path_tobody_models,
+                                    "z_up": True})
+    return HeadlessRenderer()
+
 def stack_vids_moviepy(video_lst, dur, savepath=None):
 
     if isinstance(video_lst[0], str):

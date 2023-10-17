@@ -1,6 +1,38 @@
 
 import smplx
 from pathlib import Path
+import numpy as np
+
+
+def get_smpl_skeleton():
+    return np.array(
+        [
+            [ 0, 1 ],
+            [ 0, 2 ],
+            [ 0, 3 ],
+            [ 1, 4 ],
+            [ 2, 5 ],
+            [ 3, 6 ],
+            [ 4, 7 ],
+            [ 5, 8 ],
+            [ 6, 9 ],
+            [ 7, 10],
+            [ 8, 11],
+            [ 9, 12],
+            [ 9, 13],
+            [ 9, 14],
+            [12, 15],
+            [13, 16],
+            [14, 17],
+            [16, 18],
+            [17, 19],
+            [18, 20],
+            [19, 21],
+            # [20, 22],
+            # [21, 23],
+        ]
+    )
+
 
 marker_dict = {'C7': 3470, 'CLAV': 3171, 'LANK': 3327, 'LASI': 857, 'LBAK': 1812, 
                'LBCEP': 628, 'LBHD': 182, 'LBUM': 3116, 'LBUST': 3040, 'LCHEECK': 239,

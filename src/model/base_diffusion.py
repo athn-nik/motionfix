@@ -1,5 +1,6 @@
 from os import times
 from typing import List, Optional, Union
+from matplotlib import scale
 
 import numpy as np
 import torch
@@ -57,6 +58,7 @@ class MD(BaseModel):
             self.input_deltas = False
         else:
             self.input_deltas = True
+        self.smpl_path = smpl_path
         self.condition = condition
         self.motion_condition = motion_condition
         self.text_encoder = instantiate(text_encoder)
@@ -405,12 +407,41 @@ class MD(BaseModel):
         #     self.log_dict(dico, sync_dist=True, rank_zero_only=True)
     def compute_joints_loss(self, out_motion, joints_gt, padding_mask):
 
+        # from src.render.mesh_viz import render_skeleton, render_motion
+        # from src.model.utils.tools import remove_padding, pack_to_render
+        # from src.render.video import get_offscreen_renderer
+        # r1 = get_offscreen_renderer(self.smpl_path)
         if self.input_deltas:
             motion_unnorm = self.diffout2motion(out_motion['pred_motion_feats'])
             motion_unnorm = motion_unnorm.permute(1, 0, 2)
-
         else:
+            # motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
             motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
+            # motion_norm = out_motion['pred_motion_feats']
+        # motion_unnorm = pack_to_render(rots=motion_unnorm[..., 3:],
+        #                                   trans=motion_unnorm[...,:3])
+        # motion_norm = pack_to_render(rots=motion_norm[..., 3:],
+        #                                   trans=motion_norm[...,:3])
+
+        # B, S = motion_norm['body_transl'].shape[:2]
+        # jts_norm = self.run_smpl_fwd(motion_norm['body_transl'],
+        #                                 motion_norm['body_orient'],
+        #                                 motion_norm['body_pose'].reshape(B,
+        #                                                                       S, 
+        #                                                                       63)).joints
+        # jts_norm = rearrange(jts_norm[:, :22], '(b s) ... -> b s ...',
+        #                         s=S, b=B)
+
+        # jts_unnorm = self.run_smpl_fwd(motion_unnorm['body_transl'],
+        #                                 motion_unnorm['body_orient'],
+        #                                 motion_unnorm['body_pose'].reshape(B,
+        #                                                                       S, 
+        #                                                                       63)).joints
+        # jts_unnorm = rearrange(jts_unnorm[:, :22], '(b s) ... -> b s ...',
+        #                         s=S, b=B)
+        # render_skeleton(r1, positions=jts_unnorm[0].detach().cpu().numpy(),
+        #                 filename=f'jts_unnorm')
+
         pred_smpl_params = pack_to_render(rots=motion_unnorm[..., 3:],
                                           trans=motion_unnorm[...,:3])
 
@@ -420,9 +451,16 @@ class MD(BaseModel):
                                         pred_smpl_params['body_pose'].reshape(B,
                                                                               S, 
                                                                               63)).joints
+# self.run_smpl_fwd(pred_smpl_params['body_transl'],pred_smpl_params['body_orient'],pred_smpl_params['body_pose'].reshape(B, S, 63)).joints
         pred_joints = rearrange(pred_joints[:, :22], '(b s) ... -> b s ...',
                                 s=S, b=B)
-        loss_joints = mse_loss(pred_joints * 100, joints_gt * 100, reduction='none')
+        force_in_cm = False
+        if force_in_cm:
+            scale = 100
+        else:
+            scale = 1
+
+        loss_joints = mse_loss(pred_joints * scale, joints_gt * scale, reduction='none')
         loss_joints = reduce(loss_joints, 's b j d -> s b', 'mean')
         loss_joints = (loss_joints * padding_mask).sum() / padding_mask.sum()
         # import numpy as np
@@ -492,7 +530,7 @@ class MD(BaseModel):
         # pred_smpl_params = transform_body_pose(torch.cat(
         #                                             [pred_smpl['body_orient'],
         #                                              pred_smpl['body_pose']],
-        #                                              dim=-1), "aa->6d")
+    #                                              dim=-1), "aa->6d")
 
         # gt_pose_loss_non_deltas = loss_func_data(pred_smpl_params, 
         #                                          tgt_smpl_params)
@@ -751,9 +789,9 @@ class MD(BaseModel):
                 motion_out = self.generate_motion(gt_texts, gt_lens_tgt)
                 if self.input_deltas:
                     motion_unnorm = self.diffout2motion(motion_out)
+                    motion_unnorm = motion_unnorm.permute(1, 0, 2)
                 else:
                     motion_unnorm = self.unnorm_delta(motion_out)
-                    motion_unnorm = motion_unnorm.permute(1, 0, 2)
                 # do something with the full motion
                 gen_to_render = pack_to_render(rots=motion_unnorm[...,
                                                     3:].detach().cpu(),
@@ -773,9 +811,11 @@ class MD(BaseModel):
                                               gt_lens_tgt[:nvds])
             if self.input_deltas:
                 motion_unnorm = self.diffout2motion(motion_out)
+                motion_unnorm = motion_unnorm.permute(1, 0, 2)
+            
             else:
                 motion_unnorm = self.unnorm_delta(motion_out)
-                motion_unnorm = motion_unnorm.permute(1, 0, 2)
+            
 
             gen_to_render = pack_to_render(rots=motion_unnorm[...,
                                                             3:].detach().cpu(),

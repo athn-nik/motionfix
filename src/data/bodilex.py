@@ -444,6 +444,15 @@ class BodilexDataModule(BASEDataModule):
 
                 jts_can = jts_can_ds.joints[:, :22]
                 dataset_dict_raw[k][mtype]['joint_positions'] = jts_can
+                # from src.render.mesh_viz import render_skeleton, render_motion
+                # from src.model.utils.tools import remove_padding, pack_to_render
+                # smpl_params = pack_to_render(trans=trans_can, rots=rots_can, pose_repr='aa')
+                # render_motion(renderer, smpl_params,
+                #               filename='/home/nathanasiou/Desktop/conditional_action_gen/modilex/rots.mp4')
+                # render_skeleton(renderer,
+                #                 positions=jts_can.detach().numpy(),
+                #                 filename='/home/nathanasiou/Desktop/conditional_action_gen/modilex/jts.mp4',
+                #                 pose_repr='aa')
 
         # debug overfitting
         # less frames less motions

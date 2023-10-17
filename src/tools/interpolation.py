@@ -2,7 +2,29 @@ import numpy as np
 import torch
 from src.tools.geometry import axis_angle_to_quaternion, quaternion_to_axis_angle, matrix_to_quaternion, quaternion_to_matrix
 
+def flip_motion(pose, trans):
+    """Flip pose.
+    must be in axis-angle format.
+    The flipping is based on SMPL parameters.
+    """
+    # Permutation of SMPL pose parameters when flipping the shape
+    SMPL_JOINTS_FLIP_PERM = [0, 2, 1, 3, 5, 4, 6, 8, 7, 9, 11, 10,
+                             12, 14, 13, 15, 17, 16, 19,
+                              18, 21, 20] #, 23, 22]
+    SMPL_POSE_FLIP_PERM = []
+    for i in SMPL_JOINTS_FLIP_PERM:
+        SMPL_POSE_FLIP_PERM.append(3*i)
+        SMPL_POSE_FLIP_PERM.append(3*i+1)
+        SMPL_POSE_FLIP_PERM.append(3*i+2)
+    flipped_parts = SMPL_POSE_FLIP_PERM
+    pose = pose[:, flipped_parts]
+    # we also negate the second and the third dimension of the axis-angle
+    pose[:, 1::3] = -pose[:, 1::3]
+    pose[:, 2::3] = -pose[:, 2::3]
+    x, y, z = torch.unbind(trans, dim=-1)
+    mirrored_trans = torch.stack((-x, y, z), axis=-1) 
 
+    return pose, mirrored_trans
 
 def normalize(x, axis=-1, eps=1e-8):
     """

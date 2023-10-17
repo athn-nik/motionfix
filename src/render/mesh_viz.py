@@ -6,11 +6,71 @@ import trimesh
 from aitviewer.headless import HeadlessRenderer
 from aitviewer.models.smpl import SMPLLayer
 from aitviewer.renderables.smpl import SMPLSequence
+from aitviewer.renderables.skeletons import Skeletons
+from src.utils.smpl_body_utils import get_smpl_skeleton
 
 from einops import rearrange
 from scipy.spatial.transform import Rotation as R
 from src.tools.transforms3d import transform_body_pose
 import subprocess
+
+def render_skeleton(renderer: HeadlessRenderer, positions: torch.Tensor, 
+                    filename: str, text_for_vid=None,
+                    color=(1/255, 1 / 255, 1.0, 1.0)) -> None:
+    """
+    Function to render a video of a motion sequence
+    renderer: aitviewer renderer
+    datum: dictionary containing sequence of poses, body translations and body orientations
+        data could be numpy or pytorch tensors
+    filename: the absolute path you want the video to be saved at
+
+    """
+    # assert {'body_transl', 'body_orient', 'body_pose'}.issubset(set(datum.keys()))
+
+
+    skeletons_seq = Skeletons(joint_positions=positions, 
+                              joint_connections=get_smpl_skeleton(),
+                              color=color,
+                              radius=0.03)
+
+
+    #  if 'gender' in datum.keys():
+    #  gender = datum['gender']
+    import sys
+    sys.stdout.flush()
+    old = os.dup(1)
+    os.close(1)
+    os.open(os.devnull, os.O_WRONLY)
+    
+
+    renderer.scene.add(skeletons_seq)
+    # camera follows smpl sequence
+    camera = renderer.lock_to_node(skeletons_seq, (2, 2, 2), smooth_sigma=5.0)
+    
+    renderer.save_video(video_dir=str(filename), output_fps=30)
+    # aitviewer adds a counter to the filename, we remove it
+    # filename.split('_')[-1].replace('.mp4', '')
+    # os.rename(filename + '_0.mp4', filename[:-4] + '.mp4')
+    os.rename(filename + '_0.mp4', filename + '.mp4')
+
+    # empty scene for the next rendering
+    renderer.scene.remove(skeletons_seq)
+    renderer.scene.remove(camera)
+
+    sys.stdout.flush()
+    os.close(1)
+    os.dup(old)
+    os.close(old)
+
+    if text_for_vid is not None:
+        fname = put_text(text_for_vid, f'{filename}.mp4', f'{filename}_ts.mp4')
+        os.remove(f'{filename}.mp4')
+    else:
+        fname = f'{filename}.mp4'
+
+    return fname
+
+
 
 def render_motion(renderer: HeadlessRenderer, datum: dict, 
                   filename: str, text_for_vid=None, pose_repr='6d') -> None:
@@ -55,7 +115,7 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
 
     #  if 'gender' in datum.keys():
     #  gender = datum['gender']
-
+    only_skel = False
     n_comps = 6  # default value of smplx
     if 'n_comps' in datum.keys():
         n_comps = datum['n_comps']
@@ -78,6 +138,9 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     renderer.scene.add(smpl_template)
     # camera follows smpl sequence
     camera = renderer.lock_to_node(smpl_template, (2, 2, 2), smooth_sigma=5.0)
+    
+    if only_skel:
+        smpl_template.remove(smpl_template.mesh_seq)
 
     renderer.save_video(video_dir=str(filename), output_fps=30)
     # aitviewer adds a counter to the filename, we remove it
