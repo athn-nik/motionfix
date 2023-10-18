@@ -434,7 +434,7 @@ class BodilexDataModule(BASEDataModule):
                 dataset_dict_raw[k][mtype]['trans'] = trans_can
                 seqlen, jts_no = rots_can.shape[:2]
                 
-                rots_can_rotm=transform_body_pose(rots_can,
+                rots_can_rotm = transform_body_pose(rots_can,
                                                   'aa->rot')
                 # self.body_model.batch_size = seqlen * jts_no
 

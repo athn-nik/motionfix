@@ -422,10 +422,27 @@ class MD(BaseModel):
             iid = f'epoch-{self.trainer.current_epoch}'
             motion_unnorm_rd = pack_to_render(rots=motion_unnorm[..., 3:],
                                            trans=motion_unnorm[..., :3])
+
+            B, S = motion_unnorm['body_transl'].shape[:2]
+
+            jts_unnorm = self.run_smpl_fwd(motion_unnorm_rd['body_transl'],
+                                            motion_unnorm_rd['body_orient'],
+                                            motion_unnorm_rd['body_pose'].reshape(B,                                                                                S, 
+                                                                                63)).joints
+
+            jts_unnorm = rearrange(jts_unnorm[:, :22], '(b s) ... -> b s ...',
+                                    s=S, b=B)
+            
+            render_skeleton(self.renderer,
+                            positions=jts_unnorm[0].detach().cpu().numpy(),
+                            filename=f'jts_unnorm_0{iid}')
+            render_skeleton(self.renderer,
+                            positions=jts_unnorm[1].detach().cpu().numpy(),
+                            filename=f'jts_unnorm_1{iid}')
+
             motion_norm_rd = pack_to_render(rots=motion_norm[..., 3:],
                                          trans=motion_norm[..., :3])
 
-            B, S = motion_norm_rd['body_transl'].shape[:2]
             jts_norm = self.run_smpl_fwd(motion_norm_rd['body_transl'],
                                             motion_norm_rd['body_orient'],
                                             motion_norm_rd['body_pose'].reshape(B,
@@ -439,20 +456,7 @@ class MD(BaseModel):
                             filename=f'jts_norm_1{iid}')
 
 
-            jts_unnorm = self.run_smpl_fwd(motion_unnorm_rd['body_transl'],
-                                            motion_unnorm_rd['body_orient'],
-                                            motion_unnorm_rd['body_pose'].reshape(B,
-                                                                                S, 
-                                                                                63)).joints
-            jts_unnorm = rearrange(jts_unnorm[:, :22], '(b s) ... -> b s ...',
-                                    s=S, b=B)
-            
-            render_skeleton(self.renderer, positions=jts_unnorm[0].detach().cpu().numpy(),
-                            filename=f'jts_unnorm_0{iid}')
-            render_skeleton(self.renderer, positions=jts_unnorm[1].detach().cpu().numpy(),
-                            filename=f'jts_unnorm_1{iid}')
-
-            render_skeleton(self.renderer, positions=joints_gt[0].detach().cpu().numpy(),
+            render_skeleton(r1, positions=joints_gt[0].detach().cpu().numpy(),
                             filename=f'jts_gt_0{iid}')
             render_skeleton(self.renderer, positions=joints_gt[1].detach().cpu().numpy(),
                             filename=f'jts_gt_1{iid}')
