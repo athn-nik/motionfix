@@ -415,10 +415,10 @@ class MD(BaseModel):
         else:
             # motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
             motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
-            motion_norm = out_motion['pred_motion_feats']
+            # motion_norm = out_motion['pred_motion_feats']
         B, S = motion_unnorm.shape[:2]
 
-        if self.trainer.current_epoch % 20 == 0:
+        if False: #self.trainer.current_epoch % 20 == 0:
             iid = f'epoch-{self.trainer.current_epoch}'
             motion_unnorm_rd = pack_to_render(rots=motion_unnorm[..., 3:],
                                            trans=motion_unnorm[..., :3])
