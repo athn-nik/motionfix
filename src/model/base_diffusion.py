@@ -416,10 +416,9 @@ class MD(BaseModel):
             # motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
             motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
             motion_norm = out_motion['pred_motion_feats']
-
         B, S = motion_unnorm.shape[:2]
 
-        if False:
+        if self.trainer.current_epoch % 20 == 0:
             iid = f'epoch-{self.trainer.current_epoch}'
             motion_unnorm_rd = pack_to_render(rots=motion_unnorm[..., 3:],
                                            trans=motion_unnorm[..., :3])
@@ -457,7 +456,7 @@ class MD(BaseModel):
                             filename=f'jts_norm_1{iid}')
 
 
-            render_skeleton(r1, positions=joints_gt[0].detach().cpu().numpy(),
+            render_skeleton(self.renderer, positions=joints_gt[0].detach().cpu().numpy(),
                             filename=f'jts_gt_0{iid}')
             render_skeleton(self.renderer, positions=joints_gt[1].detach().cpu().numpy(),
                             filename=f'jts_gt_1{iid}')
