@@ -55,6 +55,8 @@ def render(newcfg: DictConfig) -> None:
 
     logger.info("Loading model")
     # Instantiate all modules specified in the configs
+    import ipdb; ipdb.set_trace()
+
     model = instantiate(cfg.model,
                         nfeats=135,
                         logger_name="none",

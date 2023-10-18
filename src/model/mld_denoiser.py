@@ -70,9 +70,9 @@ class MldDenoiser(nn.Module):
             self.mem_pos = PositionalEncoding(self.latent_dim, dropout)
         elif self.pe_type == "mld":
             self.query_pos = build_position_encoding(
-                self.latent_dim, position_embedding=position_embedding)
+                self.latent_dim, position_embedding='learned')
             self.mem_pos = build_position_encoding(
-                self.latent_dim, position_embedding=position_embedding)
+                self.latent_dim, position_embedding='learned')
         else:
             raise ValueError("Not Support PE type")
 

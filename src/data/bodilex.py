@@ -498,7 +498,8 @@ class BodilexDataModule(BASEDataModule):
         for k, v in data_dict.items():
             v['id'] = k
             v['split'] = id_split_dict[k]
-        self.stats = self.calculate_feature_stats(BodilexDataset([v for k, v in data_dict.items()
+        self.stats = self.calculate_feature_stats(BodilexDataset([v for k,
+                                                                  v in data_dict.items()
                                                        if id_split_dict[k] <= 1],
                                                       self.preproc.n_body_joints,
                                                       self.preproc.stats_file,

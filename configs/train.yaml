@@ -25,7 +25,7 @@ resume_ckpt_name: null
 devices: 1
 
 
-statistics_file: statistics_synthetic${get_debug:${debug}}.npy
+statistics_file: statistics_${data.dataname}${get_debug:${debug}}.npy
 # statistics_file: "statistics_amass_circle.py"
 statistics_path: ${path.deps}/stats/${statistics_file}
 

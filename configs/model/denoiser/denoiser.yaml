@@ -8,7 +8,7 @@ normalize_before: False
 activation: 'gelu'
 flip_sin_to_cos: True
 return_intermediate_dec: False
-position_embedding: 'learned'
+position_embedding: 'mld'
 arch: trans_enc
 freq_shift: 0
 condition: ${model.condition}
