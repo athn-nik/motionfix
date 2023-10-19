@@ -403,6 +403,12 @@ class MD(BaseModel):
         # # don't write sanity check into log
         # if not self.trainer.sanity_checking:
         #     self.log_dict(dico, sync_dist=True, rank_zero_only=True)
+    @property
+    def jts_scale(self):
+        epochs_starts_cm = 500
+        return min(((self.trainer.current_epoch + 1) / epochs_starts_cm) * 100,
+                   epochs_starts_cm)
+
     def compute_joints_loss(self, out_motion, joints_gt, padding_mask):
 
         from src.render.mesh_viz import render_skeleton, render_motion
@@ -427,8 +433,8 @@ class MD(BaseModel):
 
             jts_unnorm = self.run_smpl_fwd(motion_unnorm_rd['body_transl'],
                                             motion_unnorm_rd['body_orient'],
-                                            motion_unnorm_rd['body_pose'].reshape(B,                                                                                S, 
-                                                                                63)).joints
+                            motion_unnorm_rd['body_pose'].reshape(B, S, 63)
+                                           ).joints
 
             jts_unnorm = rearrange(jts_unnorm[:, :22], '(b s) ... -> b s ...',
                                     s=S, b=B)
@@ -472,13 +478,11 @@ class MD(BaseModel):
 # self.run_smpl_fwd(pred_smpl_params['body_transl'],pred_smpl_params['body_orient'],pred_smpl_params['body_pose'].reshape(B, S, 63)).joints
         pred_joints = rearrange(pred_joints[:, :22], '(b s) ... -> b s ...',
                                 s=S, b=B)
-        force_in_cm = False
-        if force_in_cm:
-            scale = 100
-        else:
-            scale = 1
+        
 
-        loss_joints = mse_loss(pred_joints * scale, joints_gt * scale, reduction='none')
+        loss_joints = mse_loss(pred_joints * self.jts_scale, 
+                               joints_gt * self.jts_scale,
+                               reduction='none')
         loss_joints = reduce(loss_joints, 's b j d -> s b', 'mean')
         loss_joints = (loss_joints * padding_mask).sum() / padding_mask.sum()
         # import numpy as np
