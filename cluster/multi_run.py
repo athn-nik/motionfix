@@ -4,7 +4,7 @@ import time
 import subprocess
 import re
 cmd_train = ['python', 'cluster/single_run.py',
-             '--expname', 'BS-LR-REPR-wo-jts-loss',
+             '--expname', 'search-wo-jts-loss',
              '--mode', 'train',
              '--bid', '30',
              '--run-id', 'RUNID',
@@ -12,7 +12,7 @@ cmd_train = ['python', 'cluster/single_run.py',
              '--extras']
 
 batch_sizes = [16, 32]
-lrs = [8e-4, 3e-4, 4e-4, 1e-3, 1e-5]
+lrs = [8e-4, 3e-4, 1e-4, 1e-3, 1e-5]
 
 # the list() things is a hack to avoid by reference assignment
 cmd_no = 0
@@ -25,7 +25,7 @@ def run(cmd):
     print(f"Executing: {' '.join(re.escape(x) for x in cmd)}")
     x = subprocess.run(cmd)
 input_repr = [" 'model.input_feats=[body_transl, body_orient, body_pose]' ", " 'model.input_feats=[body_transl_delta_pelv_xy, body_orient_delta, body_pose_delta]' "]
-# SAMPLINGi
+# SAMPLING
 extra_const = 'model.loss_on_positions=false'
 for dtype in input_repr:
     for bs in batch_sizes:

@@ -18,7 +18,7 @@ norm_type: standardize # min_max standardize
 
 # diffusion related
 diff_params:
-  num_inference_timesteps: 2
+  num_inference_timesteps: 100
   # eta: 40
   guidance_uncondp: 0.1 # 0.1 0.25
   guidance_scale: 7.5 #

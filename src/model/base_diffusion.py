@@ -257,7 +257,7 @@ class MD(BaseModel):
         diffusion_fw_out = self.denoiser(noised_motion=noisy_motion,
                                          timestep=timesteps,
                                          encoder_hidden_states=text_encoded,
-                                         lengths=lengths, return_dict=False,)
+                                         lengths=lengths, return_dict=False)
 
 
         # Chunk the noise and noise_pred into two parts and compute the loss on each part separately.
@@ -418,7 +418,7 @@ class MD(BaseModel):
             motion_norm = out_motion['pred_motion_feats']
         B, S = motion_unnorm.shape[:2]
 
-        if self.trainer.current_epoch % 20 == 0:
+        if False: # self.trainer.current_epoch % 20 == 0:
             iid = f'epoch-{self.trainer.current_epoch}'
             motion_unnorm_rd = pack_to_render(rots=motion_unnorm[..., 3:],
                                            trans=motion_unnorm[..., :3])
