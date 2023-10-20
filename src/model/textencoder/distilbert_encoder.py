@@ -7,7 +7,7 @@ from torch.distributions.distribution import Distribution
 
 from src.model.utils import PositionalEncoding
 from src.data.tools import lengths_to_mask
-
+from src.utils.file_io import hack_path
 
 class DistilbertEncoderTransformer(DistilbertEncoderBase):
     def __init__(self, modelpath: str,
@@ -18,7 +18,7 @@ class DistilbertEncoderTransformer(DistilbertEncoderBase):
                  num_layers: int = 4, num_heads: int = 4,
                  dropout: float = 0.1,
                  activation: str = "gelu", **kwargs) -> None:
-        super().__init__(modelpath=modelpath, finetune=finetune)
+        super().__init__(modelpath=hack_path(modelpath), finetune=finetune)
         self.save_hyperparameters(logger=False)
         encoded_dim = self.text_encoded_dim
         latent_dim = latent_dim

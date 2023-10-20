@@ -55,7 +55,6 @@ def render(newcfg: DictConfig) -> None:
 
     logger.info("Loading model")
     # Instantiate all modules specified in the configs
-    import ipdb; ipdb.set_trace()
 
     model = instantiate(cfg.model,
                         nfeats=135,
@@ -122,8 +121,14 @@ def render(newcfg: DictConfig) -> None:
             model_out = model([text], [length])[0]
             model_out = model_out.cpu().squeeze().numpy()
             import ipdb; ipdb.set_trace()
-            pack_to_render(model_out[..., 3:], model_out[..., :3])
-            render_motion(aitrenderer, motion_to_render, 
+            dif_out = model.test_diffusion_forward([length], [text])
+            if model.input_deltas:
+                motion_unnorm = model.diffout2motion(dif_out)
+                motion_unnorm = motion_unnorm.permute(1, 0, 2)
+            else:
+                motion_unnorm = model.unnorm_delta(dif_out)
+            motion = pack_to_render(model_out[..., 3:], model_out[..., :3])
+            render_motion(aitrenderer, motion, 
                           output_path / f"{text}_{length}.mp4")
 
 if __name__ == '__main__':

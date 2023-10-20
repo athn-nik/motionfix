@@ -32,6 +32,15 @@ def get_metric_paths(sample_path: Path, set: str, split: str, onesample: bool, m
         return avg_path, best_path
 
 
+def hack_path(path, keyword='deps'):
+    # workaround for cluster local/sync
+    rel_p = path.split('/')
+    ########################################################
+    rel_p = rel_p[rel_p.index(keyword):]
+    rel_p = '/'.join(rel_p)
+    path = hydra.utils.get_original_cwd() + '/' + rel_p
+    return path
+
 def save_metric(path, metrics):
     strings = yaml.dump(metrics, indent=4, sort_keys=False)
     with open(path, "w") as f:

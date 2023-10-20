@@ -350,7 +350,28 @@ class MD(BaseModel):
             rs_set["joints_ref"] = joints_ref
         return rs_set
 
-    
+    def test_diffusion_forward(self, lens, texts):
+        
+
+        if self.condition in ["text", "text_uncond"]:
+            # get text embeddings
+            if self.do_classifier_free_guidance:
+                uncond_tokens = [""] * len(lens)
+                if self.condition == 'text':
+                    uncond_tokens.extend(texts)
+                elif self.condition == 'text_uncond':
+                    uncond_tokens.extend(uncond_tokens)
+                texts = uncond_tokens
+            cond_emb = self.text_encoder(texts)
+        else:
+            raise TypeError(f"condition type {self.condition} not supported")
+
+        # diffusion reverse
+        with torch.no_grad():
+            z = self._diffusion_reverse(cond_emb, lengths)
+            feats_rst = z.permute(1, 0, 2)
+        return rs_set
+
     # def on_train_epoch_end(self):
     #     return self.allsplit_epoch_end("train")
 

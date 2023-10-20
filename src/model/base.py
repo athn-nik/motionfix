@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 # Monkey patch SMPLH faster
 from src.model.utils.smpl_fast import smpl_forward_fast
-
+from src.utils.file_io import hack_path
 
 class BaseModel(LightningModule):
     def __init__(self, statistics_path: str, nfeats: int, norm_type: str,
@@ -46,6 +46,7 @@ class BaseModel(LightningModule):
         self.input_feats_dims = list(dim_per_feat)
         self.input_feats = list(input_feats)
         self.num_vids_to_render = num_vids_to_render
+        smpl_path = hack_path(smpl_path, keyword='data')
         self.body_model = smplx.SMPLHLayer(f'{smpl_path}/smplh', model_type='smplh',
                                            gender='neutral',
                                            ext='npz').to(self.device).eval();
@@ -69,7 +70,10 @@ class BaseModel(LightningModule):
         self.hparams.n_params_trainable = trainable
         self.hparams.n_params_nontrainable = nontrainable
 
+    
     def load_norm_statistics(self, path, device):
+        # workaround for cluster local/sync
+        path = hack_path(path)
         assert exists(path)
         stats = np.load(path, allow_pickle=True)[()]
         return cast_dict_to_tensors(stats, device=device)

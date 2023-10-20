@@ -5,7 +5,7 @@ import smplx
 from src.utils.genutils import freeze
 from src.model.utils.smpl_fast import smpl_forward_fast
 from typing import Dict, List
-
+from src.utils.file_io import hack_path
 
 def l2_norm(x1, x2, dim):
     return torch.linalg.vector_norm(x1 - x2, ord=2, dim=dim)
@@ -25,7 +25,7 @@ class ComputeMetrics(Metric):
         self.add_state("count_seqs", default=torch.tensor(0), dist_reduce_fx="sum")
         self.add_state("count_lens_mins", default=torch.tensor(0), dist_reduce_fx="sum")
         self.add_state("count_lens_tgt", default=torch.tensor(0), dist_reduce_fx="sum")
-
+        smpl_path = hack_path(smpl_path, keyword='data')
         self.body_model = smplx.SMPLHLayer(f'{smpl_path}/smplh', model_type='smplh',
                                            gender='neutral',
                                            ext='npz').to(self.device).eval();
