@@ -3,6 +3,7 @@ version: ${experiment}-${run_id}
 
 save_dir: wandb
 project: ${project}
+group: null
 tags: null
 notes: null
 
