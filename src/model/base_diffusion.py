@@ -28,9 +28,8 @@ import wandb
 class MD(BaseModel):
     def __init__(self, 
                  text_encoder: DictConfig,
-                 motion_decoder: DictConfig,
-                 diffusion_scheduler: DictConfig,
-                 noise_scheduler: DictConfig,
+                 infer_scheduler: DictConfig,
+                 train_scheduler: DictConfig,
                  denoiser: DictConfig,
                  losses: DictConfig,
                  diff_params: DictConfig,
@@ -52,7 +51,9 @@ class MD(BaseModel):
 
         super().__init__(statistics_path, nfeats, norm_type, input_feats,
                          dim_per_feat, smpl_path, num_vids_to_render)
-        if set(self.input_feats) == set(['body_transl', 'body_orient', 'body_pose']):
+        if set(self.input_feats) == set(['body_transl',
+                                         'body_orient',
+                                         'body_pose']):
             self.input_deltas = False
         else:
             self.input_deltas = True
@@ -63,8 +64,6 @@ class MD(BaseModel):
         self.loss_on_positions = loss_on_positions
         # from torch import nn
         # self.condition_encoder = nn.Linear()
-
-        # self.motion_decoder = instantiate(motion_decoder, nfeats=nfeats)
 
         # for k, v in self.render_data_buffer.items():
         #     self.store_examples[k] = {'ref': [], 'ref_features': [], 'keyids': []}
@@ -82,12 +81,9 @@ class MD(BaseModel):
         self.diff_params = diff_params
         denoiser['use_deltas'] = self.input_deltas
         self.denoiser = instantiate(denoiser)
-        if not self.diff_params.predict_epsilon:
-            diffusion_scheduler['prediction_type'] = 'sample'
-            noise_scheduler['prediction_type'] = 'sample'
-        
-        self.scheduler = instantiate(diffusion_scheduler)
-        self.noise_scheduler = instantiate(noise_scheduler)        
+
+        self.infer_scheduler = instantiate(infer_scheduler)
+        self.train_scheduler = instantiate(train_scheduler)        
         # Keep track of the losses
 
         # self._losses = ModuleDict({split: instantiate(losses)
@@ -143,23 +139,12 @@ class MD(BaseModel):
         return motion_feats
         #return remove_padding(joints, lengths)
 
-    def recon_from_motion(self, batch):
-        feats_ref = batch["motion"]
-        length = batch["length"]
-
-        z, dist = self.vae.encode(feats_ref, length)
-        feats_rst = self.vae.decode(z, length)
-
-        # feats => joints
-        joints = self.feats2joints(feats_rst.detach().cpu())
-        joints_ref = self.feats2joints(feats_ref.detach().cpu())
-        return remove_padding(joints,
-                              length), remove_padding(joints_ref, length)
-
     def _diffusion_reverse(self, encoder_hidden_states, lengths=None):
         # init latents
         bsz = encoder_hidden_states.shape[0]
-        bsz = bsz // 2
+        class_free = self.diff_params.guidance_scale > 1.0
+        if self.diff_params.guidance_scale > 1.0:
+            bsz = bsz // 2
         assert lengths is not None, "no vae (diffusion only) need lengths for diffusion"
         len_to_gen = max(lengths) if not self.input_deltas else max(lengths) + 1
         latents = torch.randn(
@@ -170,28 +155,26 @@ class MD(BaseModel):
 
         # scale the initial noise by the standard deviation required by the scheduler
 
-        latents = latents * self.scheduler.init_noise_sigma
-
+        latents = latents * self.infer_scheduler.init_noise_sigma
         # set timesteps
-        self.scheduler.set_timesteps(
+        self.infer_scheduler.set_timesteps(
             self.diff_params.num_inference_timesteps)
-        timesteps = self.scheduler.timesteps.to(encoder_hidden_states.device)
+        timesteps = self.infer_scheduler.timesteps.to(encoder_hidden_states.device)
         # prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
         # eta (η) is only used with the DDIMScheduler, and between [0, 1]
-        extra_step_kwargs = {}
-        if "eta" in set(
-                inspect.signature(self.scheduler.step).parameters.keys()):
-            extra_step_kwargs["eta"] = 0.0 # self.diff_params.scheduler.eta
+
+        # extra_step_kwargs = {}
+        # if "eta" in set(
+        #         inspect.signature(self.scheduler.step).parameters.keys()):
+        #     extra_step_kwargs["eta"] = 0.0 # self.diff_params.scheduler.eta
 
         # reverse
         for i, t in enumerate(timesteps):
 
             # expand the latents if we are doing classifier free guidance
             latent_model_input = torch.cat(
-                [latents] *
-                2)
-            lengths_reverse = lengths * 2
-
+                [latents] * 2) if class_free else latents
+            lengths_reverse = lengths * 2 if class_free else lengths
             # predict the noise residual
             noise_pred = self.denoiser(noised_motion=latent_model_input,
                                        timestep=t,
@@ -199,24 +182,14 @@ class MD(BaseModel):
                                        lengths=lengths_reverse)
 
             # perform guidance
-            noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-            noise_pred = noise_pred_uncond + self.diff_params.guidance_scale * (
-                noise_pred_text - noise_pred_uncond)
+            if class_free:
+                noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+                noise_pred = noise_pred_uncond + self.diff_params.guidance_scale * (
+                             noise_pred_text - noise_pred_uncond)
  
             # text_embeddings_for_guidance = encoder_hidden_states.chunk(
             #     2)[1] if self.do_classifier_free_guidance else encoder_hidden_states
-            latents = self.scheduler.step(noise_pred, t, latents,
-                                          **extra_step_kwargs).prev_sample
-            # if self.predict_epsilon:
-            #     latents = self.scheduler.step(noise_pred, t, latents,
-            #                                   **extra_step_kwargs).prev_sample
-            # else:
-            #     # predict x for standard diffusion model
-            #     # compute the previous noisy sample x_t -> x_t-1
-            #     latents = self.scheduler.step(noise_pred,
-            #                                   t,
-            #                                   latents,
-            #                                   **extra_step_kwargs).prev_sample
+            latents = self.infer_scheduler.step(noise_pred, t, latents).prev_sample
         # [batch_size, 1, latent_dim] -> [1, batch_size, latent_dim]
 
         latents = latents.permute(1, 0, 2)
@@ -242,7 +215,7 @@ class MD(BaseModel):
         # Sample a random timestep for each motion
         timesteps = torch.randint(
             0,
-            self.noise_scheduler.config.num_train_timesteps,
+            self.train_scheduler.config.num_train_timesteps,
             (bsz, ),
             device=input_motion_feats.device,
         )
@@ -250,7 +223,7 @@ class MD(BaseModel):
         
 
         # Add noise to the latents according to the noise magnitude at each timestep
-        noisy_motion = self.noise_scheduler.add_noise(input_motion_feats.clone(),
+        noisy_motion = self.train_scheduler.add_noise(input_motion_feats.clone(),
                                                       noise,
                                                       timesteps)
         # Predict the noise residual
@@ -265,7 +238,7 @@ class MD(BaseModel):
         #     noise_pred, noise_pred_prior = torch.chunk(noise_pred, 2, dim=0)
         #     noise, noise_prior = torch.chunk(noise, 2, dim=0)
         # else:
-        if not self.diff_params.predict_epsilon:
+        if self.train_scheduler.prediction_type == 'sample':
             n_set = {
                 "pred_motion_feats": diffusion_fw_out,
                 "noised_motion_feats": noisy_motion,
@@ -318,7 +291,7 @@ class MD(BaseModel):
                 elif self.condition == 'text_uncond':
                     uncond_tokens.extend(uncond_tokens)
                 texts = uncond_tokens
-            cond_emb = self.text_encoder(texts)
+            cond_emb = self.text_encoder.get_last_hidden_state(texts)
         else:
             raise TypeError(f"condition type {self.condition} not supported")
 
@@ -581,7 +554,8 @@ class MD(BaseModel):
             uncond_tokens.extend(uncond_tokens)
 
         text_emb = self.text_encoder.get_last_hidden_state(uncond_tokens)
-        diff_out = self._diffusion_reverse(text_emb, lengths)
+        with torch.no_grad():
+            diff_out = self._diffusion_reverse(text_emb, lengths)
         return diff_out.permute(1, 0, 2)
 
     def integrate_feats2motion(self, first_pose_norm, delta_motion_norm):

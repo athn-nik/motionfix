@@ -146,7 +146,7 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     # aitviewer adds a counter to the filename, we remove it
     # filename.split('_')[-1].replace('.mp4', '')
     # os.rename(filename + '_0.mp4', filename[:-4] + '.mp4')
-    os.rename(filename + '_0.mp4', filename + '.mp4')
+    os.rename(str(filename) + '_0.mp4', str(filename) + '.mp4')
 
     # empty scene for the next rendering
     renderer.scene.remove(smpl_template)
