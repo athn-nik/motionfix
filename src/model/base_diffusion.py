@@ -306,56 +306,12 @@ class MD(BaseModel):
                                         cond_emb, lengths=lengths)
         return {**n_set}
 
-    def test_diffusion_forward(self, batch, finetune_decoder=False):
-        lengths = batch["length"]
-
-        # get text embeddings
-        uncond_tokens = [""] * len(lengths)
-        if self.condition == 'text':
-            texts = batch["text"]
-            uncond_tokens.extend(texts)
-        elif self.condition == 'text_uncond':
-            uncond_tokens.extend(uncond_tokens)
-        texts = uncond_tokens
-        cond_emb = self.text_encoder.get_last_hidden_state(texts)
-
-        # diffusion reverse
-        with torch.no_grad():
-            z = self._diffusion_reverse(cond_emb, lengths)
-
-        with torch.no_grad():
-            feats_rst = z.permute(1, 0, 2)
-
-        joints_rst = self.feats2joints(feats_rst)
-
-        rs_set = {
-            "m_rst": feats_rst,
-            # [bs, ntoken, nfeats] <= [ntoken, bs, nfeats]
-            "lat_t": z.permute(1, 0, 2),
-            "joints_rst": joints_rst,
-        }
-
-        # prepare gt/refer for metric
-        if "motion" in batch.keys() and not finetune_decoder:
-            feats_ref = batch["motion"].detach()
-            with torch.no_grad():
-                motion_z = feats_ref
-                recons_z = feats_rst
-
-            joints_ref = self.feats2joints(feats_ref)
-
-            rs_set["m_ref"] = feats_ref
-            rs_set["lat_m"] = motion_z.permute(1, 0, 2)
-            rs_set["lat_rm"] = recons_z.permute(1, 0, 2)
-            rs_set["joints_ref"] = joints_ref
-        return rs_set
-
     def test_diffusion_forward(self, lens, texts):
         
 
         if self.condition in ["text", "text_uncond"]:
             # get text embeddings
-            if self.do_classifier_free_guidance:
+            if self.diff_params.guidance_scale > 1 :
                 uncond_tokens = [""] * len(lens)
                 if self.condition == 'text':
                     uncond_tokens.extend(texts)
@@ -368,9 +324,9 @@ class MD(BaseModel):
 
         # diffusion reverse
         with torch.no_grad():
-            z = self._diffusion_reverse(cond_emb, lengths)
+            z = self._diffusion_reverse(cond_emb, lens)
             feats_rst = z.permute(1, 0, 2)
-        return rs_set
+        return feats_rst
 
     # def on_train_epoch_end(self):
     #     return self.allsplit_epoch_end("train")

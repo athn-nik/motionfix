@@ -118,16 +118,16 @@ def render(newcfg: DictConfig) -> None:
         for length, text in tqdm(len_text):
         # task: input or Example
         # prepare batch data  
-            model_out = model([text], [length])[0]
-            model_out = model_out.cpu().squeeze().numpy()
-            import ipdb; ipdb.set_trace()
+            # model_out = model([text], [length])[0]
+            # model_out = model_out.cpu().squeeze().numpy()
             dif_out = model.test_diffusion_forward([length], [text])
             if model.input_deltas:
                 motion_unnorm = model.diffout2motion(dif_out)
                 motion_unnorm = motion_unnorm.permute(1, 0, 2)
             else:
                 motion_unnorm = model.unnorm_delta(dif_out)
-            motion = pack_to_render(model_out[..., 3:], model_out[..., :3])
+            motion = pack_to_render(motion_unnorm[..., 3:],
+                                    motion_unnorm[..., :3])
             render_motion(aitrenderer, motion, 
                           output_path / f"{text}_{length}.mp4")
 
