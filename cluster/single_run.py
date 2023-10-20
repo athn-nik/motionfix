@@ -4,12 +4,15 @@ import argparse
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--mode', required=True, choices=['train', 'sample', 
+    parser.add_argument('--mode', required=True, choices=['train', 'sample', 'sweep',
                                                           'eval', 'render', 'fast-render'], type=str,
                             help='Mode is either train or sample or eval!')
     
     parser.add_argument('--folder', required=False, type=str, default=None,
                         help='folder for evaluation')
+    parser.add_argument('--name', required=False, type=str, default=None,
+                        help='folder for evaluation')
+
     parser.add_argument('--expname', required=False, type=str, default='exp_name',
                         help='Experiment Name')
     parser.add_argument('--run-id', required=False, type=str, default='run_id',
@@ -29,6 +32,9 @@ if __name__ == "__main__":
     bid_for_exp = arguments.bid
     gpus_no = arguments.gpus
     gpu_mem = arguments.mem_gpu
+    fd =  arguments.folder
+    name =  arguments.name
+
     if arguments.extras is not None:
         args = arguments.extras
         _args = args.strip().split()
@@ -58,8 +64,9 @@ if __name__ == "__main__":
             run_id = arguments.run_id
             expname = arguments.expname
         experiments = [{"expname": expname, "run_id": run_id, "args": args, "gpus": gpus_no}]
-    elif cluster_mode == 'eval':
-        pass
+    elif cluster_mode == 'sweep':
+        experiments = [{"config": fd, "sweep-name":name}]
+
     launch_task_on_cluster(experiments, bid_amount=bid_for_exp, 
                            gpu_min_mem=gpu_mem,
                            mode=cluster_mode)
