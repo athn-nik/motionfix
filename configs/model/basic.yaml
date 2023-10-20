@@ -24,6 +24,7 @@ diff_params:
   guidance_scale: 7.5 #
   predict_epsilon: false
 
+
 motion_condition: target
 condition: text
 smpl_path: ${data.smplh_path}
@@ -42,6 +43,7 @@ input_feats:
 # [body_transl, body_orient, body_pose]
 
 loss_on_positions: false
+scale_loss_on_positions: 500
 
 defaults:
   # diffusion stuff

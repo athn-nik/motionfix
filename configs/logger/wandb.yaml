@@ -1,5 +1,5 @@
 logger_name: wandb
-version: ${experiment}-${run_id}
+name: ${experiment}-${run_id}
 
 save_dir: wandb
 project: ${project}

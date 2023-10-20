@@ -47,6 +47,7 @@ class MD(BaseModel):
                  condition: Optional[str] = "text",
                  motion_condition: Optional[str] = "source",
                  loss_on_positions: Optional[bool] = False,
+                 scale_loss_on_positions: Optional[int] = None,
                  renderer= None,
                  **kwargs):
 
@@ -63,7 +64,7 @@ class MD(BaseModel):
         self.loss_on_positions = loss_on_positions
         # from torch import nn
         # self.condition_encoder = nn.Linear()
-
+        self.ep_start_scale = scale_loss_on_positions
         # self.motion_decoder = instantiate(motion_decoder, nfeats=nfeats)
 
         # for k, v in self.render_data_buffer.items():
@@ -75,8 +76,6 @@ class MD(BaseModel):
         self.renderer = renderer
 
         # If we want to overide it at testing time
-        self.sample_mean = False
-        self.fact = 1.0
         self.reduce_latents = reduce_latents
         self.latent_dim = latent_dim
         self.diff_params = diff_params
@@ -405,9 +404,8 @@ class MD(BaseModel):
         #     self.log_dict(dico, sync_dist=True, rank_zero_only=True)
     @property
     def jts_scale(self):
-        epochs_starts_cm = 500
-        return min(((self.trainer.current_epoch + 1) / epochs_starts_cm) * 100,
-                   epochs_starts_cm)
+        return min(((self.trainer.current_epoch + 1) / self.ep_start_scale) * 100,
+                   self.ep_start_scale)
 
     def compute_joints_loss(self, out_motion, joints_gt, padding_mask):
 
