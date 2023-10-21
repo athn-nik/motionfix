@@ -159,8 +159,8 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
         sub_file = sub_file.replace('EXPMODE', mode)
         import yaml
         pydict_sweep = yaml.safe_load(Path(config_file).read_text())
-        # sweep_name = configs[0]["sweep-name"]
-        # pydict_sweep['parameters']['logger.group']['value'] = sweep_name
+        sweep_name = configs[0]["sweep-name"]
+        pydict_sweep['parameters']['logger.group']['value'] = sweep_name
 
         sweep_id = wandb.sweep(sweep=pydict_sweep,
                                project="motion-editing")
@@ -169,7 +169,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
                'export PATH=/home/nathanasiou/apps/imagemagick/bin:$PATH\n' \
                'export LD_LIBRARY_PATH=/home/nathanasiou/apps/imagemagick/lib:$LD_LIBRARY_PATH\n' \
                'wandb agent clockwork_pin/motion-editing/SWEEP_ID'
-        import ipdb; ipdb.set_trace
+
         # cd ~/hoi-common-sense
         # cmd=`wandb sweep --project $1 $2 2> >(grep -o "wandb agent.*$")`
         # echo "replacing command with ${cmd}"
@@ -189,7 +189,6 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
         for k,v in pydict_sweep['parameters'].items():
             if 'values' in v:
                 num_of_expers *= len(v['values'])
-
         log = f'{mode}/{sweep_id}'
         for x, y in [("NO_GPUS", str(no_gpus)), ("GPUS_REQS", gpus_requirements),
                         ("CNR_LOG_ID", f'{CONDOR_FD}/{log}/logs'),
