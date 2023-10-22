@@ -21,9 +21,14 @@ parameters:
   # wandb_logger.tags:
   #   value: ['circle', 'smplx', 'intention']
   model.input_feats:
-    values: [["body_transl_delta_pelv_xy", "body_orient_delta", "body_pose_delta"],
-    ["body_transl", "body_orient" ,"body_pose"]]
+    values: [["body_transl", "body_orient" ,"body_pose"]]
   machine.batch_size:
-    values: [64, 32, 16]
-  model.diff_params.guidance_scale:
+    values: [32, 16]
+  model.diff_params.num_inference_timesteps:
+    values: [200, 500, 1000]
+  model.diff_params.guidance_uncondp:
+    values: [2.5, 5, 7.5]
+  model.diff_params.guidance_scale_text:
+    values: [2.5, 5, 7.5]
+  model.diff_params.guidance_scale_motion:
     values: [2.5, 5, 7.5]
