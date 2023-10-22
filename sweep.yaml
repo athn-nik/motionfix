@@ -32,3 +32,7 @@ parameters:
     values: [2.5, 5, 7.5]
   model.diff_params.guidance_scale_motion:
     values: [2.5, 5, 7.5]
+  model.loss_on_positions:
+    values: [true, false]
+  model.scale_loss_on_positions:
+    values: [500, 600]
