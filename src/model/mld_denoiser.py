@@ -6,12 +6,11 @@ from src.model.utils.positional_encoding import PositionalEncoding
 from src.model.utils.transf_utils import SkipTransformerEncoder, TransformerEncoderLayer
 from src.model.utils.all_positional_encodings import build_position_encoding
 from src.data.tools.tensors import lengths_to_mask
-
+from src.model.utils.timestep_embed import TimestepEmbedderMDM
 
 class MldDenoiser(nn.Module):
 
     def __init__(self,
-                 ablation = True,
                  nfeats: int = 263,
                  condition: str = "text",
                  latent_dim: list = [1, 256],
@@ -57,6 +56,10 @@ class MldDenoiser(nn.Module):
                                        freq_shift)
             self.time_embedding = TimestepEmbedding(text_encoded_dim,
                                                     self.latent_dim)
+            
+            # FIXME me TODO this            
+            # self.time_embedding = TimestepEmbedderMDM(self.latent_dim)
+            
             # project time+text to latent_dim
             if text_encoded_dim != self.latent_dim:
                 # todo 10.24 debug why relu
@@ -104,7 +107,9 @@ class MldDenoiser(nn.Module):
     def forward(self,
                 noised_motion,
                 timestep,
-                encoder_hidden_states,
+                text_embeds,
+                condition_mask, 
+                motion_embeds=None,
                 lengths=None,
                 **kwargs):
         # 0.  dimension matching
@@ -129,18 +134,21 @@ class MldDenoiser(nn.Module):
         # 2. condition + time embedding
         if self.condition in ["text", "text_uncond"]:
             # text_emb [seq_len, batch_size, text_encoded_dim] <= [batch_size, seq_len, text_encoded_dim]
-            encoder_hidden_states = encoder_hidden_states.permute(1, 0, 2)
-            text_emb = encoder_hidden_states  # [num_words, bs, latent_dim]
+            text_embeds = text_embeds.permute(1, 0, 2)
+              # [num_words, bs, latent_dim]
             # textembedding projection
             if self.text_encoded_dim != self.latent_dim:
                 # [1 or 2, bs, latent_dim] <= [1 or 2, bs, text_encoded_dim]
-                text_emb_latent = self.emb_proj(text_emb)
+                text_emb_latent = self.emb_proj(text_embeds)
             else:
-                text_emb_latent = text_emb
-            if self.abl_plus:
-                emb_latent = time_emb + text_emb_latent
+                text_emb_latent = text_embeds
+            if motion_embeds is not None:
+                emb_latent = torch.cat((time_emb, 
+                                        text_emb_latent,
+                                        motion_embeds), 0)
             else:
-                emb_latent = torch.cat((time_emb, text_emb_latent), 0)
+                emb_latent = torch.cat((time_emb, 
+                                        text_emb_latent), 0)
         else:
             raise TypeError(f"condition type {self.condition} not supported")
         # 4. transformer
@@ -159,10 +167,10 @@ class MldDenoiser(nn.Module):
             #     # [seqlen+1, bs, d]
             #     # todo change to query_pos_decoder
             xseq = self.query_pos(xseq)
-            token_mask = torch.ones((bs, 
-                                     text_emb_latent.shape[0] + time_emb.shape[0]),
-                                     dtype=bool, device=xseq.device)
-            aug_mask = torch.cat((token_mask, mask), 1)
+            time_token_mask = torch.ones((bs, time_emb.shape[0]),
+                                          dtype=bool, device=xseq.device)
+            # condition_mask
+            aug_mask = torch.cat((time_token_mask, condition_mask, mask), 1)
 
             tokens = self.encoder(xseq,
                                   src_key_padding_mask=~aug_mask)

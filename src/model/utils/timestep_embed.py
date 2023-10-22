@@ -1,3 +1,4 @@
+import select
 from torch import nn
 import torch
 import math
@@ -76,3 +77,22 @@ class Timesteps(nn.Module):
                                        flip_sin_to_cos=self.flip_sin_to_cos,
                                        downscale_freq_shift=self.downscale_freq_shift,)
         return t_emb
+
+
+class TimestepEmbedderMDM(nn.Module):
+    def __init__(self, latent_dim):
+        super().__init__()
+        self.latent_dim = latent_dim
+        from src.model.utils.positional_encoding import PositionalEncoding
+
+        time_embed_dim = self.latent_dim
+        self.sequence_pos_encoder = PositionalEncoding(d_model=self.latent_dim)
+
+        self.time_embed = nn.Sequential(
+            nn.Linear(self.latent_dim, time_embed_dim),
+            nn.SiLU(),
+            nn.Linear(time_embed_dim, time_embed_dim),
+        )
+
+    def forward(self, timesteps):
+        return self.time_embed(self.sequence_pos_encoder.pe[timesteps]).permute(1, 0, 2)

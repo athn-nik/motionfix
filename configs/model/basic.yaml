@@ -20,9 +20,10 @@ norm_type: standardize # min_max standardize
 diff_params:
   num_inference_timesteps: 1000
   guidance_uncondp: 0.1 # 0.1 0.25
-  guidance_scale: 7.5 #
+  guidance_scale_text: 7.5 #
+  guidance_scale_motion: 1.5
 
-motion_condition: target
+motion_condition: source
 condition: text
 smpl_path: ${data.smplh_path}
 
@@ -40,6 +41,7 @@ input_feats:
 # [body_transl, body_orient, body_pose]
 
 loss_on_positions: false
+scale_loss_on_positions: 500
 
 defaults:
   # diffusion stuff
@@ -48,8 +50,7 @@ defaults:
   - denoiser: denoiser
   # VAE stuff
   - text_encoder: distilbert_enc
-  - motion_encoder: actor
-  - motion_decoder: actor
+  - motion_condition_encoder: actor
   - losses: basic
   - optim: adamw
   - /model/losses/function/recons@func_recons

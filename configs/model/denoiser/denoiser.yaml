@@ -13,6 +13,5 @@ arch: trans_enc
 freq_shift: 0
 condition: ${model.condition}
 latent_dim: ${model.latent_dim}
-guidance_scale: ${model.diff_params.guidance_scale}
 guidance_uncondp: ${model.diff_params.guidance_uncondp}
 nfeats: ${model.nfeats} # TODO FIX THIS

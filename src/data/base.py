@@ -43,8 +43,6 @@ class BASEDataModule(pl.LightningDataModule):
         sample_params.update(overrides)
         return self.Dataset(**sample_params)
 
-
-
     def train_dataloader(self):
         return DataLoader(self.dataset['train'], **self.dataloader_options)
 

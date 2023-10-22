@@ -1,5 +1,6 @@
 from os import times
 from typing import List, Optional, Union
+from matplotlib.pylab import cond
 import numpy as np
 import torch
 from hydra.utils import instantiate
@@ -28,6 +29,7 @@ import wandb
 class MD(BaseModel):
     def __init__(self, 
                  text_encoder: DictConfig,
+                 motion_condition_encoder: DictConfig,
                  infer_scheduler: DictConfig,
                  train_scheduler: DictConfig,
                  denoiser: DictConfig,
@@ -46,6 +48,7 @@ class MD(BaseModel):
                  condition: Optional[str] = "text",
                  motion_condition: Optional[str] = "source",
                  loss_on_positions: Optional[bool] = False,
+                 scale_loss_on_positions: Optional[int] = None,
                  renderer= None,
                  **kwargs):
 
@@ -60,10 +63,14 @@ class MD(BaseModel):
         self.smpl_path = smpl_path
         self.condition = condition
         self.motion_condition = motion_condition
+        if self.motion_condition == 'source':
+            self.motion_cond_encoder = instantiate(motion_condition_encoder)
         self.text_encoder = instantiate(text_encoder)
         self.loss_on_positions = loss_on_positions
         # from torch import nn
         # self.condition_encoder = nn.Linear()
+        self.ep_start_scale = scale_loss_on_positions
+        # self.motion_decoder = instantiate(motion_decoder, nfeats=nfeats)
 
         # for k, v in self.render_data_buffer.items():
         #     self.store_examples[k] = {'ref': [], 'ref_features': [], 'keyids': []}
@@ -74,8 +81,6 @@ class MD(BaseModel):
         self.renderer = renderer
 
         # If we want to overide it at testing time
-        self.sample_mean = False
-        self.fact = 1.0
         self.reduce_latents = reduce_latents
         self.latent_dim = latent_dim
         self.diff_params = diff_params
@@ -84,7 +89,12 @@ class MD(BaseModel):
 
         self.infer_scheduler = instantiate(infer_scheduler)
         self.train_scheduler = instantiate(train_scheduler)        
+
         # Keep track of the losses
+        if train_scheduler.prediction_type == 'sample':
+            self.predict_noise = False
+        else:
+            self.predict_noise = True
 
         # self._losses = ModuleDict({split: instantiate(losses)
         #     for split in ["losses_train", "losses_test", "losses_val"]
@@ -120,36 +130,29 @@ class MD(BaseModel):
         z = z.unsqueeze(0)
         return z
 
-    def forward(self, text_prompts, lens):
-        lengths = lens
-        # diffusion reverse
-        uncond_tokens = [""] * len(text_prompts)
-        if self.condition == 'text':
-            uncond_tokens.extend(text_prompts)
-        elif self.condition == 'text_uncond':
-            uncond_tokens.extend(uncond_tokens)
-        texts = uncond_tokens
-        text_emb = self.text_encoder.get_last_hidden_state(texts)
-        motion_feats = self._diffusion_reverse(text_emb, lengths)
-
-        with torch.no_grad():
-            # ToDo change mcross actor to same api
-            motion_feats = motion_feats.permute(1, 0, 2)
-
-        return motion_feats
-        #return remove_padding(joints, lengths)
-
-    def _diffusion_reverse(self, encoder_hidden_states, lengths=None):
+    def _diffusion_reverse(self, text_embeds, motion_embeds,
+                           lengths=None):
+        # guidance_scale_text: 7.5 #
+        #  guidance_scale_motion: 1.5
         # init latents
-        bsz = encoder_hidden_states.shape[0]
-        class_free = self.diff_params.guidance_scale > 1.0
-        if self.diff_params.guidance_scale > 1.0:
+        bsz = text_embeds.shape[0]
+        class_free_both = self.diff_params.guidance_scale_motion > 1.0 and\
+              self.diff_params.guidance_scale_text > 1.0 
+        class_free_motion = self.diff_params.guidance_scale_motion > 1.0 and\
+              self.diff_params.guidance_scale_text < 1.0 
+        class_free_text = self.diff_params.guidance_scale_motion < 1.0 and\
+              self.diff_params.guidance_scale_text > 1.0 
+
+        # if class_free_both:
+        #     bsz = bsz // 3
+        if class_free_motion or class_free_text or class_free_both:
             bsz = bsz // 2
+
         assert lengths is not None, "no vae (diffusion only) need lengths for diffusion"
         len_to_gen = max(lengths) if not self.input_deltas else max(lengths) + 1
         latents = torch.randn(
             (bsz, len_to_gen, self.nfeats),
-            device=encoder_hidden_states.device,
+            device=text_embeds.device,
             dtype=torch.float,
         )
 
@@ -159,7 +162,7 @@ class MD(BaseModel):
         # set timesteps
         self.infer_scheduler.set_timesteps(
             self.diff_params.num_inference_timesteps)
-        timesteps = self.infer_scheduler.timesteps.to(encoder_hidden_states.device)
+        timesteps = self.infer_scheduler.timesteps.to(text_embeds.device)
         # prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
         # eta (η) is only used with the DDIMScheduler, and between [0, 1]
 
@@ -171,22 +174,69 @@ class MD(BaseModel):
         # reverse
         for i, t in enumerate(timesteps):
 
-            # expand the latents if we are doing classifier free guidance
-            latent_model_input = torch.cat(
-                [latents] * 2) if class_free else latents
-            lengths_reverse = lengths * 2 if class_free else lengths
+            if class_free_motion or class_free_text or class_free_both:
+                latent_model_input = torch.cat([latents] * 2)
+                lengths_reverse = lengths * 2
+            else:
+                latent_model_input = latents
+                lengths_reverse = lengths
+            # # expand the latents if we are doing classifier free guidance
+            # latent_model_input = torch.cat(
+            #     [latents] * 2) if class_free else latents
+
+            #  both_rows, uncond_rows, text_rows1, motion_rows2
+
+            condition_mask_wo_text = self.filter_conditions(
+                                        max_text_len=text_embeds.shape[1],
+                                        max_motion_len=motion_embeds.shape[0],
+                                        batch_size=text_embeds.shape[0], 
+                                        perc_only_text=0.0,
+                                        perc_only_motion=0.5,
+                                        perc_text_n_motion=0.5, 
+                                        randomize=False)
+            condition_mask_both = self.filter_conditions(
+                            max_text_len=text_embeds.shape[1],
+                            max_motion_len=motion_embeds.shape[0],
+                            batch_size=text_embeds.shape[0], 
+                            perc_only_text=0.0,
+                            perc_only_motion=0.0,
+                            perc_text_n_motion=1.0, 
+                            randomize=False)
+            if class_free_both:
             # predict the noise residual
-            noise_pred = self.denoiser(noised_motion=latent_model_input,
-                                       timestep=t,
-                                       encoder_hidden_states=encoder_hidden_states,
-                                       lengths=lengths_reverse)
+                mot_pred_both = self.denoiser(noised_motion=latent_model_input,
+                                            timestep=t,
+                                            text_embeds=text_embeds,
+                                            condition_mask=condition_mask_both,
+                                            motion_embeds=motion_embeds,
+                                            lengths=lengths_reverse)
+
+                mot_pred_motion = self.denoiser(noised_motion=latent_model_input,
+                                                timestep=t,
+                                                text_embeds=text_embeds,
+                                                condition_mask=condition_mask_wo_text,
+                                                motion_embeds=motion_embeds,
+                                                lengths=lengths_reverse)
 
             # perform guidance
-            if class_free:
-                noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                noise_pred = noise_pred_uncond + self.diff_params.guidance_scale * (
-                             noise_pred_text - noise_pred_uncond)
- 
+            if class_free_both:
+                mot_pred_uncond, mot_pred_src = mot_pred_motion.chunk(2)
+                mot_pred_uncond, mot_pred_both = mot_pred_motion.chunk(2)
+
+                noise_pred = mot_pred_uncond +\
+                             self.diff_params.guidance_scale_motion * (
+                             mot_pred_src - mot_pred_uncond)*\
+                             self.diff_params.guidance_scale_text*(
+                                mot_pred_both - mot_pred_src
+                             )
+            # elif class_free_motion or class_free_text:
+            #     latent_model_input = torch.cat([latents] * 2)
+            #     lengths_reverse = lengths * 2
+            # else:
+            #     latent_model_input = latents
+            #     lengths_reverse = lengths
+
+
             # text_embeddings_for_guidance = encoder_hidden_states.chunk(
             #     2)[1] if self.do_classifier_free_guidance else encoder_hidden_states
             latents = self.infer_scheduler.step(noise_pred, t, latents).prev_sample
@@ -196,7 +246,10 @@ class MD(BaseModel):
         return latents
     
 
-    def _diffusion_process(self, input_motion_feats, text_encoded,
+    def _diffusion_process(self, input_motion_feats,
+                           text_encoded,
+                           mask_for_condition,
+                           motion_encoded=None,
                            lengths=None):
         """
         heavily from https://github.com/huggingface/diffusers/blob/main/examples/dreambooth/train_dreambooth.py
@@ -229,8 +282,11 @@ class MD(BaseModel):
         # Predict the noise residual
         diffusion_fw_out = self.denoiser(noised_motion=noisy_motion,
                                          timestep=timesteps,
-                                         encoder_hidden_states=text_encoded,
-                                         lengths=lengths, return_dict=False)
+                                         text_embeds=text_encoded,
+                                         motion_embeds=motion_encoded,
+                                         lengths=lengths,
+                                         condition_mask=mask_for_condition,
+                                         return_dict=False)
 
 
         # Chunk the noise and noise_pred into two parts and compute the loss on each part separately.
@@ -238,7 +294,13 @@ class MD(BaseModel):
         #     noise_pred, noise_pred_prior = torch.chunk(noise_pred, 2, dim=0)
         #     noise, noise_prior = torch.chunk(noise, 2, dim=0)
         # else:
-        if self.train_scheduler.prediction_type == 'sample':
+        if self.predict_noise:
+            n_set = {
+                "noise": noise,
+                "noise_pred": diffusion_fw_out,
+            }
+
+        else:
             n_set = {
                 "pred_motion_feats": diffusion_fw_out,
                 "noised_motion_feats": noisy_motion,
@@ -246,62 +308,112 @@ class MD(BaseModel):
                 "timesteps": timesteps
             }
 
-        else:
-            n_set = {
-                "noise": noise,
-                "noise_pred": diffusion_fw_out,
-            }
 
         return n_set
 
+    def filter_conditions(self, max_text_len, max_motion_len,
+                          batch_size, 
+                          perc_only_text=0.05,  perc_only_motion=0.05,
+                          perc_text_n_motion=0.85,
+                          randomize=True):
+
+        # Define the dimensions of the tensor
+        M = batch_size # Number of rows (adjust as needed)
+        N = max_text_len + max_motion_len  # Total number of columns
+
+        # Calculate the number of rows for each category
+        
+        percent_uncond = 1 - perc_text_n_motion - perc_only_text - perc_only_motion
+        # rows_ones = int(M * perc_text_n_motion)
+        rows_uncond = int(round(M * percent_uncond))
+        rows_text_only = int(round(M * perc_only_text))
+        rows_motion_only = int(round(M * perc_only_motion))
+        rows_both = M - rows_text_only - rows_uncond - rows_motion_only
+        all_masks = []
+        if rows_both:
+            # Create rows with all ones
+            both_rows = torch.ones((rows_both, N), dtype=torch.float)
+            all_masks.append(both_rows)
+        if rows_uncond:
+            # Create rows with all zeros
+            uncond_rows = torch.zeros((rows_uncond, N), dtype=torch.float)
+            all_masks.append(uncond_rows)
+
+        if rows_text_only:
+            # Create rows with k zeros and w ones
+            single_row_text = torch.cat((torch.ones(max_text_len,
+                                              dtype=torch.float),
+                                         torch.zeros(max_motion_len,
+                                               dtype=torch.float),
+                                         ))
+            text_only_row = torch.cat([single_row_text[None]] * rows_text_only,
+                                      dim=0)
+            all_masks.append(text_only_row)
+
+        if rows_motion_only:
+            single_row_mot = torch.cat((torch.zeros(max_text_len, 
+                                                    dtype=torch.float),
+                                        torch.ones(max_motion_len,
+                                                   dtype=torch.float)))
+            motion_only_row = torch.cat([single_row_mot[None]] * rows_motion_only,
+                                        dim=0)
+            all_masks.append(motion_only_row)
+
+        # Combine the rows
+        final_mask = torch.cat(all_masks, dim=0)
+
+        if randomize:
+            # Shuffle the tensor if needed
+            final_mask = final_mask[torch.randperm(final_mask.size(0))]
+
+        return final_mask.bool().to(self.device)
+
 
     def train_diffusion_forward(self, batch, batch_idx):
+        cond_emb_motion = None
         if self.motion_condition == 'source':
-            feats_ref = batch['source_motion']
-        else:
-            feats_ref = batch['target_motion']
-        lengths = batch['length_target']
+            source_motion_condition = batch['source_motion']
+            cond_emb_motion = self.motion_cond_encoder(source_motion_condition.permute(1, 0, 2),
+                                                       batch['length_source'])
+            cond_emb_motion = cond_emb_motion.unsqueeze(0)
+
+        feats_for_denois = batch['target_motion']
+        target_lens = batch['length_target']
         # motion encode
         # with torch.no_grad():
             
         # motion_feats = feats_ref.permute(1, 0, 2)
+        batch_size = len(batch["text"])
 
         text = batch["text"]
         # classifier free guidance: randomly drop text during training
-        text = [ "" if np.random.rand(1) < self.diff_params.guidance_uncondp
-                else i for i in text]
+
+        # text = [ "" if np.random.rand(1) < self.diff_params.guidance_uncondp
+        #         else i for i in text]
+        # # cond_emb_motion = [ "" np.random.rand(1) < self.diff_params.guidance_uncondp
+        # #         else i for i in text]
+
+        # text = [ "" if np.random.rand(1) < self.diff_params.guidance_uncondp
+        #         else i for i in text]
+        # text = [ "" if np.random.rand(1) < self.diff_params.guidance_uncondp
+        #         else i for i in text]
 
         # text encode
-        cond_emb = self.text_encoder.get_last_hidden_state(text)
-        
+        cond_emb_text = self.text_encoder.get_last_hidden_state(text)
+        aug_mask = self.filter_conditions(max_text_len=cond_emb_text.shape[1],
+                                          max_motion_len=cond_emb_motion.shape[0],
+                                          batch_size=batch_size, 
+                                          perc_only_text=0.05,
+                                          perc_only_motion=0.05,
+                                          perc_text_n_motion=0.85)
         # diffusion process return with noise and noise_pred
-        n_set = self._diffusion_process(feats_ref,
-                                        cond_emb, lengths=lengths)
+        n_set = self._diffusion_process(feats_for_denois,
+                                        text_encoded=cond_emb_text, 
+                                        motion_encoded=cond_emb_motion,
+                                        mask_for_condition=aug_mask,
+                                        lengths=target_lens)
         return {**n_set}
 
-    def test_diffusion_forward(self, lens, texts):
-        
-
-        if self.condition in ["text", "text_uncond"]:
-            # get text embeddings
-            if self.diff_params.guidance_scale > 1 :
-                uncond_tokens = [""] * len(lens)
-                if self.condition == 'text':
-                    uncond_tokens.extend(texts)
-                elif self.condition == 'text_uncond':
-                    uncond_tokens.extend(uncond_tokens)
-                texts = uncond_tokens
-            cond_emb = self.text_encoder.get_last_hidden_state(texts)
-        else:
-            raise TypeError(f"condition type {self.condition} not supported")
-
-        # diffusion reverse
-        with torch.no_grad():
-            z = self._diffusion_reverse(cond_emb, lens)
-            feats_rst = z.permute(1, 0, 2)
-        return feats_rst
-
-    # def on_train_epoch_end(self):
     #     return self.allsplit_epoch_end("train")
 
     # def on_validation_epoch_end(self):
@@ -326,38 +438,15 @@ class MD(BaseModel):
     def test_step(self, batch, batch_idx):
         return self.allsplit_step("test", batch, batch_idx)
 
-    # def predict_step(self, batch, batch_idx):
-    #     return self.forward(batch)
-
-    # def allsplit_epoch_end(self, split: str ):
-        # dico = {}
-
-        # if split in ["train", "val"]:
-        #     losses = self.losses[split]
-        #     loss_dict = losses.compute()
-        #     losses.reset()
-        #     dico.update({
-        #         losses.loss2logname(loss, split): value.item()
-        #         for loss, value in loss_dict.items() if not torch.isnan(value)
-        #     })
-
-        # if split in ["val"]:
-        #     pass
-        #     # metrics_dict = self.metrics.compute()
-
-        # if split != "test":
-        #     dico.update({
-        #         "epoch": float(self.trainer.current_epoch),
-        #         "step": float(self.trainer.current_epoch),
-        #     })
-        # # don't write sanity check into log
-        # if not self.trainer.sanity_checking:
-        #     self.log_dict(dico, sync_dist=True, rank_zero_only=True)
     @property
     def jts_scale(self):
-        epochs_starts_cm = 500
-        return min(((self.trainer.current_epoch + 1) / epochs_starts_cm) * 100,
-                   epochs_starts_cm)
+        warm_up_epochs = 300
+        if self.trainer.current_epoch < warm_up_epochs:
+            return 1.0
+        else:
+            return min(((self.trainer.current_epoch - warm_up_epochs + 1)
+                        / self.ep_start_scale) * 100,
+                        self.ep_start_scale)
 
     def compute_joints_loss(self, out_motion, joints_gt, padding_mask):
 
@@ -546,16 +635,28 @@ class MD(BaseModel):
 
         return source_motion_gt, target_motion_gt
 
-    def generate_motion(self, texts, lengths):
-        uncond_tokens = [""] * len(texts)
+    def generate_motion(self, texts_cond, motions_cond, lengths_cond,
+                         lengths):
+        uncond_tokens = [""] * len(texts_cond)
         if self.condition == 'text':
-            uncond_tokens.extend(texts)
+            uncond_tokens.extend(texts_cond)
         elif self.condition == 'text_uncond':
             uncond_tokens.extend(uncond_tokens)
 
         text_emb = self.text_encoder.get_last_hidden_state(uncond_tokens)
+
+        cond_emb_motion = None
+        if self.motion_condition == 'source':
+            source_motion_condition = motions_cond
+            cond_emb_motion = self.motion_cond_encoder(
+                                        source_motion_condition.permute(1, 0,
+                                                                        2), 
+                                        lengths_cond)
+            cond_emb_motion = torch.cat([cond_emb_motion, cond_emb_motion],
+                                        dim=0).unsqueeze(0)
         with torch.no_grad():
-            diff_out = self._diffusion_reverse(text_emb, lengths)
+            diff_out = self._diffusion_reverse(text_emb, cond_emb_motion,
+                                               lengths)
         return diff_out.permute(1, 0, 2)
 
     def integrate_feats2motion(self, first_pose_norm, delta_motion_norm):
@@ -715,6 +816,7 @@ class MD(BaseModel):
                 batch[f'{k}_motion'] = v[1:]
             else:
                 batch[f'{k}_motion'] = v
+                batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
 
         if self.input_deltas:
             batch = self.append_first_frame(batch, which_motion='target')
@@ -722,6 +824,7 @@ class MD(BaseModel):
             actual_target_lens = [leng + 1 for leng in batch['length_target']]
         else:
             actual_target_lens = batch['length_target']
+
         # batch['text'] = ['']*len(batch['text'])
 
         gt_lens_tgt = batch['length_target']
@@ -759,7 +862,10 @@ class MD(BaseModel):
         if split == 'val':
             source_motion_gt, target_motion_gt = self.batch2motion(batch)
             with torch.no_grad():
-                motion_out = self.generate_motion(gt_texts, gt_lens_tgt)
+                motion_out = self.generate_motion(gt_texts, 
+                                                  batch['source_motion'],
+                                                  batch['length_source'],
+                                                  gt_lens_tgt)
                 if self.input_deltas:
                     motion_unnorm = self.diffout2motion(motion_out)
                     motion_unnorm = motion_unnorm.permute(1, 0, 2)
@@ -781,6 +887,8 @@ class MD(BaseModel):
             source_motion_gt, target_motion_gt = self.batch2motion(batch, 
                                                                 slice_til=nvds)
             motion_out = self.generate_motion(gt_texts[:nvds],
+                                              batch['source_motion'][:, :nvds],
+                                              batch['length_source'][:nvds],
                                               gt_lens_tgt[:nvds])
             if self.input_deltas:
                 motion_unnorm = self.diffout2motion(motion_out)
