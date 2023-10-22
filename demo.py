@@ -1,5 +1,6 @@
 import os
 import logging
+from sched import scheduler
 import hydra
 from pathlib import Path
 from omegaconf import DictConfig
@@ -17,13 +18,16 @@ from aitviewer.headless import HeadlessRenderer
 import itertools
 from aitviewer.configuration import CONFIG as AITVIEWER_CONFIG
 from src.model.utils.tools import pack_to_render
-
+import diffusers
 logger = logging.getLogger(__name__)
 
 
 @hydra.main(config_path="configs", config_name="demo")
 def _render(cfg: DictConfig) -> None:
     return render(cfg)
+
+def chunker(seq, size):
+    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
 def render(newcfg: DictConfig) -> None:
     from pathlib import Path
@@ -35,8 +39,32 @@ def render(newcfg: DictConfig) -> None:
 
     # Overload it
     cfg = OmegaConf.merge(prevcfg, newcfg)
+    sch_cfg = newcfg.scheduler
+    if newcfg.scheduler.name == 'ddim':
 
+        infer_scheduler = diffusers.DDIMScheduler(
+            num_train_timesteps=sch_cfg.num_inference_timesteps,
+            beta_start=sch_cfg.beta_start,
+            beta_end=sch_cfg.beta_end,
+            beta_schedule=sch_cfg.beta_schedule,
+            clip_sample=sch_cfg.clip_sample,
+            prediction_type=sch_cfg.prediction_type,
+            set_alpha_to_one= False,
+            steps_offset= 1
+        )
 
+    elif newcfg.scheduler.name == 'ddpm':
+        infer_scheduler = diffusers.DDPMScheduler(
+            num_train_timesteps=sch_cfg.num_inference_timesteps,
+            beta_start=sch_cfg.beta_start,
+            beta_end=sch_cfg.beta_end,
+            beta_schedule=sch_cfg.beta_schedule,
+            clip_sample=sch_cfg.clip_sample,
+            prediction_type=sch_cfg.prediction_type,
+        )
+
+    else:
+        exit('Scheduler not supported!')
     output_path = exp_folder / 'demo-renders'
     output_path.mkdir(exist_ok=True, parents=True)
     logger.info(f"Sample script. The outputs will be stored in:{output_path}")
@@ -55,7 +83,12 @@ def render(newcfg: DictConfig) -> None:
 
     logger.info("Loading model")
     # Instantiate all modules specified in the configs
+    if cfg.model.diff_params.guidance_scale > 1:
+        cfg.model.condition = 'text_uncond'
+    else:
+        cfg.model.condition = 'text'
 
+    # FIXME 
     model = instantiate(cfg.model,
                         nfeats=135,
                         logger_name="none",
@@ -65,7 +98,8 @@ def render(newcfg: DictConfig) -> None:
     logger.info(f"Model '{cfg.model.modelname}' loaded")
 
     # Load the last checkpoint
-    model = model.load_from_checkpoint(last_ckpt_path)
+    model = model.load_from_checkpoint(last_ckpt_path, 
+                                       infer_scheduler=infer_scheduler)
     model.eval()
     logger.info("Model weights restored")
     model.sample_mean = cfg.mean
@@ -105,31 +139,42 @@ def render(newcfg: DictConfig) -> None:
     # model.eval()
 
     AITVIEWER_CONFIG.update_conf({"playback_fps": 30,
-                                  "auto_set_floor": False,
-                                  "smplx_models": 'data/body_models'})
+                                  "auto_set_floor": True,
+                                  "smplx_models": 'data/body_models',
+                                  'z_up': True})
+
     aitrenderer = HeadlessRenderer()
 
     lengths = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300]
+
     texts = ['slower', 'faster']
     len_text = [list(tup) for tup in list(itertools.product(lengths, texts))]
-
+    idx = 0
     # sample
     with torch.no_grad():
-        for length, text in tqdm(len_text):
+        for batch_len_text in tqdm(chunker(len_text, 8)):
+            lengths, texts = zip(*batch_len_text)
         # task: input or Example
         # prepare batch data  
             # model_out = model([text], [length])[0]
             # model_out = model_out.cpu().squeeze().numpy()
-            dif_out = model.test_diffusion_forward([length], [text])
+            dif_out = model.test_diffusion_forward(list(lengths),
+                                                   list(texts))
             if model.input_deltas:
                 motion_unnorm = model.diffout2motion(dif_out)
                 motion_unnorm = motion_unnorm.permute(1, 0, 2)
             else:
                 motion_unnorm = model.unnorm_delta(dif_out)
-            motion = pack_to_render(motion_unnorm[..., 3:],
+            batch_motion = pack_to_render(motion_unnorm[..., 3:],
                                     motion_unnorm[..., :3])
-            render_motion(aitrenderer, motion, 
-                          output_path / f"{text}_{length}.mp4")
+            for jj in range(motion_unnorm.shape[0]):
+                one_motion = {k: v[jj] 
+                              for k, v in batch_motion.items()
+                             }
+                render_motion(aitrenderer, one_motion,
+                            output_path / f"movie_{idx}_{jj}",
+                            pose_repr='aa')
+            idx += 1
 
 if __name__ == '__main__':
 

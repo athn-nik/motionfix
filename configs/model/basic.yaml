@@ -18,14 +18,12 @@ norm_type: standardize # min_max standardize
 
 # diffusion related
 diff_params:
-  num_inference_timesteps: 100
-  # eta: 40
+  num_inference_timesteps: 1000
   guidance_uncondp: 0.1 # 0.1 0.25
-  guidance_scale: 7.5 #
-  predict_epsilon: false
+  guidance_scale_text: 7.5 #
+  guidance_scale_motion: 1.5
 
-
-motion_condition: target
+motion_condition: source
 condition: text
 smpl_path: ${data.smplh_path}
 
@@ -47,14 +45,12 @@ scale_loss_on_positions: 500
 
 defaults:
   # diffusion stuff
-  - diffusion_scheduler: scheduler
-  - noise_scheduler: noise_scheduler
+  - train_scheduler: ddpm
+  - infer_scheduler: ddpm
   - denoiser: denoiser
-
   # VAE stuff
   - text_encoder: distilbert_enc
-  - motion_encoder: actor
-  - motion_decoder: actor
+  - motion_condition_encoder: actor
   - losses: basic
   - optim: adamw
   - /model/losses/function/recons@func_recons

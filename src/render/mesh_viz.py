@@ -146,7 +146,7 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     # aitviewer adds a counter to the filename, we remove it
     # filename.split('_')[-1].replace('.mp4', '')
     # os.rename(filename + '_0.mp4', filename[:-4] + '.mp4')
-    os.rename(filename + '_0.mp4', filename + '.mp4')
+    os.rename(str(filename) + '_0.mp4', str(filename) + '.mp4')
 
     # empty scene for the next rendering
     renderer.scene.remove(smpl_template)
@@ -166,14 +166,26 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     return fname
 
 
-def put_text(text: str, fname: str, outf: str, v=False):
+def put_text(text: str, fname: str, outf: str, position='bottom_right', 
+             v=False):
     cmd_m = ['ffmpeg']
     # -i inputClip.mp4 -vf f"drawtext=text='{method}':x=200:y=0:fontsize=22:fontcolor=white" -c:a copy {temp_path}.mp4
 
+    diff_pos = {
+    'top_left'		: 'x=10:y=10',
+    'top_center'	: 'x=(w-text_w)/2:y=10',
+    'top_right'		: 'x=w-tw-10:y=10',
+    'center'	    : 'x=(w-text_w)/2:y=(h-text_h)/2',
+    'bottom_left'	: 'x=10:y=h-th-10',
+    'bottom_center'	: 'x=(w-text_w)/2:y=h-th-10',
+    'bottom_right'	: 'x=w-tw-10:y=h-th-10'
+    }
+    
     cmd_m.extend(['-i',fname, '-y', '-vf', 
-                  f"drawtext=text='{text}':x=(w-text_w)/2:y=h-th-10:fontsize=20::box=1:boxcolor=black@0.6:boxborderw=5:fontcolor=white",
+    f"drawtext=text='{text}':{diff_pos[position]}:fontsize=30::box=1:boxcolor=black@0.6:boxborderw=5:fontcolor=white",
                   '-loglevel', 'quiet', '-c:a', 'copy',
                   f'{outf}'])
+    
 
     if v:
         print('Executing', ' '.join(cmd_m))
