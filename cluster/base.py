@@ -159,8 +159,8 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
         sub_file = sub_file.replace('EXPMODE', mode)
         import yaml
         pydict_sweep = yaml.safe_load(Path(config_file).read_text())
-        sweep_name = configs[0]["sweep-name"]
-        pydict_sweep['parameters']['logger.group']['value'] = sweep_name
+        # sweep_name = configs[0]["sweep-name"]
+        # pydict_sweep['parameters']['logger.group']['value'] = sweep_name
 
         sweep_id = wandb.sweep(sweep=pydict_sweep,
                                project="motion-editing")
