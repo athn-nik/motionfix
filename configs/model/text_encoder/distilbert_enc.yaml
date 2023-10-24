@@ -2,7 +2,6 @@ name: distilbert_linear_encoder
 _target_: src.model.textencoder.distilbert_encoder.DistilbertEncoderTransformer
 
 latent_dim: ${model.latent_dim}
-vae: ${model.vae}
 
 ff_size: ${model.ff_size}
 num_layers: ${model.num_layers}

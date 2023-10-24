@@ -70,10 +70,9 @@ def render_skeleton(renderer: HeadlessRenderer, positions: torch.Tensor,
 
     return fname
 
-
-
 def render_motion(renderer: HeadlessRenderer, datum: dict, 
-                  filename: str, text_for_vid=None, pose_repr='6d') -> None:
+                  filename: str, text_for_vid=None, pose_repr='6d',
+                  color=(160 / 255, 160 / 255, 160 / 255, 1.0)) -> None:
     """
     Function to render a video of a motion sequence
     renderer: aitviewer renderer
@@ -133,6 +132,7 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
                                  smpl_layer,
                                  poses_root=global_orient,
                                  trans=body_transl,
+                                 color=color,
                                  z_up=True)
 
     renderer.scene.add(smpl_template)

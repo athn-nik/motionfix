@@ -451,12 +451,11 @@ class BodilexDataModule(BASEDataModule):
                 # r = get_offscreen_renderer(self.smpl_p)
                 # smpl_params = pack_to_render(trans=trans_can, rots=rots_can, pose_repr='aa')
 
-                # render_motion(r, smpl_params,
-                #               filename='/home/nathanasiou/Desktop/conditional_action_gen/modilex/rots_unflip')
-                # render_skeleton(renderer,
+                # render_motion(r, smpl_params, pose_repr='aa',
+                #               filename='/home/nathanasiou/Desktop/conditional_action_gen/modilex/markos_can')
+                # render_skeleton(r,
                 #                 positions=jts_can.detach().numpy(),
-                #                 filename='/home/nathanasiou/Desktop/conditional_action_gen/modilex/jts.mp4',
-                #                 pose_repr='aa')
+                #                 filename='/home/nathanasiou/Desktop/conditional_action_gen/modilex/jts.mp4')
 
         # debug overfitting
         # less frames less motions

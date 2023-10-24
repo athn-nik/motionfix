@@ -12,7 +12,7 @@ from src.utils.file_io import hack_path
 class DistilbertEncoderTransformer(DistilbertEncoderBase):
     def __init__(self, modelpath: str,
                  finetune: bool = False,
-                 vae: bool = True,
+                 vae: bool = False,
                  latent_dim: int = 256,
                  ff_size: int = 1024,
                  num_layers: int = 4, num_heads: int = 4,

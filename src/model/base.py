@@ -16,7 +16,7 @@ from src.utils.genutils import freeze
 import smplx
 from os.path import exists, join
 from src.utils.genutils import cast_dict_to_tensors
-
+from src.utils.art_utils import color_map
 # A logger for this file
 log = logging.getLogger(__name__)
 
@@ -357,11 +357,13 @@ class BaseModel(LightningModule):
                 for k, v in data.items():
                     if isinstance(v, dict):
                         mot_to_rend = {k2: v2[iid_tor] for k2, v2 in v.items()}
+
                         # RENDER THE MOTION
                         fname = render_motion(self.renderer, mot_to_rend,
                                                 f'{flname}_{k}_{cur_key}',
                                                 text_for_vid=cur_text,
-                                                pose_repr='aa')
+                                                pose_repr='aa',
+                                                color=color_map[k])
                         
                         video_names.append(fname)
 

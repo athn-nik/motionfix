@@ -1,1 +1,2 @@
 from .distilbert_encoder import DistilbertEncoderTransformer
+from .clip_encoder import ClipTextEncoder

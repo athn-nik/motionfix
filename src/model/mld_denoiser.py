@@ -21,7 +21,7 @@ class MldDenoiser(nn.Module):
                  normalize_before: bool = False,
                  activation: str = "gelu",
                  flip_sin_to_cos: bool = True,
-                 position_embedding: str = "learned",
+                 position_embedding: str = "actor",
                  arch: str = "trans_enc",
                  freq_shift: int = 0,
                  guidance_scale: float = 7.5,
@@ -119,13 +119,13 @@ class MldDenoiser(nn.Module):
         # 0. check lengths for no vae (diffusion only)
         if lengths not in [None, []]:
             if self.use_deltas:
-                mask = lengths_to_mask([x+1 for x in lengths], noised_motion.device)
+                motion_in_mask = lengths_to_mask([x+1 for x in lengths], noised_motion.device)
             else:
-                mask = lengths_to_mask([x for x in lengths], noised_motion.device)
+                motion_in_mask = lengths_to_mask([x for x in lengths], noised_motion.device)
 
         # 1. time_embedding
         # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
-        timesteps = timestep.expand(noised_motion.shape[1]).clone()
+        timesteps = timestep.expand(bs).clone()
         time_emb = self.time_proj(timesteps)
         time_emb = time_emb.to(dtype=noised_motion.dtype)
         # [1, bs, latent_dim] <= [bs, latent_dim]
@@ -167,10 +167,12 @@ class MldDenoiser(nn.Module):
             #     # [seqlen+1, bs, d]
             #     # todo change to query_pos_decoder
             xseq = self.query_pos(xseq)
+
             time_token_mask = torch.ones((bs, time_emb.shape[0]),
                                           dtype=bool, device=xseq.device)
             # condition_mask
-            aug_mask = torch.cat((time_token_mask, condition_mask, mask), 1)
+            aug_mask = torch.cat((time_token_mask, condition_mask,
+                                  motion_in_mask), 1)
 
             tokens = self.encoder(xseq,
                                   src_key_padding_mask=~aug_mask)
@@ -181,13 +183,13 @@ class MldDenoiser(nn.Module):
 
                 denoised_first_pose = self.first_pose_proj(denoised_motion_proj[:1])            
                 denoised_motion_only = self.pose_proj(denoised_motion_proj[1:])
-                denoised_motion_only[~mask.T[1:]] = 0
+                denoised_motion_only[~motion_in_mask.T[1:]] = 0
                 denoised_motion = torch.zeros_like(noised_motion)
                 denoised_motion[1:] = denoised_motion_only
                 denoised_motion[0] = denoised_first_pose
             else:
                 denoised_motion = self.pose_proj(denoised_motion_proj)
-                denoised_motion[~mask.T] = 0
+                denoised_motion[~motion_in_mask.T] = 0
             # zero for padded area
             # else:
             #     sample = tokens[:sample.shape[0]]
