@@ -198,7 +198,7 @@ class MD(BaseModel):
                                             perc_text_n_motion=0.0,
                                             perc_uncond=0.5, 
                                             randomize=False)
-                condition_mask_wo_motion[bsz:, :text_embeds.shape[1]] *= text_masks
+                condition_mask_wo_motion[:, :text_embeds.shape[1]] *= text_masks
 
                 condition_mask_both = self.filter_conditions(
                                 max_text_len=text_embeds.shape[1],
@@ -207,9 +207,10 @@ class MD(BaseModel):
                                 perc_only_text=0.0,
                                 perc_only_motion=0.0,
                                 perc_text_n_motion=1.0, 
+                                perc_uncond=0.0,
                                 randomize=False)
                 # might need to adjust for motion if it is more than 1 token
-                condition_mask_both[:, :text_embeds.shape[1]] *= text_masks
+                condition_mask_both[bsz:, :text_embeds.shape[1]] *= text_masks[bsz:]
 
             elif self.condition in ['text', 'text_uncondp']:
                 condition_mask_only_text = self.filter_conditions(
