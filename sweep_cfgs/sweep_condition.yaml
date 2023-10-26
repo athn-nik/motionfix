@@ -1,0 +1,40 @@
+# wandb agent markos_mpi/HOI-common-sense/fw1yp9u3
+interpreter: /home/nathanasiou/.venvs/modit/bin/python
+program: train.py
+command:
+  - ${interpreter}
+  - ${program}
+  - ${args_no_hyphens}
+method: grid
+metric:
+  name: losses/train/total_loss_epoch
+  goal: minimize
+parameters:
+  logger.project:
+    value: "motion-editing"
+  logger.name:
+    value: "'${run_id}'"
+  model:
+    value: basic
+  logger.group:
+    value: "GROUP-NAME"
+  model.input_feats:
+    values: [["body_transl", "body_orient" ,"body_pose"]]
+  machine.batch_size:
+    values: [16]
+  model.diff_params.num_inference_timesteps:
+    values: [1000]
+  model.diff_params.guidance_scale_text:
+    values: [2.0]
+  model.diff_params.guidance_scale_motion:
+    values: [2.0]
+  model.train_scheduler.beta_schedule:
+    values: ['squaredcos_cap_v2']
+  model.loss_on_positions:
+    values: ['false', 'true']
+  model.loss_func_pos:
+    values: ['mse']
+  model.loss_func_feats:
+    values: ['mse']
+  model.condition:
+    values: ['null', source]
