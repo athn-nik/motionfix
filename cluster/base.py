@@ -22,6 +22,8 @@ GPUS = {
         'a100-sm80': ('\"NVIDIA A100-SXM4-80GB\"', 'nvidia', 80000),
         'a100-sxm40': ('\"NVIDIA A100-SXM4-40GB\"', 'nvidia', 40000),
         'quadro6000': ('\"Quadro RTX 6000\"', 'quadro', 24000),
+        'quadro6000': ('\"Quadro RTX 6000\"', 'quadro', 24000),
+        'nvidia-h100': ('\"NVIDIA H100\"', 'nvidia', 80000),
         #'rtx2080ti': ('\"NVIDIA GeForce RTX 2080 Ti\"', 'rtx', 11000)
         }
     
@@ -159,8 +161,8 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
         sub_file = sub_file.replace('EXPMODE', mode)
         import yaml
         pydict_sweep = yaml.safe_load(Path(config_file).read_text())
-        # sweep_name = configs[0]["sweep-name"]
-        # pydict_sweep['parameters']['logger.group']['value'] = sweep_name
+        sweep_name = configs[0]["sweep-name"]
+        pydict_sweep['parameters']['logger.group']['value'] = sweep_name
 
         sweep_id = wandb.sweep(sweep=pydict_sweep,
                                project="motion-editing")

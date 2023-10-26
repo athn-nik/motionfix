@@ -7,7 +7,7 @@ num_layers: 9
 num_head: 4
 droupout: 0.1
 activation: "gelu"
-render_vids_every_n_epochs: 20
+render_vids_every_n_epochs: 100
 num_vids_to_render: 2
 lr_scheduler: null # reduceonplateau, steplr
 
