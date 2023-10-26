@@ -77,7 +77,7 @@ class ComputeMetrics(Metric):
         pred_target_verts = pred_target_verts.vertices.reshape(B, S_tgt, -1, 3)
         pred_target_verts
 
-        accel_per_vert += (pred_target_verts[..., :-2] - 2 * pred_target_verts[..., 1:-1] + pred_target_verts[..., 2:]) / (1 ** 2)
+        accel_per_vert = (pred_target_verts[..., :-2] - 2 * pred_target_verts[..., 1:-1] + pred_target_verts[..., 2:]) / (1 ** 2)
         self.acceleration += accel_per_vert.mean(-2).squeeze()
         # Average the acceleration values across the sequence (S) and batch (B) dimensions
         # This will result in a tensor of shape (J, 3)
