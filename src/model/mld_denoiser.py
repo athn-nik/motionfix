@@ -106,6 +106,7 @@ class MldDenoiser(nn.Module):
 
     def forward(self,
                 noised_motion,
+                in_motion_mask,
                 timestep,
                 text_embeds,
                 condition_mask, 
@@ -117,11 +118,8 @@ class MldDenoiser(nn.Module):
         bs = noised_motion.shape[0]
         noised_motion = noised_motion.permute(1, 0, 2)
         # 0. check lengths for no vae (diffusion only)
-        if lengths not in [None, []]:
-            if self.use_deltas:
-                motion_in_mask = lengths_to_mask([x+1 for x in lengths], noised_motion.device)
-            else:
-                motion_in_mask = lengths_to_mask([x for x in lengths], noised_motion.device)
+        # if lengths not in [None, []]:
+        motion_in_mask = in_motion_mask
 
         # 1. time_embedding
         # broadcast to batch dimension in a way that's compatible with ONNX/Core ML

@@ -1,3 +1,4 @@
+from pyexpat import features
 import numpy as np
 import logging
 from pytorch_lightning import LightningModule
@@ -160,7 +161,10 @@ class BaseModel(LightningModule):
             # normalise and cat to a unified feature vector
             list_of_feat_tensors_normed = self.norm_inputs(list_of_feat_tensors,
                                                            features_types)
-
+            # list_of_feat_tensors_normed = [x[1:] if 'delta' in nx else x for nx,
+                                                # x in zip(features_types, 
+                                                # list_of_feat_tensors_normed)]
+            
             x_norm, _ = self.cat_inputs(list_of_feat_tensors_normed)
             input_batch[mot] = x_norm
         return input_batch
@@ -326,16 +330,12 @@ class BaseModel(LightningModule):
 
     @torch.no_grad()
     def render_buffer(self, buffer: list[dict], split=False):
-        """
-        """
         from src.render.video import stack_vids
-
         novids = self.num_vids_to_render
         # create videos and save full paths
         folder = "epoch_" + str(self.trainer.current_epoch).zfill(3)
         folder =  Path('visuals') / folder / split
         folder.mkdir(exist_ok=True, parents=True)
-
         stacked_videos = []
 
         for data in buffer:

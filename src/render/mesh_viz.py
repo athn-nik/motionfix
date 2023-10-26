@@ -72,7 +72,8 @@ def render_skeleton(renderer: HeadlessRenderer, positions: torch.Tensor,
 
 def render_motion(renderer: HeadlessRenderer, datum: dict, 
                   filename: str, text_for_vid=None, pose_repr='6d',
-                  color=(160 / 255, 160 / 255, 160 / 255, 1.0)) -> None:
+                  color=(160 / 255, 160 / 255, 160 / 255, 1.0),
+                  return_verts=False) -> None:
     """
     Function to render a video of a motion sequence
     renderer: aitviewer renderer
@@ -138,7 +139,8 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     renderer.scene.add(smpl_template)
     # camera follows smpl sequence
     camera = renderer.lock_to_node(smpl_template, (2, 2, 2), smooth_sigma=5.0)
-    
+    if return_verts:
+        mesh_seq_verts = smpl_template.vertices
     if only_skel:
         smpl_template.remove(smpl_template.mesh_seq)
 
@@ -162,7 +164,8 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
         os.remove(f'{filename}.mp4')
     else:
         fname = f'{filename}.mp4'
-
+    if return_verts:
+        return fname, mesh_seq_verts
     return fname
 
 

@@ -10,6 +10,7 @@ from torch.distributions.distribution import Distribution
 from torch.nn import ModuleDict
 from src.data.tools.collate import collate_tensor_with_padding
 from torch.nn import functional as F
+from src.data.tools.tensors import lengths_to_mask
 from src.model.base import BaseModel
 from src.model.metrics import ComputeMetrics
 from src.model.utils.tools import remove_padding
@@ -25,6 +26,9 @@ from einops import rearrange, reduce
 from torch.nn.functional import l1_loss, mse_loss
 from src.utils.genutils import dict_to_device
 from src.utils.art_utils import color_map
+import torch
+import torch.distributions as dist
+
 import wandb
 
 class MD(BaseModel):
@@ -50,17 +54,27 @@ class MD(BaseModel):
                  motion_condition: Optional[str] = "source",
                  loss_on_positions: Optional[bool] = False,
                  scale_loss_on_positions: Optional[int] = None,
+                 loss_func_pos: str = 'mse', # l1 mse
+                 loss_func_feats: str = 'mse', # l1 mse
                  renderer= None,
                  **kwargs):
 
         super().__init__(statistics_path, nfeats, norm_type, input_feats,
                          dim_per_feat, smpl_path, num_vids_to_render)
-        if set(self.input_feats) == set(['body_transl',
-                                         'body_orient',
-                                         'body_pose']):
-            self.input_deltas = False
-        else:
+
+        if set(self.input_feats) == set(["body_transl_delta_pelv_xy",
+                                         "body_orient_delta",
+                                         "body_pose_delta"]):
             self.input_deltas = True
+        else:
+            self.input_deltas = False
+
+        if set(["body_transl_delta_pelv_xy", "body_orient_delta",
+                "body_pose_delta"]).issubset(self.input_feats):
+            self.using_deltas = True
+        else:
+            self.using_deltas = False
+
         self.smpl_path = smpl_path
         self.condition = condition
         self.motion_condition = motion_condition
@@ -90,13 +104,16 @@ class MD(BaseModel):
 
         self.infer_scheduler = instantiate(infer_scheduler)
         self.train_scheduler = instantiate(train_scheduler)        
-
+        # distribution of timesteps
+        shape = 2.0
+        scale = 1.0
+        self.tsteps_distr = dist.Gamma(torch.tensor(shape),
+                                       torch.tensor(scale))
         # Keep track of the losses
         if train_scheduler.prediction_type == 'sample':
             self.predict_noise = False
         else:
             self.predict_noise = True
-
         # self._losses = ModuleDict({split: instantiate(losses)
         #     for split in ["losses_train", "losses_test", "losses_val"]
         # })
@@ -104,6 +121,17 @@ class MD(BaseModel):
         #                                                               "val",
         #                                                               "test"]}
         self.loss_params = losses
+        # loss params terrible
+        if loss_func_pos == 'l1':
+            self.loss_func_pos = l1_loss
+        elif loss_func_pos in ['mse', 'l2']:
+            self.loss_func_pos = mse_loss
+
+        if loss_func_feats == 'l1':
+            self.loss_func_feats = l1_loss
+        elif loss_func_feats in ['mse', 'l2']:
+            self.loss_func_feats = mse_loss
+
         self.__post_init__()
 
     def sample_from_distribution(
@@ -133,7 +161,7 @@ class MD(BaseModel):
 
     def _diffusion_reverse(self, text_embeds, text_masks, 
                            motion_embeds, motion_masks,
-                           lengths=None):
+                           inp_motion_mask=None):
         # guidance_scale_text: 7.5 #
         #  guidance_scale_motion: 1.5
         # init latents
@@ -151,10 +179,10 @@ class MD(BaseModel):
                                                                 'text_uncondp']:
             bsz = bsz // 2
 
-        assert lengths is not None, "no vae (diffusion only) need lengths for diffusion"
-        len_to_gen = max(lengths) if not self.input_deltas else max(lengths) + 1
+        assert inp_motion_mask is not None, "no vae (diffusion only) need lengths for diffusion"
+        # len_to_gen = max(lengths) if not self.input_deltas else max(lengths) + 1
         latents = torch.randn(
-            (bsz, len_to_gen, self.nfeats),
+            (bsz, inp_motion_mask.shape[1], self.nfeats),
             device=text_embeds.device,
             dtype=torch.float,
         )
@@ -174,83 +202,89 @@ class MD(BaseModel):
         #         inspect.signature(self.scheduler.step).parameters.keys()):
         #     extra_step_kwargs["eta"] = 0.0 # self.diff_params.scheduler.eta
 
+
+
+        inp_motion_mask = torch.cat([inp_motion_mask] * 2)
+        #  both_rows, uncond_rows, text_rows1, motion_rows2
+        if self.motion_condition == 'source':
+            condition_mask_wo_motion = self.filter_conditions(
+                                        max_text_len=text_embeds.shape[1],
+                                        max_motion_len=motion_embeds.shape[0],
+                                        batch_size=text_embeds.shape[0], 
+                                        perc_only_text=0.5,
+                                        perc_only_motion=0.0,
+                                        perc_text_n_motion=0.0,
+                                        perc_uncond=0.5, 
+                                        randomize=False)
+
+            condition_mask_wo_motion[:, :text_embeds.shape[1]] *= text_masks
+            condition_mask_both = self.filter_conditions(
+                            max_text_len=text_embeds.shape[1],
+                            max_motion_len=motion_embeds.shape[0],
+                            batch_size=text_embeds.shape[0] // 2, 
+                            perc_only_text=0.0,
+                            perc_only_motion=0.0,
+                            perc_text_n_motion=1.0, 
+                            perc_uncond=0.0,
+                            randomize=False)
+            # might need to adjust for motion if it is more than 1 token
+            condition_mask_both[:, :text_embeds.shape[1]] *= text_masks[bsz:]
+
+        elif self.condition in ['text', 'text_uncondp']:
+            condition_mask_only_text = self.filter_conditions(
+                                        max_text_len=text_embeds.shape[1],
+                                        max_motion_len=0,
+                                        batch_size=text_embeds.shape[0], 
+                                        perc_only_text=0.5,
+                                        perc_only_motion=0.0,
+                                        perc_text_n_motion=0.0, 
+                                        perc_uncond=0.5,
+                                        randomize=False)
+            condition_mask_only_text[bsz:, :text_embeds.shape[1]] *= text_masks[bsz:]
+
         # reverse
         for i, t in enumerate(timesteps):
 
             if class_free_motion or class_free_text or class_free_both:
                 latent_model_input = torch.cat([latents] * 2)
-                lengths_reverse = lengths * 2
             else:
                 latent_model_input = latents
-                lengths_reverse = lengths
             # # expand the latents if we are doing classifier free guidance
             # latent_model_input = torch.cat(
             #     [latents] * 2) if class_free else latents
 
-            #  both_rows, uncond_rows, text_rows1, motion_rows2
-            if self.motion_condition == 'source':
-                condition_mask_wo_motion = self.filter_conditions(
-                                            max_text_len=text_embeds.shape[1],
-                                            max_motion_len=motion_embeds.shape[0],
-                                            batch_size=text_embeds.shape[0], 
-                                            perc_only_text=0.5,
-                                            perc_only_motion=0.0,
-                                            perc_text_n_motion=0.0,
-                                            perc_uncond=0.5, 
-                                            randomize=False)
-                condition_mask_wo_motion[:, :text_embeds.shape[1]] *= text_masks
-
-                condition_mask_both = self.filter_conditions(
-                                max_text_len=text_embeds.shape[1],
-                                max_motion_len=motion_embeds.shape[0],
-                                batch_size=text_embeds.shape[0] // 2, 
-                                perc_only_text=0.0,
-                                perc_only_motion=0.0,
-                                perc_text_n_motion=1.0, 
-                                perc_uncond=0.0,
-                                randomize=False)
-                # might need to adjust for motion if it is more than 1 token
-                condition_mask_both[bsz:, :text_embeds.shape[1]] *= text_masks[bsz:]
-
-            elif self.condition in ['text', 'text_uncondp']:
-                condition_mask_only_text = self.filter_conditions(
-                                            max_text_len=text_embeds.shape[1],
-                                            max_motion_len=0,
-                                            batch_size=text_embeds.shape[0], 
-                                            perc_only_text=0.5,
-                                            perc_only_motion=0.0,
-                                            perc_text_n_motion=0.0, 
-                                            perc_uncond=0.5,
-                                            randomize=False)
-                condition_mask_only_text[bsz:, :text_embeds.shape[1]] *= text_masks[bsz:]
 
             # predict the noise residual
             if self.motion_condition == 'source':
                 mot_pred_both = self.denoiser(noised_motion=latent_model_input[bsz:],
+                                              in_motion_mask=inp_motion_mask[bsz:],
                                               timestep=t,
                                               text_embeds=text_embeds[bsz:],
                                               condition_mask=condition_mask_both,
-                                              motion_embeds=motion_embeds[bsz:],
-                                              lengths=lengths_reverse[bsz:])
+                                              motion_embeds=motion_embeds[:, 
+                                                                          bsz:]
+                                                                          )
 
                 mot_pred_uncond_text = self.denoiser(
                                         noised_motion=latent_model_input,
+                                        in_motion_mask=inp_motion_mask,
                                         timestep=t,
                                         text_embeds=text_embeds,
-                                        condition_mask=condition_mask_wo_motion,
+                                        condition_mask=condition_mask_wo_motion[:, :-motion_embeds.shape[0]],
                                         motion_embeds=None,
-                                        lengths=lengths_reverse)
+                                        )
             elif self.condition in ['text', 'text_uncondp']:
                 mot_pred_uncond_cond = self.denoiser(noised_motion=latent_model_input,
+                                                     in_motion_mask=inp_motion_mask,
                                                      timestep=t,
                                                      text_embeds=text_embeds,
                                                      condition_mask=condition_mask_only_text,
                                                      motion_embeds=None,
-                                                     lengths=lengths_reverse)
+                                                     )
 
             # perform guidance
             if self.motion_condition == 'source':
-                mot_pred_uncond, mot_pred_text = mot_pred_text_uncond.chunk(2)
+                mot_pred_uncond, mot_pred_text = mot_pred_uncond_text.chunk(2)
 
                 motion_pred = mot_pred_uncond +\
                              self.diff_params.guidance_scale_motion * (
@@ -279,8 +313,29 @@ class MD(BaseModel):
         latents = latents.permute(1, 0, 2)
         return latents
     
+    def sample_timesteps(self, samples: int):
+        if self.trainer.current_epoch / self.trainer.max_epochs > 0.5:
+
+            # Sample `k` values from the Gamma distribution
+            # You can adjust this to the number of samples you need
+            gamma_samples = self.tsteps_distr.sample((samples,))
+        
+            # Scale and shift the Gamma samples to the desired interval [1, 1000]
+            lower_bound = 0
+            upper_bound = self.train_scheduler.config.num_train_timesteps
+            scaled_samples = lower_bound + (upper_bound - lower_bound) * (gamma_samples / gamma_samples.max())
+        
+            # Convert the samples to integers
+            timesteps_sampled = scaled_samples.floor().int().to(self.device)
+        else:
+            timesteps_sampled = torch.randint(0,
+                                self.train_scheduler.config.num_train_timesteps,
+                                (samples, ),
+                                device=self.device)
+        return timesteps_sampled
 
     def _diffusion_process(self, input_motion_feats,
+                           mask_in_mot,
                            text_encoded,
                            mask_for_condition,
                            motion_encoded=None,
@@ -300,14 +355,8 @@ class MD(BaseModel):
         noise = torch.randn_like(input_motion_feats)
         bsz = input_motion_feats.shape[0]
         # Sample a random timestep for each motion
-        timesteps = torch.randint(
-            0,
-            self.train_scheduler.config.num_train_timesteps,
-            (bsz, ),
-            device=input_motion_feats.device,
-        )
+        timesteps = self.sample_timesteps(samples=bsz)
         timesteps = timesteps.long()
-        
 
         # Add noise to the latents according to the noise magnitude at each timestep
         noisy_motion = self.train_scheduler.add_noise(input_motion_feats.clone(),
@@ -315,10 +364,11 @@ class MD(BaseModel):
                                                       timesteps)
         # Predict the noise residual
         diffusion_fw_out = self.denoiser(noised_motion=noisy_motion,
+                                         in_motion_mask=mask_in_mot,
                                          timestep=timesteps,
                                          text_embeds=text_encoded,
                                          motion_embeds=motion_encoded,
-                                         lengths=lengths,
+                                        #  lengths=lengths,
                                          condition_mask=mask_for_condition,
                                          return_dict=False)
 
@@ -402,13 +452,14 @@ class MD(BaseModel):
         return final_mask.bool().to(self.device)
 
 
-    def train_diffusion_forward(self, batch, batch_idx):
-        # ALWAYS --> [ text condition || motion condition ] 
+    def train_diffusion_forward(self, batch, mask_source_motion,
+                                mask_target_motion):
+
         cond_emb_motion = None
         if self.motion_condition == 'source':
             source_motion_condition = batch['source_motion']
-            cond_emb_motion = self.motion_cond_encoder(source_motion_condition.permute(1, 0, 2),
-                                                       batch['length_source'])
+            cond_emb_motion = self.motion_cond_encoder(source_motion_condition,
+                                                       mask_source_motion)
             cond_emb_motion = cond_emb_motion.unsqueeze(0)
 
         feats_for_denois = batch['target_motion']
@@ -434,6 +485,14 @@ class MD(BaseModel):
         perc_uncondp = self.diff_params.prob_uncondp
         # text encode
         cond_emb_text, text_mask = self.text_encoder(text)
+        # ALWAYS --> [ text condition || motion condition ] 
+        # row order (rows=batch size) --> ---------------
+        #                                 | rows_mixed  |
+        #                                 | rows_uncond |
+        #                                 |rows_txt_only|
+        #                                 |rows_mot_only|
+        #                                 ---------------
+
         if self.motion_condition == 'source':
             aug_mask = self.filter_conditions(max_text_len=cond_emb_text.shape[1],
                                               max_motion_len=cond_emb_motion.shape[0],
@@ -441,21 +500,35 @@ class MD(BaseModel):
                                               perc_only_text=0.05,
                                               perc_only_motion=0.05,
                                               perc_text_n_motion=0.85,
-                                              perc_uncond=perc_uncondp)
-
-            aug_mask[:, :cond_emb_text.shape[1]] *= text_mask
-
+                                              perc_uncond=perc_uncondp, 
+                                              randomize=False)
+            
+            idx_text_only = int(round(batch_size * 0.05))
+            idx_motion_only = int(round(batch_size * 0.05))
+            idx_uncondp = int(round(batch_size * perc_uncondp))
+            idx_mix = batch_size - idx_text_only - idx_uncondp - idx_motion_only
+            # FIXME if motion is more than SEQ === 1 
+            aug_mask[
+                     (idx_uncondp+idx_mix):(idx_uncondp+idx_mix+idx_text_only), :-1] *= text_mask[(idx_uncondp+idx_mix):(idx_uncondp+idx_mix+idx_text_only)]
+            # aug_mask[-idx_motion_only:] *= motion_source_mask[-idx_motion_only:]
+            aug_mask = aug_mask[torch.randperm(batch_size)]
         else:
             aug_mask = self.filter_conditions(max_text_len=cond_emb_text.shape[1],
                                               max_motion_len=0,
-                                              batch_size=batch_size, 
+                                              batch_size=batch_size,
                                               perc_only_text=0.9,
                                               perc_only_motion=0.00,
                                               perc_text_n_motion=0.0,
-                                              perc_uncond=perc_uncondp)
-            aug_mask *= text_mask
+                                              perc_uncond=perc_uncondp,
+                                              randomize=False)
+            # final_mask = final_mask[torch.randperm(final_mask.size(0))]
+            no_of_uncond = int(round(batch_size * perc_uncondp))
+            aug_mask[no_of_uncond:] *= text_mask[no_of_uncond:]
+            aug_mask = aug_mask[torch.randperm(batch_size)]
+
         # diffusion process return with noise and noise_pred
         n_set = self._diffusion_process(feats_for_denois,
+                                        mask_in_mot=mask_target_motion,
                                         text_encoded=cond_emb_text, 
                                         motion_encoded=cond_emb_motion,
                                         mask_for_condition=aug_mask,
@@ -474,7 +547,6 @@ class MD(BaseModel):
     #     return self.allsplit_epoch_end("val")
 
     # def on_test_epoch_end(self):
-
     #     return self.allsplit_epoch_end("test")
 
     def training_step(self, batch, batch_idx):
@@ -488,13 +560,13 @@ class MD(BaseModel):
 
     @property
     def jts_scale(self):
-        warm_up_epochs = 300
-        if self.trainer.current_epoch < warm_up_epochs:
+        warm_up_epochs = self.ep_start_scale
+        if self.trainer.current_epoch <= warm_up_epochs:
             return 1.0
         else:
+            max_loss_lambda = 10
             return min(((self.trainer.current_epoch - warm_up_epochs + 1)
-                        / self.ep_start_scale) * 100,
-                        self.ep_start_scale)
+                        / max_loss_lambda) * max_loss_lambda, max_loss_lambda)
 
     def compute_joints_loss(self, out_motion, joints_gt, padding_mask):
 
@@ -513,6 +585,13 @@ class MD(BaseModel):
 
         if False: # self.trainer.current_epoch % 20 == 0:
             iid = f'epoch-{self.trainer.current_epoch}'
+            tot_dim_deltas = 0
+            if self.using_deltas:
+                for idx_feat, in_feat in enumerate(self.input_feats):
+                    if 'delta' in in_feat:
+                        tot_dim_deltas += self.input_feats_dims[idx_feat]
+                motion_unnorm = motion_unnorm[..., tot_dim_deltas:]
+
             motion_unnorm_rd = pack_to_render(rots=motion_unnorm[..., 3:],
                                            trans=motion_unnorm[..., :3])
 
@@ -553,6 +632,12 @@ class MD(BaseModel):
                             filename=f'jts_gt_0{iid}')
             render_skeleton(self.renderer, positions=joints_gt[1].detach().cpu().numpy(),
                             filename=f'jts_gt_1{iid}')
+        tot_dim_deltas = 0
+        if self.using_deltas:
+            for idx_feat, in_feat in enumerate(self.input_feats):
+                if 'delta' in in_feat:
+                    tot_dim_deltas += self.input_feats_dims[idx_feat]
+            motion_unnorm = motion_unnorm[..., tot_dim_deltas:]
 
         pred_smpl_params = pack_to_render(rots=motion_unnorm[..., 3:],
                                           trans=motion_unnorm[...,:3])
@@ -567,65 +652,78 @@ class MD(BaseModel):
                                 s=S, b=B)
         
 
-        loss_joints = mse_loss(pred_joints * self.jts_scale, 
-                               joints_gt * self.jts_scale,
-                               reduction='none')
+        loss_joints = self.jts_scale * self.loss_func_pos(pred_joints, 
+                                                          joints_gt,
+                                                          reduction='none')
         loss_joints = reduce(loss_joints, 's b j d -> s b', 'mean')
         loss_joints = (loss_joints * padding_mask).sum() / padding_mask.sum()
+         
         # import numpy as np
         # np.save('gt.npz',joints_gt[0].detach().cpu().numpy())  
         # np.save('pred.npz', pred_joints[0].detach().cpu().numpy())
 
         return loss_joints, pred_smpl_params
 
-    def compute_losses(self, out_dict, joints_gt, tgt_smpl_params, lengths):
+    def compute_losses(self, out_dict, joints_gt, motion_mask_source, 
+                       motion_mask_target):
         from torch import nn
         from src.data.tools.tensors import lengths_to_mask
 
-        pad_mask = lengths_to_mask(lengths, self.device)
         if self.input_deltas:
-
-            pad_mask_jts_pos = lengths_to_mask([ll+1 for ll in lengths] , self.device)
+            pad_mask_jts_pos = motion_mask_target
+            pad_mask = motion_mask_target
         else:
-            pad_mask_jts_pos = pad_mask
-        lparts = np.cumsum(self.input_feats_dims)
+            pad_mask_jts_pos = motion_mask_target
+            pad_mask = motion_mask_target
+        f_rg = np.cumsum([0] + self.input_feats_dims)
+        all_losses_dict = {}
+        tot_loss = torch.tensor(0.0, device=self.device)
         if self.loss_params['predict_epsilon']:
-            loss_func_noise = nn.MSELoss(reduction='mean')
-            noise_loss = loss_func_noise(out_dict['noise_pred'],
-                                         out_dict['noise'])
+            noise_loss = self.loss_func_feats(out_dict['noise_pred'],
+                                         out_dict['noise'],
+                                         reduction='none')
         # predict x
         else:
-            loss_func_data = nn.MSELoss(reduction='none')
 
-            data_loss = loss_func_data(out_dict['pred_motion_feats'],
-                                       out_dict['input_motion_feats'])
+            data_loss = self.loss_func_feats(out_dict['pred_motion_feats'],
+                                       out_dict['input_motion_feats'],
+                                       reduction='none')
             if self.input_deltas:
                 first_pose_loss = data_loss[:, 0].mean(-1)
                 first_pose_loss = first_pose_loss.mean()
-                deltas_pose = data_loss[:, 1:]
+                full_feature_loss = data_loss[:, 1:]
             else:
                 first_pose_loss = torch.tensor(0.0)
-                deltas_pose = data_loss
-            trans_loss = deltas_pose[..., :lparts[0]].mean(-1)*pad_mask
-            trans_loss = trans_loss.sum() / pad_mask.sum()
+                full_feature_loss = data_loss
 
-            orient_loss = deltas_pose[..., 
-                                      lparts[0]:lparts[1]].mean(-1)*pad_mask
-            orient_loss = orient_loss.sum() / pad_mask.sum()
+            for i, _ in enumerate(f_rg[:-1]):
+                if 'delta' in self.input_feats[i]:
+                    cur_feat_loss = full_feature_loss[:, 1:, f_rg[i]:f_rg[i+1]
+                                                      ].mean(-1)*pad_mask[:, 1:]
+                    tot_feat_loss = cur_feat_loss.sum() / pad_mask[:, 1:].sum()
+                    all_losses_dict.update({self.input_feats[i]: tot_feat_loss})
+                else:
+                    cur_feat_loss = full_feature_loss[..., f_rg[i]:f_rg[i+1]
+                                                      ].mean(-1)*pad_mask
+                    tot_feat_loss = cur_feat_loss.sum() / pad_mask.sum()
+                    all_losses_dict.update({self.input_feats[i]: tot_feat_loss})
+                tot_loss += tot_feat_loss
+            all_losses_dict['total_loss'] = tot_loss
+            # trans_loss = full_feature_loss[..., :lparts[0]].mean(-1)*pad_mask
+            # trans_loss = trans_loss.sum() / pad_mask.sum()
 
-            pose_loss = deltas_pose[...,
-                                    lparts[1]:lparts[2]].mean(-1)*pad_mask
-            pose_loss = pose_loss.sum() / pad_mask.sum()            
+            # orient_loss = full_feature_loss[..., 
+            #                           lparts[0]:lparts[1]].mean(-1)*pad_mask
+            # orient_loss = orient_loss.sum() / pad_mask.sum()
 
-            total_loss = pose_loss + trans_loss + orient_loss + first_pose_loss
+            # pose_loss = full_feature_loss[...,
+            #                         lparts[1]:lparts[2]].mean(-1)*pad_mask
+            # pose_loss = pose_loss.sum() / pad_mask.sum()            
+
+            # total_loss = pose_loss + trans_loss + orient_loss + first_pose_loss
         
             # total_loss = first_pose_loss
         
-        if self.loss_params['lmd_prior'] != 0.0:
-            # loss - prior loss
-            loss_func_prior = nn.MSELoss(reduction='mean')
-            prior_loss = loss_func_prior(out_dict['noise_prior'],
-                                         out_dict['dist_m1'])
 
         loss_joints = torch.tensor(0.0)                                 
         if self.loss_on_positions:
@@ -645,36 +743,41 @@ class MD(BaseModel):
         #                                          tgt_smpl_params)
         # gt_pose_loss_non_deltas = gt_pose_loss_non_deltas.mean(-1)
         # gt_pose_loss_non_deltas = gt_pose_loss_non_deltas.sum() / pad_mask.sum()
-        total_loss = total_loss + loss_joints
-        
-        return total_loss, {'total_loss': total_loss,
-                            self.input_feats[2]: pose_loss,
-                            self.input_feats[1]: orient_loss,
-                            self.input_feats[0]: trans_loss,
-                            'first_pose_loss': first_pose_loss,
-                            'global_joints_loss': loss_joints,
-                            }
+        all_losses_dict['total_loss'] += loss_joints
+        all_losses_dict['loss_joints'] = loss_joints
+        return tot_loss + loss_joints, all_losses_dict 
+    
+    
+    # {'total_loss': total_loss,
+    #                         self.input_feats[2]: pose_loss,
+    #                         self.input_feats[1]: orient_loss,
+    #                         self.input_feats[0]: trans_loss,
+    #                         'first_pose_loss': first_pose_loss,
+    #                         'global_joints_loss': loss_joints,
+    #                         }
 
     def batch2motion(self, batch, slice_til=None):
-        batch_to_cpu = { k: v.detach().cpu() for k, v in batch.items() 
-                        if torch.is_tensor(v) }
-
+        # batch_to_cpu = { k: v.detach().cpu() for k, v in batch.items() 
+        #                 if torch.is_tensor(v) }
+        tot_dim_deltas = 0
+        if self.using_deltas:
+            for idx_feat, in_feat in enumerate(self.input_feats):
+                if 'delta' in in_feat:
+                    tot_dim_deltas += self.input_feats_dims[idx_feat]
         # source motion
-        source_motion_gt_pose = torch.cat([batch_to_cpu['body_orient_source'], 
-                                           batch_to_cpu['body_pose_source']],
-                                           dim=-1)
-        source_motion_gt_trans = batch_to_cpu['body_transl_source']
-        source_motion_gt = pack_to_render(rots=source_motion_gt_pose,
-                                          trans=source_motion_gt_trans)
+        source_motion = batch['source_motion']
+        source_motion = self.unnorm_delta(source_motion)[..., tot_dim_deltas:]
+        source_motion = source_motion.permute(1, 0, 2).detach().cpu()
+        source_motion_gt = pack_to_render(rots=source_motion[..., 3:],
+                                          trans=source_motion[...,:3])
 
         # target motion
-        target_motion_gt_pose = torch.cat([batch_to_cpu['body_orient_target'], 
-                                           batch_to_cpu['body_pose_target']],
-                                           dim=-1)
-        target_motion_gt_trans = batch_to_cpu['body_transl_target']
-        target_motion_gt = pack_to_render(rots=target_motion_gt_pose,
-                                          trans=target_motion_gt_trans)
-
+        target_motion = batch['target_motion']
+        target_motion = self.unnorm_delta(target_motion)[..., tot_dim_deltas:]
+        target_motion = target_motion.permute(1, 0, 2).detach().cpu()
+        target_motion_gt = pack_to_render(rots=target_motion[..., 3:],
+                                          trans=target_motion[...,:3])
+        
         if slice_til is not None:
             source_motion_gt = {k: v[:slice_til] 
                                 for k, v in source_motion_gt.items()}
@@ -683,8 +786,8 @@ class MD(BaseModel):
 
         return source_motion_gt, target_motion_gt
 
-    def generate_motion(self, texts_cond, motions_cond, lengths_cond,
-                         lengths):
+    def generate_motion(self, texts_cond, motions_cond,
+                        mask_source, mask_target):
         uncond_tokens = [""] * len(texts_cond)
         if self.condition == 'text':
             uncond_tokens.extend(texts_cond)
@@ -697,12 +800,10 @@ class MD(BaseModel):
         cond_motion_mask = None
         if self.motion_condition == 'source':
             source_motion_condition = motions_cond
-            cond_emb_motion = self.motion_cond_encoder(
-                                        source_motion_condition.permute(1, 0,
-                                                                        2), 
-                                        lengths_cond)
+            cond_emb_motion = self.motion_cond_encoder(source_motion_condition, 
+                                                       mask_source)
             cond_motion_mask = torch.ones((cond_emb_motion.shape[0],
-                                           cond_emb_motion.shape[1]),
+                                           1),
                                           dtype=bool, device=self.device)
             cond_emb_motion = torch.cat([cond_emb_motion, cond_emb_motion],
                                         dim=0).unsqueeze(0)
@@ -711,7 +812,7 @@ class MD(BaseModel):
             diff_out = self._diffusion_reverse(text_emb, text_mask,
                                                cond_emb_motion,
                                                cond_motion_mask,
-                                               lengths)
+                                               mask_target)
         return diff_out.permute(1, 0, 2)
 
     def integrate_feats2motion(self, first_pose_norm, delta_motion_norm):
@@ -776,6 +877,12 @@ class MD(BaseModel):
         timesteps = dif_out['timesteps']
         noisy_motion = dif_out['noised_motion_feats']
         diffusion_fw_out = dif_out['pred_motion_feats']
+        if self.using_deltas:
+            tot_dim_deltas = 0
+            for idx_feat, in_feat in enumerate(self.input_feats):
+                if 'delta' in in_feat:
+                    tot_dim_deltas += self.input_feats_dims[idx_feat]
+
         if self.input_deltas:
             # integrate all motions
             mot_from_deltas = self.diffout2motion(input_motion_feats.detach())
@@ -801,6 +908,10 @@ class MD(BaseModel):
             text_vid = f'{texts_diff[idx]}'
 
             one_mot_from_deltas = mot_from_deltas[idx, :target_lens[idx]]
+            if self.using_deltas:
+                one_mot_from_deltas = one_mot_from_deltas[...,
+                                                          tot_dim_deltas:]
+
             uno_vid = pack_to_render(rots=one_mot_from_deltas[...,
                                                         3:].detach().cpu(),
                                         trans=one_mot_from_deltas[...,
@@ -813,6 +924,9 @@ class MD(BaseModel):
 
 
             one_noisy_mot_from_deltas = noisy_mot_from_deltas[idx, :target_lens[idx]]
+            if self.using_deltas:
+                one_noisy_mot_from_deltas = one_noisy_mot_from_deltas[...,
+                                                          tot_dim_deltas:]
             no_vid = pack_to_render(rots=one_noisy_mot_from_deltas[...,
                                                         3:].detach().cpu(),
                                         trans=one_noisy_mot_from_deltas[...,
@@ -825,6 +939,9 @@ class MD(BaseModel):
 
 
             one_denois_mot_deltas = denois_mot_deltas[idx, :target_lens[idx]]
+            if self.using_deltas:
+                one_denois_mot_deltas = one_denois_mot_deltas[...,
+                                                          tot_dim_deltas:]
             deno_vid = pack_to_render(rots=one_denois_mot_deltas[...,
                                                         3:].detach().cpu(),
                                         trans=one_denois_mot_deltas[...,
@@ -848,6 +965,43 @@ class MD(BaseModel):
         self.logger.experiment.log(log_render_dic_debug)
 
         ##### DEBUG THE MODEL #####
+    def prepare_mot_masks(self, source_lens, target_lens):
+        # mask_for_features_source = []
+        # mask_for_features_target = []
+
+        # mask_source = lengths_to_mask([l - 1 
+        #                                       for l in source_lens],
+        #                                       self.device)
+        # mask_target = lengths_to_mask([l - 1 
+        #                                       for l in target_lens],
+        #                                       self.device)
+
+        # mask_deltas_source = torch.cat((torch.zeros(len(mask_deltas_source),
+        #                                 1, dtype=torch.bool,
+        #                                 device=self.device), 
+        #                                 mask_deltas_source),
+        #                                dim=1)
+        # mask_deltas_target = torch.cat((torch.zeros(len(mask_deltas_source),
+        #                                             1, dtype=torch.bool,
+        #                                 device=self.device), mask_deltas_target),
+        #                                dim=1)
+
+        mask_target = lengths_to_mask(target_lens,
+                                              self.device)
+        mask_source = lengths_to_mask(source_lens,
+                                              self.device)
+        # for feat_name in self.input_feats:
+        #     if 'delta' in feat_name:
+        #         mask_for_features_source.append(mask_deltas_source)
+        #         mask_for_features_target.append(mask_deltas_target)
+        #     else:
+        #         mask_for_features_source.append(mask_source)
+        #         mask_for_features_target.append(mask_target)
+        # mask_source = torch.cat(mask_for_features_source,
+        #                         dim=1)
+        # mask_target = torch.cat(mask_for_features_target,
+        #                         dim=1)
+        return mask_source, mask_target
 
 
     def allsplit_step(self, split: str, batch, batch_idx):
@@ -876,6 +1030,8 @@ class MD(BaseModel):
                 batch[f'{k}_motion'] = v
                 batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
 
+        mask_source, mask_target = self.prepare_mot_masks(batch['length_source'],
+                                                        batch['length_target'])
         if self.input_deltas:
             batch = self.append_first_frame(batch, which_motion='target')
             batch['length_target'] = [leng - 1 for leng in batch['length_target']]
@@ -892,8 +1048,9 @@ class MD(BaseModel):
         gt_keyids = batch['id']
         self.batch_size = len(gt_texts)
 
-
-        dif_dict = self.train_diffusion_forward(batch, batch_idx)
+        dif_dict = self.train_diffusion_forward(batch,
+                                                mask_source,
+                                                mask_target)
 
         if self.trainer.current_epoch % 50 == 0 and self.global_rank == 0 \
             and split=='train' and batch_idx == 0:
@@ -906,8 +1063,8 @@ class MD(BaseModel):
 
         total_loss, loss_dict = self.compute_losses(dif_dict,
                                                     batch['body_joints_target'],
-                                                    target_smpl,
-                                                    gt_lens_tgt)
+                                                    mask_source, 
+                                                    mask_target)
 
 
         # self.losses[split](rs_set)
@@ -922,14 +1079,20 @@ class MD(BaseModel):
             with torch.no_grad():
                 motion_out = self.generate_motion(gt_texts, 
                                                   batch['source_motion'],
-                                                  batch['length_source'],
-                                                  gt_lens_tgt)
+                                                  mask_source, mask_target)
                 if self.input_deltas:
                     motion_unnorm = self.diffout2motion(motion_out)
                     motion_unnorm = motion_unnorm.permute(1, 0, 2)
                 else:
                     motion_unnorm = self.unnorm_delta(motion_out)
                 # do something with the full motion
+                tot_dim_deltas = 0
+                if self.using_deltas:
+                    for idx_feat, in_feat in enumerate(self.input_feats):
+                        if 'delta' in in_feat:
+                            tot_dim_deltas += self.input_feats_dims[idx_feat]
+                    motion_unnorm = motion_unnorm[..., tot_dim_deltas:]
+
                 gen_to_render = pack_to_render(rots=motion_unnorm[...,
                                                     3:].detach().cpu(),
                                                trans=motion_unnorm[...,
@@ -946,8 +1109,8 @@ class MD(BaseModel):
                                                                 slice_til=nvds)
             motion_out = self.generate_motion(gt_texts[:nvds],
                                               batch['source_motion'][:, :nvds],
-                                              batch['length_source'][:nvds],
-                                              gt_lens_tgt[:nvds])
+                                              mask_source[:nvds], 
+                                              mask_target[:nvds])
             if self.input_deltas:
                 motion_unnorm = self.diffout2motion(motion_out)
                 motion_unnorm = motion_unnorm.permute(1, 0, 2)
@@ -955,6 +1118,12 @@ class MD(BaseModel):
             else:
                 motion_unnorm = self.unnorm_delta(motion_out)
             
+            tot_dim_deltas = 0
+            if self.using_deltas:
+                for idx_feat, in_feat in enumerate(self.input_feats):
+                    if 'delta' in in_feat:
+                        tot_dim_deltas += self.input_feats_dims[idx_feat]
+                motion_unnorm = motion_unnorm[..., tot_dim_deltas:]
 
             gen_to_render = pack_to_render(rots=motion_unnorm[...,
                                                             3:].detach().cpu(),

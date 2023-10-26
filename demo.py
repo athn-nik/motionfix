@@ -108,7 +108,7 @@ def render(newcfg: DictConfig) -> None:
     logger.info("Trainer initialized")
     import numpy as np
 
-
+    data_module = instantiate(cfg.data)
     # state_dict = torch.load(cfg.TEST.CHECKPOINTS,
     #                         map_location="cpu")["state_dict"]
     # # remove mismatched and unused params

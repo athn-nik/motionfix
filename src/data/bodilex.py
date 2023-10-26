@@ -474,10 +474,11 @@ class BodilexDataModule(BASEDataModule):
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
 
         # add id fiels in order to turn the dict into a list without loosing it
-        random.seed(self.preproc.split_seed)
+        # random.seed(self.preproc.split_seed)
+ 
         data_ids = list(data_dict.keys())
         data_ids.sort()
-        random.shuffle(data_ids)
+        # random.shuffle(data_ids)
         if self.debug:
             # 70-10-20% train-val-test for each sequence
             num_train = int(len(data_ids) * 0.8)
@@ -485,14 +486,14 @@ class BodilexDataModule(BASEDataModule):
         else:
             # 70-10-20% train-val-test for each sequence
             num_train = int(len(data_ids) * 0.7)
-            num_val = int(len(data_ids) * 0.2)
+            num_val = int(len(data_ids) * 0.1)
         # give ids to data sets--> 0:train, 1:val, 2:test
 
         split = np.zeros(len(data_ids))
         split[num_train:num_train + num_val] = 1
         split[num_train + num_val:] = 2
         id_split_dict = {id: split[i] for i, id in enumerate(data_ids)}
-        random.random()  # restore randomness in life (maybe randomness is life)
+        # random.random()  # restore randomness in life (maybe randomness is life)
         # calculate feature statistics
         for k, v in data_dict.items():
             v['id'] = k

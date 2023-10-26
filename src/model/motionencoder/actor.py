@@ -31,20 +31,16 @@ class ActorAgnosticEncoder(nn.Module):
                                                              nhead=num_heads,
                                                              dim_feedforward=ff_size,
                                                              dropout=dropout,
-                                                             activation=activation,
-                                                             batch_first=True) # multi-gpu
+                                                             activation=activation) # multi-gpu
 
         self.seqTransEncoder = nn.TransformerEncoder(seq_trans_encoder_layer,
                                                      num_layers=num_layers)
 
-    def forward(self, features: Tensor, lengths: Optional[List[int]] = None) -> Union[Tensor, Distribution]:
-        if lengths is None:
-            lengths = [len(feature) for feature in features]
-
+    def forward(self, features: Tensor, mask: Tensor) -> Union[Tensor, Distribution]:
+        in_mask = mask
         device = features.device
 
-        bs, nframes, nfeats = features.shape
-        mask = lengths_to_mask(lengths, device)
+        nframes, bs, nfeats = features.shape
 
         x = features
         # Embed each human poses into latent vectors
@@ -57,13 +53,13 @@ class ActorAgnosticEncoder(nn.Module):
         emb_token = torch.tile(self.emb_token, (bs,)).reshape(bs, -1)
 
         # adding the embedding token for all sequences
-        xseq = torch.cat((emb_token[:, None], x), 1)
+        xseq = torch.cat((emb_token[None], x), 0)
 
         # create a bigger mask, to allow attend to emb
         token_mask = torch.ones((bs, 1), dtype=bool, device=x.device)
-        aug_mask = torch.cat((token_mask, mask), 1)
+        aug_mask = torch.cat((token_mask, in_mask), 1)
         # add positional encoding
         xseq = self.sequence_pos_encoding(xseq)
         final = self.seqTransEncoder(xseq, src_key_padding_mask=~aug_mask)
 
-        return final[:, 0]
+        return final[0]

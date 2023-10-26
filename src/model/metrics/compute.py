@@ -22,6 +22,8 @@ class ComputeMetrics(Metric):
         self.add_state("local_edit_accuracy", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("global_edit_accuracy", default=torch.tensor(0.0), dist_reduce_fx="sum")
         
+        self.add_state("acceleration", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        
         self.add_state("count_seqs", default=torch.tensor(0), dist_reduce_fx="sum")
         self.add_state("count_lens_mins", default=torch.tensor(0), dist_reduce_fx="sum")
         self.add_state("count_lens_tgt", default=torch.tensor(0), dist_reduce_fx="sum")
@@ -73,6 +75,12 @@ class ComputeMetrics(Metric):
                                                                           S_tgt,
                                                                           63))
         pred_target_verts = pred_target_verts.vertices.reshape(B, S_tgt, -1, 3)
+        pred_target_verts
+
+        accel_per_vert += (pred_target_verts[..., :-2] - 2 * pred_target_verts[..., 1:-1] + pred_target_verts[..., 2:]) / (1 ** 2)
+        self.acceleration += accel_per_vert.mean(-2).squeeze()
+        # Average the acceleration values across the sequence (S) and batch (B) dimensions
+        # This will result in a tensor of shape (J, 3)
 
         self.count_lens_mins += sum(min_lens)
         self.count_lens_tgt += sum(lengths_target)
@@ -130,7 +138,10 @@ class ComputeMetrics(Metric):
                       'EdAcc_LCL':
                       self.local_edit_accuracy / total_tgt,
                       'EdAcc_GLB':
-                      self.global_edit_accuracy / total_tgt
+                      self.global_edit_accuracy / total_tgt,
+                      'Acceleration':
+                      self.acceleration / total_tgt
+
                       }
 
         return final_metrs

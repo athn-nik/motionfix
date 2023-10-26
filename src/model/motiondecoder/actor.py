@@ -36,8 +36,7 @@ class ActorAgnosticDecoder(pl.LightningModule):
 
         self.final_layer = nn.Linear(latent_dim, output_feats)
 
-    def forward(self, z: Tensor, lengths: List[int], mem_masks=None):
-        mask = lengths_to_mask(lengths, z.device)
+    def forward(self, z: Tensor, mask: Tensor, mem_masks=None):
         latent_dim = z.shape[-1]
         bs, nframes = mask.shape
         nfeats = self.hparams.nfeats

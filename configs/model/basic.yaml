@@ -22,7 +22,7 @@ diff_params:
   guidance_scale_text: 2.5 #
   guidance_scale_motion: 1.5
 
-motion_condition: source
+motion_condition: null
 condition: text
 smpl_path: ${data.smplh_path}
 
@@ -30,9 +30,9 @@ nfeats: 135
 dim_per_feat: [135]
 # data related
 input_feats:
-# - "body_transl_delta_pelv_xy"
-# - "body_orient_delta"
-# - "body_pose_delta"
+- "body_transl_delta_pelv_xy"
+- "body_orient_delta"
+- "body_pose_delta"
 - "body_transl"
 - "body_orient"
 - "body_pose"
@@ -41,6 +41,9 @@ input_feats:
 
 loss_on_positions: false
 scale_loss_on_positions: 500
+loss_func_pos: mse # l1 mse
+loss_func_feats: mse # l1 mse
+
 
 defaults:
   # diffusion stuff
