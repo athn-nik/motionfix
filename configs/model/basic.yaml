@@ -30,10 +30,10 @@ nfeats: 135
 dim_per_feat: [135]
 # data related
 input_feats:
-- "body_transl_delta_pelv_xy"
-- "body_orient_delta"
-- "body_pose_delta"
-- "body_transl"
+- "body_transl_delta_pelv"
+# - "body_orient_delta"
+# - "body_pose_delta"
+# - "body_transl"
 - "body_orient"
 - "body_pose"
 # [body_transl_delta_pelv_xy, body_orient_delta, body_pose_delta]

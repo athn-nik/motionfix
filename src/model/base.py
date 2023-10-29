@@ -216,7 +216,8 @@ class BaseModel(LightningModule):
     def unnorm_state(self, state_norm: Tensor) -> Tensor:
         # unnorm state
         return self.cat_inputs(
-            self.unnorm_inputs(self.uncat_inputs(state_norm, self.first_pose_feats_dims),
+            self.unnorm_inputs(self.uncat_inputs(state_norm,
+                                                 self.first_pose_feats_dims),
                                self.first_pose_feats))[0]
         
     def unnorm_delta(self, delta_norm: Tensor) -> Tensor:
@@ -372,6 +373,8 @@ class BaseModel(LightningModule):
                                            orient='h')
                 stacked_videos.append(stacked_fname)
         return stacked_videos
+    
+    
     # might be needed not working in multi GPU --> all_split_end
     # Logging per joint things 
     

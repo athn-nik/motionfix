@@ -17,8 +17,6 @@ from src.tools.geometry import matrix_to_euler_angles, matrix_to_rotation_6d
 from pytorch_lightning import LightningDataModule
 from smplx.joint_names import JOINT_NAMES
 from torch.nn.functional import pad
-from torch.quantization.observer import \
-    MovingAveragePerChannelMinMaxObserver as mmo
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 from src.data.base import BASEDataModule

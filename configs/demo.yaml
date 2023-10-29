@@ -5,7 +5,11 @@ hydra:
     chdir: true
   output_subdir: null
 
+
+
 folder: ???
+mode: denoise # denoise / sample / sthing else
+
 savedir: null
 mean: false
 fact: 1
@@ -14,19 +18,12 @@ ckpt_name: 999
 last_ckpt_path: ${get_last_checkpoint:${folder},${ckpt_name}}
 logger_level: INFO
 
-# scheduler related 
-scheduler:
-  name: ddpm
-  num_inference_timesteps: 1000
-  beta_start: 0.00085
-  beta_end: 0.012
-  beta_schedule: 'scaled_linear' # ['linear', 'scaled_linear', 'squaredcos_cap_v2']
-  clip_sample: false # clip sample to -1~1
-  prediction_type: sample
-
-
 defaults:
+  - _self_
+  - model/infer_scheduler: ddpm
   - /path@path
   - override hydra/job_logging: rich # custom
   - override hydra/hydra_logging: rich # custom
-  - _self_
+
+model:
+  infer_scheduler: ddpm

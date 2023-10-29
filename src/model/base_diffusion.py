@@ -75,6 +75,13 @@ class MD(BaseModel):
         else:
             self.using_deltas = False
 
+        transl_feats = [x for x in self.input_feats if 'transl' in x]
+        if set(transl_feats).issubset(["body_transl_delta", "body_transl_delta_pelv",
+                                  "body_transl_delta_pelv_xy"]):
+            self.using_deltas_transl = True
+        else:
+            self.using_deltas_transl = False
+
         self.smpl_path = smpl_path
         self.condition = condition
         self.motion_condition = motion_condition
@@ -313,25 +320,27 @@ class MD(BaseModel):
         latents = latents.permute(1, 0, 2)
         return latents
     
-    def sample_timesteps(self, samples: int):
-        if self.trainer.current_epoch / self.trainer.max_epochs > 0.5:
+    def sample_timesteps(self, samples: int, sample_mode=None):
+        if sample_mode is None:
+            if self.trainer.current_epoch / self.trainer.max_epochs > 0.5:
 
-            # Sample `k` values from the Gamma distribution
-            # You can adjust this to the number of samples you need
-            gamma_samples = self.tsteps_distr.sample((samples,))
-        
-            # Scale and shift the Gamma samples to the desired interval [1, 1000]
-            lower_bound = 0
-            upper_bound = self.train_scheduler.config.num_train_timesteps
-            scaled_samples = lower_bound + (upper_bound - lower_bound) * (gamma_samples / gamma_samples.max())
-        
-            # Convert the samples to integers
-            timesteps_sampled = scaled_samples.floor().int().to(self.device)
+                gamma_samples = self.tsteps_distr.sample((samples,))
+                lower_bound = 0
+                upper_bound = self.train_scheduler.config.num_train_timesteps
+                scaled_samples = upper_bound * (gamma_samples / gamma_samples.max()) 
+                # Convert the samples to integers
+                timesteps_sampled = scaled_samples.floor().int().to(self.device)
+            else:
+                timesteps_sampled = torch.randint(0,
+                                    self.train_scheduler.config.num_train_timesteps,
+                                     (samples, ),
+                                    device=self.device)
         else:
-            timesteps_sampled = torch.randint(0,
-                                self.train_scheduler.config.num_train_timesteps,
-                                (samples, ),
-                                device=self.device)
+            if sample_mode == 'uniform':
+                timesteps_sampled = torch.randint(0,
+                                        self.train_scheduler.config.num_train_timesteps,
+                                        (samples, ),
+                                        device=self.device)
         return timesteps_sampled
 
     def _diffusion_process(self, input_motion_feats,
@@ -339,6 +348,7 @@ class MD(BaseModel):
                            text_encoded,
                            mask_for_condition,
                            motion_encoded=None,
+                           sample=None,
                            lengths=None):
         """
         heavily from https://github.com/huggingface/diffusers/blob/main/examples/dreambooth/train_dreambooth.py
@@ -355,7 +365,8 @@ class MD(BaseModel):
         noise = torch.randn_like(input_motion_feats)
         bsz = input_motion_feats.shape[0]
         # Sample a random timestep for each motion
-        timesteps = self.sample_timesteps(samples=bsz)
+        timesteps = self.sample_timesteps(samples=bsz,
+                                          sample_mode=sample)
         timesteps = timesteps.long()
 
         # Add noise to the latents according to the noise magnitude at each timestep
@@ -451,6 +462,80 @@ class MD(BaseModel):
 
         return final_mask.bool().to(self.device)
 
+    def denoise_forward(self, batch, mask_source_motion,
+                        mask_target_motion,
+                        sample_schema='uniform'):
+
+        cond_emb_motion = None
+        if self.motion_condition == 'source':
+            source_motion_condition = batch['source_motion']
+            cond_emb_motion = self.motion_cond_encoder(source_motion_condition,
+                                                       mask_source_motion)
+            cond_emb_motion = cond_emb_motion.unsqueeze(0)
+
+        feats_for_denois = batch['target_motion']
+        target_lens = batch['length_target']
+        # motion encode
+        # with torch.no_grad():
+            
+        # motion_feats = feats_ref.permute(1, 0, 2)
+        batch_size = len(batch["text"])
+
+        text = batch["text"]
+
+        perc_uncondp = self.diff_params.prob_uncondp
+        # text encode
+        cond_emb_text, text_mask = self.text_encoder(text)
+        # ALWAYS --> [ text condition || motion condition ] 
+        # row order (rows=batch size) --> ---------------
+        #                                 | rows_mixed  |
+        #                                 | rows_uncond |
+        #                                 |rows_txt_only|
+        #                                 |rows_mot_only|
+        #                                 ---------------
+
+        if self.motion_condition == 'source':
+            aug_mask = self.filter_conditions(max_text_len=cond_emb_text.shape[1],
+                                              max_motion_len=cond_emb_motion.shape[0],
+                                              batch_size=batch_size, 
+                                              perc_only_text=0.05,
+                                              perc_only_motion=0.05,
+                                              perc_text_n_motion=0.85,
+                                              perc_uncond=perc_uncondp, 
+                                              randomize=False)
+            
+            idx_text_only = int(round(batch_size * 0.05))
+            idx_motion_only = int(round(batch_size * 0.05))
+            idx_uncondp = int(round(batch_size * perc_uncondp))
+            idx_mix = batch_size - idx_text_only - idx_uncondp - idx_motion_only
+            # FIXME if motion is more than SEQ === 1 
+            aug_mask[
+                     (idx_uncondp+idx_mix):(idx_uncondp+idx_mix+idx_text_only), :-1] *= text_mask[(idx_uncondp+idx_mix):(idx_uncondp+idx_mix+idx_text_only)]
+            # aug_mask[-idx_motion_only:] *= motion_source_mask[-idx_motion_only:]
+            aug_mask = aug_mask[torch.randperm(batch_size)]
+        else:
+            aug_mask = self.filter_conditions(max_text_len=cond_emb_text.shape[1],
+                                              max_motion_len=0,
+                                              batch_size=batch_size,
+                                              perc_only_text=0.9,
+                                              perc_only_motion=0.00,
+                                              perc_text_n_motion=0.0,
+                                              perc_uncond=perc_uncondp,
+                                              randomize=False)
+            # final_mask = final_mask[torch.randperm(final_mask.size(0))]
+            no_of_uncond = int(round(batch_size * perc_uncondp))
+            aug_mask[no_of_uncond:] *= text_mask[no_of_uncond:]
+            aug_mask = aug_mask[torch.randperm(batch_size)]
+
+        # diffusion process return with noise and noise_pred
+        n_set = self._diffusion_process(feats_for_denois,
+                                        mask_in_mot=mask_target_motion,
+                                        text_encoded=cond_emb_text, 
+                                        motion_encoded=cond_emb_motion,
+                                        mask_for_condition=aug_mask,
+                                        lengths=target_lens,
+                                        sample=sample_schema)
+        return {**n_set}
 
     def train_diffusion_forward(self, batch, mask_source_motion,
                                 mask_target_motion):
@@ -575,8 +660,12 @@ class MD(BaseModel):
         #from src.render.video import get_offscreen_renderer
         
         if self.input_deltas:
-            motion_unnorm = self.diffout2motion(out_motion['pred_motion_feats'])
+            motion_unnorm = self.diffout2motion(out_motion['pred_motion_feats'],
+                                                full_deltas=True)
             motion_unnorm = motion_unnorm.permute(1, 0, 2)
+        elif self.using_deltas_transl: 
+            motion_unnorm = self.diffout2motion(out_motion['pred_motion_feats'])
+            # motion_unnorm = motion_unnorm.permute(1, 0, 2)
         else:
             # motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
             motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
@@ -634,7 +723,7 @@ class MD(BaseModel):
                             filename=f'jts_gt_1{iid}')
         tot_dim_deltas = 0
         if self.using_deltas:
-            for idx_feat, in_feat in enumerate(self.input_feats):
+            for idx_feat, in_feat in enumemorate(self.input_feats):
                 if 'delta' in in_feat:
                     tot_dim_deltas += self.input_feats_dims[idx_feat]
             motion_unnorm = motion_unnorm[..., tot_dim_deltas:]
@@ -766,14 +855,15 @@ class MD(BaseModel):
                     tot_dim_deltas += self.input_feats_dims[idx_feat]
         # source motion
         source_motion = batch['source_motion']
-        source_motion = self.unnorm_delta(source_motion)[..., tot_dim_deltas:]
+        # source_motion = self.unnorm_delta(source_motion)[..., tot_dim_deltas:]
+        source_motion = self.diffout2motion(source_motion.detach())
         source_motion = source_motion.permute(1, 0, 2).detach().cpu()
         source_motion_gt = pack_to_render(rots=source_motion[..., 3:],
                                           trans=source_motion[...,:3])
 
         # target motion
         target_motion = batch['target_motion']
-        target_motion = self.unnorm_delta(target_motion)[..., tot_dim_deltas:]
+        target_motion = self.diffout2motion(target_motion.detach())        
         target_motion = target_motion.permute(1, 0, 2).detach().cpu()
         target_motion_gt = pack_to_render(rots=target_motion[..., 3:],
                                           trans=target_motion[...,:3])
@@ -823,6 +913,7 @@ class MD(BaseModel):
         perform the calculatios and then normalise again
         """
         # unnorm features
+
         first_pose = self.unnorm_state(first_pose_norm)
         delta_motion = self.unnorm_delta(delta_motion_norm)
 
@@ -848,29 +939,93 @@ class MD(BaseModel):
         new_state_norm = self.norm_state(new_state)
         return new_state_norm
 
-    def diffout2motion(self, diffout):
-        # FIRST POSE FOR GENERATION & DELTAS FOR INTEGRATION
-        first_pose = diffout[:, :1]
-        delta_feats = diffout[:, 1:]
 
-        # FORWARD PASS 
-        full_mot = [first_pose.squeeze()[None]]
-        prev_pose = first_pose
-        for i in range(delta_feats.shape[1]):
-            cur_pose = self.integrate_feats2motion(prev_pose.squeeze(),
-                                                   delta_feats[:, i])
-            prev_pose = cur_pose
-            full_mot.append(cur_pose[None])
-    
-        full_motion_norm = torch.cat(full_mot, dim=0)
-        full_motion_unnorm = self.unnorm_state(full_motion_norm)
+    def integrate_translation(self, pelv_orient_norm, first_trans,
+                              delta_transl_norm):
+        """"
+        Given a state [translation, orientation, pose] and state deltas,
+        properly calculate the next state
+        input and output are normalised features hence we first unnormalise,
+        perform the calculatios and then normalise again
+        """
+        # B, S, 6d
+        pelv_orient_unnorm = self.cat_inputs(self.unnorm_inputs(
+                                                [pelv_orient_norm],
+                                                ['body_orient'])
+                                             )[0]
+        # B, S, 3
+        delta_trans_unnorm = self.cat_inputs(self.unnorm_inputs(
+                                                [delta_transl_norm],
+                                                ['body_transl_delta_pelv'])
+                                                )[0]
+        # B, 1, 3
+        first_trans = self.cat_inputs(self.unnorm_inputs(
+                                                [first_trans],
+                                                ['body_transl'])
+                                          )[0]
+
+        # apply deltas
+        # get velocity in global c.f. and add it to the state position
+        assert 'body_transl_delta_pelv' in self.input_feats
+        pelv_orient_unnorm_rotmat = transform_body_pose(pelv_orient_unnorm,
+                                                        "6d->rot")
+        trans_vel_pelv = change_for(delta_trans_unnorm,
+                                    pelv_orient_unnorm_rotmat,
+                                    forward=False)
+
+        # new_state_pos = prev_trans_norm.squeeze() + trans_vel_pelv
+        full_trans_unnorm = torch.cumsum(trans_vel_pelv,
+                                          dim=1) + first_trans
+        full_trans_unnorm = torch.cat([first_trans,
+                                        full_trans_unnorm], dim=1)
+        return full_trans_unnorm
+
+
+    def diffout2motion(self, diffout, full_deltas=False):
+        if full_deltas:
+            # FIRST POSE FOR GENERATION & DELTAS FOR INTEGRATION
+            first_pose = diffout[:, :1]
+            delta_feats = diffout[:, 1:]
+
+            # FORWARD PASS 
+            full_mot = [first_pose.squeeze()[None]]
+            prev_pose = first_pose
+            for i in range(delta_feats.shape[1]):
+                cur_pose = self.integrate_feats2motion(prev_pose.squeeze(),
+                                                    delta_feats[:, i])
+                prev_pose = cur_pose
+                full_mot.append(cur_pose[None])
+        
+            full_motion_norm = torch.cat(full_mot, dim=0)
+            full_motion_unnorm = self.unnorm_state(full_motion_norm)
+
+        else:
+            # FIRST POSE FOR GENERATION & DELTAS FOR INTEGRATION
+            first_trans = torch.zeros(*diffout.shape[:-1], 3,
+                                      device=self.device)[:, [0]]
+            delta_trans = diffout[..., :3]
+            pelv_orient = diffout[..., 3:9]
+            # for i in range(1, delta_trans.shape[1]):
+            full_trans_unnorm = self.integrate_translation(pelv_orient[:, :-1],
+                                                           first_trans,
+                                                           delta_trans[:, 1:])
+            rots_unnorm = self.cat_inputs(self.unnorm_inputs(self.uncat_inputs(
+                                                            diffout[..., 3:],
+                                                    self.input_feats_dims[1:]),
+                                               self.input_feats[1:])
+                                               )[0]
+            full_motion_unnorm = torch.cat([full_trans_unnorm,
+                                            rots_unnorm], dim=-1)
+
         return full_motion_unnorm
     
     
-    def visualize_diffusion(self, dif_out, target_lens, keyids, texts_diff):       
+    def visualize_diffusion(self, dif_out, target_lens, keyids, texts_diff,
+                            curepoch, return_fnames=False):       
         ##### DEBUG THE MODEL #####
         import os
-        cur_epoch = self.trainer.current_epoch
+        cur_epoch = curepoch
+        # if not self.training
         curdir = f'debug/epoch-{cur_epoch}'
         os.makedirs(curdir, exist_ok=True)
         input_motion_feats = dif_out['input_motion_feats']
@@ -885,13 +1040,22 @@ class MD(BaseModel):
 
         if self.input_deltas:
             # integrate all motions
-            mot_from_deltas = self.diffout2motion(input_motion_feats.detach())
-            noisy_mot_from_deltas = self.diffout2motion(noisy_motion.detach())
-            denois_mot_deltas = self.diffout2motion(diffusion_fw_out.detach())
+            mot_from_deltas = self.diffout2motion(input_motion_feats.detach(), 
+                                                  full_deltas=True)
+            noisy_mot_from_deltas = self.diffout2motion(noisy_motion.detach(), 
+                                                  full_deltas=True)
+            denois_mot_deltas = self.diffout2motion(diffusion_fw_out.detach(), 
+                                                  full_deltas=True)
             mot_from_deltas = mot_from_deltas.permute(1, 0, 2)
             noisy_mot_from_deltas = noisy_mot_from_deltas.permute(1, 0, 2)
             denois_mot_deltas = denois_mot_deltas.permute(1, 0, 2)
-
+        elif self.using_deltas_transl:
+            mot_from_deltas = self.diffout2motion(input_motion_feats.detach())
+            noisy_mot_from_deltas = self.diffout2motion(noisy_motion.detach())
+            denois_mot_deltas = self.diffout2motion(diffusion_fw_out.detach())
+            # mot_from_deltas = mot_from_deltas.permute(1, 0, 2)
+            # noisy_mot_from_deltas = noisy_mot_from_deltas.permute(1, 0, 2)
+            # denois_mot_deltas = denois_mot_deltas.permute(1, 0, 2)
         else:
             # integrate all motions
             mot_from_deltas = self.unnorm_delta(input_motion_feats.detach())
@@ -899,7 +1063,7 @@ class MD(BaseModel):
             denois_mot_deltas = self.unnorm_delta(diffusion_fw_out.detach())
 
         log_render_dic_debug = {}
-
+        filenames_lst = []
         for idx in range(2):
             keyid_ts_str = f'{keyids[idx]}_ts_{str(timesteps[idx].item())}'
             tstep = f'timestep: {str(timesteps[idx].item())}'
@@ -961,8 +1125,10 @@ class MD(BaseModel):
             log_render_dic_debug[logname] = wandb.Video(stacked_name, fps=30,
                                                         format='mp4',
                                                         caption=tstep) 
-
-        self.logger.experiment.log(log_render_dic_debug)
+        if return_fnames:
+            return filenames_lst
+        else:
+            self.logger.experiment.log(log_render_dic_debug)
 
         ##### DEBUG THE MODEL #####
     def prepare_mot_masks(self, source_lens, target_lens):
@@ -1055,7 +1221,8 @@ class MD(BaseModel):
         if self.trainer.current_epoch % 50 == 0 and self.global_rank == 0 \
             and split=='train' and batch_idx == 0:
             self.visualize_diffusion(dif_dict, actual_target_lens, 
-                                     gt_keyids, gt_texts)
+                                     gt_keyids, gt_texts, 
+                                     self.trainer.current_epoch)
         # rs_set Bx(S+1)xN --> first pose included 
         target_smpl = torch.cat([batch['body_orient_target'], 
                                  batch['body_pose_target']],
@@ -1081,8 +1248,12 @@ class MD(BaseModel):
                                                   batch['source_motion'],
                                                   mask_source, mask_target)
                 if self.input_deltas:
-                    motion_unnorm = self.diffout2motion(motion_out)
+                    motion_unnorm = self.diffout2motion(motion_out,
+                                                        full_deltas=True)
                     motion_unnorm = motion_unnorm.permute(1, 0, 2)
+                if self.using_deltas_transl:
+                    motion_unnorm = self.diffout2motion(motion_out)
+                    # motion_unnorm = motion_unnorm.permute(1, 0, 2)
                 else:
                     motion_unnorm = self.unnorm_delta(motion_out)
                 # do something with the full motion
@@ -1112,9 +1283,12 @@ class MD(BaseModel):
                                               mask_source[:nvds], 
                                               mask_target[:nvds])
             if self.input_deltas:
-                motion_unnorm = self.diffout2motion(motion_out)
+                motion_unnorm = self.diffout2motion(motion_out,
+                                                    full_deltas=True)
                 motion_unnorm = motion_unnorm.permute(1, 0, 2)
-            
+            elif self.using_deltas_transl:
+                motion_unnorm = self.diffout2motion(motion_out)
+                # motion_unnorm = motion_unnorm.permute(1, 0, 2)
             else:
                 motion_unnorm = self.unnorm_delta(motion_out)
             
