@@ -1,4 +1,3 @@
-# wandb agent markos_mpi/HOI-common-sense/fw1yp9u3
 interpreter: /home/nathanasiou/.venvs/modit/bin/python
 program: train.py
 command:
@@ -18,16 +17,14 @@ parameters:
     value: basic
   logger.group:
     value: "GROUP-NAME"
-  model.input_feats:
-    values: [["body_transl", "body_orient" ,"body_pose"]]
   machine.batch_size:
     values: [16]
   model.diff_params.num_inference_timesteps:
     values: [1000]
   model.diff_params.guidance_scale_text:
-    values: [2.0]
+    values: [2.5]
   model.diff_params.guidance_scale_motion:
-    values: [2.0]
+    values: [2.5]
   model.train_scheduler.beta_schedule:
     values: ['squaredcos_cap_v2']
   model.loss_on_positions:
@@ -36,5 +33,5 @@ parameters:
     values: ['mse']
   model.loss_func_feats:
     values: ['mse']
-  model.condition:
-    values: ['null', source]
+  model.motion_condition:
+    values: ['null', 'source']
