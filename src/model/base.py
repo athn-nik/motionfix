@@ -274,27 +274,29 @@ class BaseModel(LightningModule):
     def allsplit_epoch_end(self, split: str):
         video_names = []
         # RENDER
-        if self.global_rank == 0 and self.trainer.current_epoch != 0:
-            if split == 'train':
-                if self.trainer.current_epoch%self.render_vids_every_n_epochs == 0:
+        if self.renderer is not None:
+            if self.global_rank == 0 and self.trainer.current_epoch != 0:
+                if split == 'train':
+                    if self.trainer.current_epoch%self.render_vids_every_n_epochs == 0:
+                        video_names = self.render_buffer(self.render_data_buffer[split],
+                                                        split=split)
+                    video_names = []
+                else:
                     video_names = self.render_buffer(self.render_data_buffer[split],
-                                                    split=split)
-            else:
-                video_names = self.render_buffer(self.render_data_buffer[split],
-                                                    split=split)
-                # # log videos to wandb
-                # self.render_buffer(self.render_data_buffer[split],split=split)
+                                                        split=split)
+                    # # log videos to wandb
+                    # self.render_buffer(self.render_data_buffer[split],split=split)
 
-    
-            if self.logger is not None and video_names:
-                log_render_dic = {}
-                for v in video_names:
-                    logname = f'{split}_renders/' + v.replace('.mp4',
-                                                    '').split('/')[-1][4:-4]
-                    logname = f'{logname}_kid'
-                    log_render_dic[logname] = wandb.Video(v, fps=30,
-                                                            format='mp4') 
-                self.logger.experiment.log(log_render_dic)
+        
+                if self.logger is not None and video_names:
+                    log_render_dic = {}
+                    for v in video_names:
+                        logname = f'{split}_renders/' + v.replace('.mp4',
+                                                        '').split('/')[-1][4:-4]
+                        logname = f'{logname}_kid'
+                        log_render_dic[logname] = wandb.Video(v, fps=30,
+                                                                format='mp4') 
+                    self.logger.experiment.log(log_render_dic)
         self.render_data_buffer[split].clear()
 
         if split == "val":
@@ -372,9 +374,7 @@ class BaseModel(LightningModule):
                                            fname=f'{flname}_{cur_key}_stk.mp4',
                                            orient='h')
                 stacked_videos.append(stacked_fname)
-        return stacked_videos
-    
-    
+        return stacked_videos            
     # might be needed not working in multi GPU --> all_split_end
     # Logging per joint things 
     

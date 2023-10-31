@@ -335,13 +335,95 @@ class MD(BaseModel):
                                     self.train_scheduler.config.num_train_timesteps,
                                      (samples, ),
                                     device=self.device)
+        # elif isinstance(sample_mode, list):
+            
         else:
+            
             if sample_mode == 'uniform':
                 timesteps_sampled = torch.randint(0,
                                         self.train_scheduler.config.num_train_timesteps,
                                         (samples, ),
                                         device=self.device)
         return timesteps_sampled
+
+    @torch.no_grad()
+    def visualize_denoising(self, dif_out, target_lens, keyids,
+                            texts_diff, curepoch, return_fnames=False):       
+        ##### DEBUG THE MODEL #####
+        import os
+        cur_epoch = curepoch
+        # if not self.training
+        curdir = f'debug/epoch-{cur_epoch}'
+        os.makedirs(curdir, exist_ok=True)
+        input_motion_feats = dif_out['input_motion_feats']
+        timesteps = dif_out['timesteps']
+        noisy_motion = dif_out['noised_motion_feats']
+        diffusion_fw_out = dif_out['pred_motion_feats']
+
+        mot_from_deltas = self.diffout2motion(input_motion_feats.detach())
+        noisy_mot_from_deltas = self.diffout2motion(noisy_motion.detach())
+        denois_mot_deltas = self.diffout2motion(diffusion_fw_out.detach())
+
+        log_render_dic_debug = {}
+        filenames_lst = []
+        for idx in range(2):
+            keyid_ts_str = f'{keyids[idx]}_ts_{str(timesteps[idx].item())}'
+            tstep = f'timestep: {str(timesteps[idx].item())}'
+            from src.render.mesh_viz import render_motion
+            from src.render.video import stack_vids
+            text_vid = f'{texts_diff[idx]}'
+
+            one_mot_from_deltas = mot_from_deltas[idx, :target_lens[idx]]
+            if self.using_deltas:
+                one_mot_from_deltas = one_mot_from_deltas[...,
+                                                          tot_dim_deltas:]
+
+            uno_vid = pack_to_render(rots=one_mot_from_deltas[...,
+                                                        3:].detach().cpu(),
+                                        trans=one_mot_from_deltas[...,
+                                                    :3].detach().cpu())
+            in_fl = render_motion(self.renderer, uno_vid, 
+                                  f'{curdir}/input_{keyid_ts_str}', 
+                                  text_for_vid=text_vid, 
+                                  pose_repr='aa',
+                                  color=color_map['input'])
+
+
+            one_noisy_mot_from_deltas = noisy_mot_from_deltas[idx,
+                                                               :target_lens[idx]]
+            if self.using_deltas:
+                one_noisy_mot_from_deltas = one_noisy_mot_from_deltas[...,
+                                                          tot_dim_deltas:]
+            no_vid = pack_to_render(rots=one_noisy_mot_from_deltas[...,
+                                                        3:].detach().cpu(),
+                                        trans=one_noisy_mot_from_deltas[...,
+                                                    :3].detach().cpu())
+            noised_fl = render_motion(self.renderer, no_vid,
+                                      f'{curdir}/noised_{keyid_ts_str}',
+                                      text_for_vid=text_vid,
+                                      pose_repr='aa',
+                                      color=color_map['noised'])
+
+
+            one_denois_mot_deltas = denois_mot_deltas[idx, :target_lens[idx]]
+            if self.using_deltas:
+                one_denois_mot_deltas = one_denois_mot_deltas[...,
+                                                          tot_dim_deltas:]
+            deno_vid = pack_to_render(rots=one_denois_mot_deltas[...,
+                                                        3:].detach().cpu(),
+                                        trans=one_denois_mot_deltas[...,
+                                                    :3].detach().cpu())
+            denoised_fl = render_motion(self.renderer, deno_vid, 
+                                        f'{curdir}/denoised_{keyid_ts_str}',
+                                        text_for_vid=text_vid,
+                                        pose_repr='aa',
+                                        color=color_map['denoised'])
+
+
+            fname_for_stack = f'{curdir}/stak_{keyid_ts_str}_{idx}.mp4'
+            stacked_name = stack_vids([in_fl, noised_fl, denoised_fl],
+                                      fname=fname_for_stack,
+                                      orient='h')
 
     def _diffusion_process(self, input_motion_feats,
                            mask_in_mot,
@@ -723,7 +805,7 @@ class MD(BaseModel):
                             filename=f'jts_gt_1{iid}')
         tot_dim_deltas = 0
         if self.using_deltas:
-            for idx_feat, in_feat in enumemorate(self.input_feats):
+            for idx_feat, in_feat in enumerate(self.input_feats):
                 if 'delta' in in_feat:
                     tot_dim_deltas += self.input_feats_dims[idx_feat]
             motion_unnorm = motion_unnorm[..., tot_dim_deltas:]
@@ -856,15 +938,19 @@ class MD(BaseModel):
         # source motion
         source_motion = batch['source_motion']
         # source_motion = self.unnorm_delta(source_motion)[..., tot_dim_deltas:]
-        source_motion = self.diffout2motion(source_motion.detach())
-        source_motion = source_motion.permute(1, 0, 2).detach().cpu()
+        source_motion = self.diffout2motion(source_motion.detach().permute(1,
+                                                                           0,
+                                                                           2))
+        source_motion = source_motion.detach().cpu()
         source_motion_gt = pack_to_render(rots=source_motion[..., 3:],
                                           trans=source_motion[...,:3])
 
         # target motion
         target_motion = batch['target_motion']
-        target_motion = self.diffout2motion(target_motion.detach())        
-        target_motion = target_motion.permute(1, 0, 2).detach().cpu()
+        target_motion = self.diffout2motion(target_motion.detach().permute(1,
+                                                                           0,
+                                                                           2))
+        target_motion = target_motion.detach().cpu()
         target_motion_gt = pack_to_render(rots=target_motion[..., 3:],
                                           trans=target_motion[...,:3])
         
@@ -977,7 +1063,7 @@ class MD(BaseModel):
         full_trans_unnorm = torch.cumsum(trans_vel_pelv,
                                           dim=1) + first_trans
         full_trans_unnorm = torch.cat([first_trans,
-                                        full_trans_unnorm], dim=1)
+                                       full_trans_unnorm], dim=1)
         return full_trans_unnorm
 
 
@@ -1087,7 +1173,8 @@ class MD(BaseModel):
                                   color=color_map['input'])
 
 
-            one_noisy_mot_from_deltas = noisy_mot_from_deltas[idx, :target_lens[idx]]
+            one_noisy_mot_from_deltas = noisy_mot_from_deltas[idx,
+                                                               :target_lens[idx]]
             if self.using_deltas:
                 one_noisy_mot_from_deltas = one_noisy_mot_from_deltas[...,
                                                           tot_dim_deltas:]
@@ -1220,9 +1307,10 @@ class MD(BaseModel):
 
         if self.trainer.current_epoch % 50 == 0 and self.global_rank == 0 \
             and split=='train' and batch_idx == 0:
-            self.visualize_diffusion(dif_dict, actual_target_lens, 
-                                     gt_keyids, gt_texts, 
-                                     self.trainer.current_epoch)
+            if self.renderer is not None:
+                self.visualize_diffusion(dif_dict, actual_target_lens, 
+                                        gt_keyids, gt_texts, 
+                                        self.trainer.current_epoch)
         # rs_set Bx(S+1)xN --> first pose included 
         target_smpl = torch.cat([batch['body_orient_target'], 
                                  batch['body_pose_target']],

@@ -1,18 +1,14 @@
 import os
 import numpy as np
 import torch
-import trimesh
 
-from aitviewer.headless import HeadlessRenderer
-from aitviewer.models.smpl import SMPLLayer
-from aitviewer.renderables.smpl import SMPLSequence
-from aitviewer.renderables.skeletons import Skeletons
 from src.utils.smpl_body_utils import get_smpl_skeleton
 
 from einops import rearrange
 from scipy.spatial.transform import Rotation as R
 from src.tools.transforms3d import transform_body_pose
 import subprocess
+from aitviewer.headless import HeadlessRenderer
 
 def render_skeleton(renderer: HeadlessRenderer, positions: torch.Tensor, 
                     filename: str, text_for_vid=None,
@@ -26,7 +22,12 @@ def render_skeleton(renderer: HeadlessRenderer, positions: torch.Tensor,
 
     """
     # assert {'body_transl', 'body_orient', 'body_pose'}.issubset(set(datum.keys()))
+    import trimesh
 
+    from aitviewer.headless import HeadlessRenderer
+    from aitviewer.models.smpl import SMPLLayer
+    from aitviewer.renderables.smpl import SMPLSequence
+    from aitviewer.renderables.skeletons import Skeletons
 
     skeletons_seq = Skeletons(joint_positions=positions, 
                               joint_connections=get_smpl_skeleton(),
@@ -82,6 +83,10 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     filename: the absolute path you want the video to be saved at
 
     """
+    from aitviewer.headless import HeadlessRenderer
+    from aitviewer.models.smpl import SMPLLayer
+    from aitviewer.renderables.smpl import SMPLSequence
+    import trimesh
     assert {'body_transl', 'body_orient', 'body_pose'}.issubset(set(datum.keys()))
     # os.environ['DISPLAY'] = ":11"
     if len(datum['body_transl'].shape) > 2:
@@ -169,7 +174,8 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     return fname
 
 
-def put_text(text: str, fname: str, outf: str, position='bottom_right', 
+def put_text(text: str, fname: str, outf: str,
+             position='bottom_center', 
              v=False):
     cmd_m = ['ffmpeg']
     # -i inputClip.mp4 -vf f"drawtext=text='{method}':x=200:y=0:fontsize=22:fontcolor=white" -c:a copy {temp_path}.mp4

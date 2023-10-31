@@ -76,10 +76,15 @@ class ComputeMetrics(Metric):
                                                                           63))
         pred_target_verts = pred_target_verts.vertices.reshape(B, S_tgt, -1, 3)
 
-        accel_per_vert = (pred_target_verts[..., :-2] - 2 * pred_target_verts[..., 1:-1] + pred_target_verts[..., 2:]) / (1 ** 2)
-        self.acceleration += accel_per_vert.mean(-2).squeeze().sum()
         # Average the acceleration values across the sequence (S) and batch (B) dimensions
         # This will result in a tensor of shape (J, 3)
+        velocity = pred_target_verts[1:] - pred_target_verts[:-1]
+
+        # Compute the acceleration (second derivative of position)
+        acceleration_tot = velocity[1:] - velocity[:-1]
+        mean_accel_per_seq += acceleration_tot.mean(dim=1)
+
+        self.acceleration += mean_accel_per_seq.sum()
 
         self.count_lens_mins += sum(min_lens)
         self.count_lens_tgt += sum(lengths_target)
