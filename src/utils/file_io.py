@@ -11,7 +11,14 @@ import glob
 import hydra
 import yaml
 from pathlib import Path
-
+import codecs as cs
+def read_text_lines(path, split):
+    split_file = os.path.join(path, split + ".txt")
+    id_list = []
+    with cs.open(split_file, "r") as f:
+        for line in f.readlines():
+            id_list.append(line.strip())
+    return id_list
 
 def get_metric_paths(sample_path: Path, set: str, split: str, onesample: bool, mean: bool, fact: float):
     extra_str = ("_mean" if mean else "") if onesample else "_multi"

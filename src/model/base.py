@@ -96,8 +96,12 @@ class BaseModel(LightningModule):
 
 
     def training_step(self, batch, batch_idx):
-        train_loss, step_loss_dict = self.allsplit_step("train", 
-                                                         batch, batch_idx)
+        if 'source' in akey or 'target' in akey:
+            self.text2motion = True
+        else:
+            self.text2motion = False
+        train_loss, step_loss_dict = self.allsplit_step("train", batch,
+                                                        batch_idx)
         if self.loss_dict['train'] is None:
             for k, v in step_loss_dict.items():
                 step_loss_dict[k] = [v]
@@ -124,8 +128,8 @@ class BaseModel(LightningModule):
         # for name, param in model.named_parameters():
         #    if param.grad is None:
         #         print(name)
-        return val_loss
-    
+        return val_loss        
+
     def test_step(self, batch, batch_idx):
         return self.allsplit_step("test", batch, batch_idx)
 
@@ -154,7 +158,13 @@ class BaseModel(LightningModule):
         seq_first = lambda t: rearrange(t, 'b s ... -> s b ...') 
         input_batch = {}
         ## PREPARE INPUT ##
-        for mot in ['source', 'target']:
+        motion_condition = any('source' in value for value in batch.keys())
+        if motion_condition:
+            mo_types = ['source', 'target']
+        else:
+            mo_types = ['target']
+            self.motion_condition = None
+        for mot in mo_types:
             
             list_of_feat_tensors = [seq_first(batch[f'{feat_type}_{mot}']) 
                                     for feat_type in features_types]
@@ -167,6 +177,27 @@ class BaseModel(LightningModule):
             
             x_norm, _ = self.cat_inputs(list_of_feat_tensors_normed)
             input_batch[mot] = x_norm
+        return input_batch
+    
+    def norm_and_cat_single_motion(self, batch, features_types):
+        """
+        turn batch data into the format the forward() function expects
+        """
+        seq_first = lambda t: rearrange(t, 'b s ... -> s b ...') 
+        input_batch = {}
+        ## PREPARE INPUT ##
+            
+        list_of_feat_tensors = [seq_first(batch[feat_type]) 
+                                for feat_type in features_types]
+        # normalise and cat to a unified feature vector
+        list_of_feat_tensors_normed = self.norm_inputs(list_of_feat_tensors,
+                                                        features_types)
+        # list_of_feat_tensors_normed = [x[1:] if 'delta' in nx else x for nx,
+                                            # x in zip(features_types, 
+                                            # list_of_feat_tensors_normed)]
+        
+        x_norm, _ = self.cat_inputs(list_of_feat_tensors_normed)
+        input_batch['motion'] = x_norm
         return input_batch
     
     def append_first_frame(self, batch, which_motion):
@@ -274,27 +305,29 @@ class BaseModel(LightningModule):
     def allsplit_epoch_end(self, split: str):
         video_names = []
         # RENDER
-        if self.global_rank == 0 and self.trainer.current_epoch != 0:
-            if split == 'train':
-                if self.trainer.current_epoch%self.render_vids_every_n_epochs == 0:
+        if self.renderer is not None:
+            if self.global_rank == 0 and self.trainer.current_epoch != 0:
+                if split == 'train':
+                    if self.trainer.current_epoch%self.render_vids_every_n_epochs == 0:                        
+                        video_names = []
+                        # self.render_buffer(self.render_data_buffer[split],
+                                                        # split=split)
+                else:
                     video_names = self.render_buffer(self.render_data_buffer[split],
-                                                    split=split)
-            else:
-                video_names = self.render_buffer(self.render_data_buffer[split],
-                                                    split=split)
-                # # log videos to wandb
-                # self.render_buffer(self.render_data_buffer[split],split=split)
+                                                        split=split)
+                    # # log videos to wandb
+                    # self.render_buffer(self.render_data_buffer[split],split=split)
 
-    
-            if self.logger is not None and video_names:
-                log_render_dic = {}
-                for v in video_names:
-                    logname = f'{split}_renders/' + v.replace('.mp4',
-                                                    '').split('/')[-1][4:-4]
-                    logname = f'{logname}_kid'
-                    log_render_dic[logname] = wandb.Video(v, fps=30,
-                                                            format='mp4') 
-                self.logger.experiment.log(log_render_dic)
+        
+                if self.logger is not None and video_names:
+                    log_render_dic = {}
+                    for v in video_names:
+                        logname = f'{split}_renders/' + v.replace('.mp4',
+                                                        '').split('/')[-1][4:-4]
+                        logname = f'{logname}_kid'
+                        log_render_dic[logname] = wandb.Video(v, fps=30,
+                                                                format='mp4') 
+                    self.logger.experiment.log(log_render_dic)
         self.render_data_buffer[split].clear()
 
         if split == "val":
@@ -352,7 +385,7 @@ class BaseModel(LightningModule):
             for iid_tor in range(novids):
                 flname = folder / str(iid_tor).zfill(3)
                 video_names = []
-                cur_text = data['text_diff'][iid_tor]
+                cur_text = data['text_descr'][iid_tor]
                 cur_key = data['keyids'][iid_tor]
 
                 for k, v in data.items():
@@ -372,9 +405,7 @@ class BaseModel(LightningModule):
                                            fname=f'{flname}_{cur_key}_stk.mp4',
                                            orient='h')
                 stacked_videos.append(stacked_fname)
-        return stacked_videos
-    
-    
+        return stacked_videos            
     # might be needed not working in multi GPU --> all_split_end
     # Logging per joint things 
     

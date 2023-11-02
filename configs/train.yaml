@@ -13,7 +13,7 @@ debug: false
 
 # Global configurations shared between different modules
 expdir: ${get_expdir:${debug}}
-experiment: baseline
+experiment: cvpr24
 # must be the same when you are resuming experiment
 project: motion-editing
 seed: 42
@@ -22,7 +22,7 @@ run_id: ${generate_id:}
 # For finetuning
 resume: null
 resume_ckpt_name: null
-
+renderer: ait # null
 devices: 1
 
 statistics_file: statistics_${data.dataname}${get_debug:${debug}}.npy

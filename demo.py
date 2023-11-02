@@ -1,83 +1,95 @@
 import os
 import logging
-from sched import scheduler
 import hydra
-from pathlib import Path
 from omegaconf import DictConfig
 from omegaconf import OmegaConf
 from src.render.mesh_viz import render_motion
+from torch import Tensor
 
 # from src.render.mesh_viz import visualize_meshes
 from src.render.video import save_video_samples
 import src.launch.prepare  # noqa
 from tqdm import tqdm
-from src.utils.file_io import read_json
-from src.launch.prepare import get_last_checkpoint
 import torch
 from aitviewer.headless import HeadlessRenderer
 import itertools
 from aitviewer.configuration import CONFIG as AITVIEWER_CONFIG
 from src.model.utils.tools import pack_to_render
-import diffusers
 logger = logging.getLogger(__name__)
 
 
 @hydra.main(config_path="configs", config_name="demo")
-def _render(cfg: DictConfig) -> None:
-    return render(cfg)
+def _render_vids(cfg: DictConfig) -> None:
+    return render_vids(cfg)
 
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
-def render(newcfg: DictConfig) -> None:
+
+def prepare_test_batch(model, batch):
+    batch = { k: v.to(model.device) if torch.is_tensor(v) else v
+                for k, v in batch.items() }
+
+    input_batch = model.norm_and_cat(batch, model.input_feats)
+    for k, v in input_batch.items():
+        if model.input_deltas:
+            batch[f'{k}_motion'] = v[1:]
+        else:
+            batch[f'{k}_motion'] = v
+            batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
+
+    return batch
+
+def cleanup_files(lo_fls):
+    for fl in lo_fls:
+        os.remove(fl)
+
+def output2renderable(model, lst_of_tensors: list[Tensor]):
+    l_of_renders = []
+    for el in lst_of_tensors:
+        if isinstance(el, list):
+            render_readies = []
+            for sub_el in el:
+                print(sub_el.shape)
+                # motion_unnorm_nest = model.diffout2motion(sub_el)
+                modict_nest = pack_to_render(rots=sub_el[...,
+                                                            3:].detach().cpu(),
+                                             trans=sub_el[...,
+                                                            :3].detach().cpu())
+                render_readies.append(modict_nest)
+        else:
+            # print(el.shape)
+
+            # motion_unnorm = model.diffout2motion(el)
+            render_readies = pack_to_render(rots=el[...,
+                                                            3:].detach().cpu(),
+                                            trans=el[...,
+                                                         :3].detach().cpu())
+        l_of_renders.append(render_readies)
+
+    return l_of_renders
+    
+def render_vids(newcfg: DictConfig) -> None:
     from pathlib import Path
 
     exp_folder = Path(hydra.utils.to_absolute_path(newcfg.folder))
     last_ckpt_path = newcfg.last_ckpt_path
     # Load previous config
     prevcfg = OmegaConf.load(exp_folder / ".hydra/config.yaml")
-    # new_sched = newcfg.model.infer_scheduler
-    # if new_sched is not None:
-    #     logger.info(f"...Sampling with a different scheduler...{new_sched.name}")
-    #     logger.info(f"Scheduler: {new_sched.name}")
-    #     logger.info(f"Parameters of scheduler: {new_sched.scheduler}")
-
+    
     # Overload it
     cfg = OmegaConf.merge(prevcfg, newcfg)
     
-    # if newcfg.scheduler.name == 'ddim':
-
-    #     infer_scheduler = diffusers.DDIMScheduler(
-    #         num_train_timesteps=sch_cfg.num_inference_timesteps,
-    #         beta_start=sch_cfg.beta_start,
-    #         beta_end=sch_cfg.beta_end,
-    #         beta_schedule=sch_cfg.beta_schedule,
-    #         clip_sample=sch_cfg.clip_sample,
-    #         prediction_type=sch_cfg.prediction_type,
-    #         set_alpha_to_one= False,
-    #         steps_offset= 1
-    #     )
-
-    # elif newcfg.scheduler.name == 'ddpm':
-    #     infer_scheduler = diffusers.DDPMScheduler(
-    #         num_train_timesteps=sch_cfg.num_inference_timesteps,
-    #         beta_start=sch_cfg.beta_start,
-    #         beta_end=sch_cfg.beta_end,
-    #         beta_schedule=sch_cfg.beta_schedule,
-    #         clip_sample=sch_cfg.clip_sample,
-    #         prediction_type=sch_cfg.prediction_type,
-    #     )
-
-    # else:
-    #     exit('Scheduler not supported!')
-
-    output_path = exp_folder / 'demo-renders'
+    output_path = exp_folder / cfg.mode
     output_path.mkdir(exist_ok=True, parents=True)
     logger.info(f"Sample script. The outputs will be stored in:{output_path}")
 
     import pytorch_lightning as pl
     import numpy as np
     from hydra.utils import instantiate
+    from src.render.video import put_text
+    from src.render.video import stack_vids
+
     seed_logger = logging.getLogger("pytorch_lightning.utilities.seed")
     seed_logger.setLevel(logging.WARNING)
 
@@ -102,49 +114,22 @@ def render(newcfg: DictConfig) -> None:
                         _recursive_=False)
 
     logger.info(f"Model '{cfg.model.modelname}' loaded")
-
     
     # Load the last checkpoint
-    # del checkpoint['state_dict']["text_encoder.text_model.text_model.embeddings.position_ids"]
-    # del checkpoint['state_dict']["text_encoder.text_model.vision_model.embeddings.position_ids"]
     model = model.load_from_checkpoint(last_ckpt_path,
                                        renderer=aitrenderer,
                                        strict=False)
-                                    #    infer_scheduler=infer_scheduler)    model.eval()
+    model.freeze()
     logger.info("Model weights restored")
 
     logger.info("Trainer initialized")
     import numpy as np
 
     data_module = instantiate(cfg.data)
-    # state_dict = torch.load(cfg.TEST.CHECKPOINTS,
-    #                         map_location="cpu")["state_dict"]
-    # # remove mismatched and unused params
-    # from collections import OrderedDict
-    # new_state_dict = OrderedDict()
-    # for k, v in state_dict.items():
-    #     old, new = "denoiser.decoder.0.", "denoiser.decoder."
-    #     # old1, new1 = "text_encoder.text_model.text_model", "text_encoder.text_model.vision_model"
-    #     old1 = "text_encoder.text_model.vision_model"
-    #     if k[: len(old)] == old:
-    #         name = k.replace(old, new)
-    #     # elif k[: len(old)] == old:
-    #     #     name = k.replace(old, new)
-    #     else:
-    #         name = k
-
-    #     new_state_dict[name] = v
-    #     # if k.split(".")[0] not in ["text_encoder", "denoiser"]:
-    #     #     new_state_dict[k] = v
-    # model.load_state_dict(new_state_dict, strict=False)
-
-    # model.load_state_dict(state_dict, strict=True)
-
-    # logger.info("model {} loaded".format(cfg.model.model_type))
-    # model.sample_mean = cfg.TEST.MEAN
-    # model.fact = cfg.TEST.FACT
-    # model.to(device)
-    # model.eval()
+    transl_feats = [x for x in model.input_feats if 'transl' in x]
+    if set(transl_feats).issubset(["body_transl_delta", "body_transl_delta_pelv",
+                                   "body_transl_delta_pelv_xy"]):
+        model.using_deltas_transl = True
 
     if cfg.mode == 'demo':
         lengths = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300]
@@ -152,108 +137,100 @@ def render(newcfg: DictConfig) -> None:
         texts = ['slower', 'faster']
         len_text = [list(tup) for tup in list(itertools.product(lengths, texts))]
         idx = 0
+        ds_iterator = chunker(len_text, 8)
+
     else:
+        # load the test set and collate it properly
         test_dataset = data_module.dataset['test']
+        features_to_load = test_dataset.load_feats
+        from src.data.tools.collate import collate_batch_last_padding
+        collate_fn = lambda b: collate_batch_last_padding(b,
+                                                          features_to_load)
         testloader = torch.utils.data.DataLoader(test_dataset,
                                                  shuffle=False,
                                                  num_workers=0,
-                                                 batch_size=8)
+                                                 batch_size=8,
+                                                 collate_fn=collate_fn)
+        ds_iterator = testloader 
+    from src.utils.art_utils import color_map
 
-    if cfg.mode == 'denoise':
-        # sample
+    if cfg.mode in ['denoise', 'sample']:
         with torch.no_grad():
-            for batch in tqdm(testloader):
+            for batch in tqdm(ds_iterator):
+
                 source_lens = batch['length_source']
                 text_diff = batch['text']
                 target_lens = batch['length_target']
                 keyids = batch['id']
-                # model_out = model([text], [length])[0]
-                # model_out = model_out.cpu().squeeze().numpy()
-                batch = { k: v.to(model.device) if torch.is_tensor(v) else v
-                         for k, v in batch.items() }
-
-                input_batch = model.norm_and_cat(batch, model.input_feats)
-                for k, v in input_batch.items():
-                    if model.input_deltas:
-                        batch[f'{k}_motion'] = v[1:]
-                    else:
-                        batch[f'{k}_motion'] = v
-                        batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
-
+                no_of_motions = len(keyids)
+                batch = prepare_test_batch(model, batch)
 
                 mask_source, mask_target = model.prepare_mot_masks(source_lens,
                                                                   target_lens)
 
-                diffout = model.denoise_forward(batch, mask_source,
-                                                mask_target)
-                input_motion_feats = dif_out['input_motion_feats']
-                timesteps = dif_out['timesteps']
-                noisy_motion = dif_out['noised_motion_feats']
-                diffusion_fw_out = dif_out['pred_motion_feats']
+                if cfg.mode == 'denoise':
+                    diffout = model.denoise_forward(batch, mask_source,
+                                                    mask_target)
+                    in_mot = model.diffout2motion(diffout['input_motion_feats'])
+                    timesteps = diffout['timesteps']
+                    no_mo = model.diffout2motion(diffout['noised_motion_feats'])
+                    deno_mo = model.diffout2motion(diffout['pred_motion_feats'])
+                    mots_to_render = [in_mot, no_mo, deno_mo]
+                    monames = ['input', 'noised', 'denoised']
+                else:
+                    diffout = model.generate_motion(text_diff,
+                                                    batch['source_motion'],
+                                                    mask_source,
+                                                    mask_target)
+                    gen_mo = model.diffout2motion(diffout)
 
-                model.visualize_diffusion(diffout, target_lens, 
-                                          keyids, text_diff, 
-                                          'test', return_fnames=True)
-                xy=1
-                if model.input_deltas:
-                    motion_unnorm = model.diffout2motion(diffout, 
-                                                         full_deltas=True)
-                    motion_unnorm = motion_unnorm.permute(1, 0, 2)
-                elif model.input_deltas_transl:
-                    motion_unnorm = model.diffout2motion(diffusion_fw_out)
-                else:
-                    motion_unnorm = model.unnorm_delta(diffout)
-                batch_motion = pack_to_render(motion_unnorm[..., 3:],
-                                        motion_unnorm[..., :3])
-                for jj in range(motion_unnorm.shape[0]):
-                    one_motion = {k: v[jj] 
-                                for k, v in batch_motion.items()
-                                }
-                    render_motion(aitrenderer, one_motion,
-                                  output_path / f"movie_{idx}_{jj}",
-                                  pose_repr='aa',
-                                  text_for_vid=timesteps[jj])
-                idx += 1
-    
-    elif cfg.mode == 'sample':
-        # sample
-        with torch.no_grad():
-            for batch_len_text in tqdm(chunker(len_text, 8)):
-                lengths, texts = zip(*batch_len_text)
-            # task: input or Example
-            # prepare batch data  
-                # model_out = model([text], [length])[0]
-                # model_out = model_out.cpu().squeeze().numpy()
-                mask_source, mask_target = model.prepare_mot_masks(
-                                                    batch['length_source'],
-                                                    batch['length_target']
-                                                    )
-                if model.motion_condition is None:
-                    source_mot = None
-                else:
-                    batch['source_motion']
-                dif_out = model.generate_motion(list(texts),
-                                                batch['source_motion']
-                                                mask_source,
-                                                mask_target)
-                if model.input_deltas:
-                    motion_unnorm = model.diffout2motion(dif_out)
-                    motion_unnorm = motion_unnorm.permute(1, 0, 2)
-                else:
-                    motion_unnorm = model.unnorm_delta(dif_out)
-                batch_motion = pack_to_render(motion_unnorm[..., 3:],
-                                        motion_unnorm[..., :3])
-                for jj in range(motion_unnorm.shape[0]):
-                    one_motion = {k: v[jj] 
-                                for k, v in batch_motion.items()
-                                }
-                    render_motion(aitrenderer, one_motion,
-                                output_path / f"movie_{idx}_{jj}",
-                                pose_repr='aa')
-                idx += 1
-        
+                    if model.motion_condition is not None:
+                        src_mot_cond, tgt_mot = model.batch2motion(batch,
+                                                        pack_to_dict=False)
+                        src_mot_cond = src_mot_cond.to(model.device)
+                        tgt_mot = tgt_mot.to(model.device)
+                    mots_to_render = [src_mot_cond, tgt_mot, 
+                                      [src_mot_cond, tgt_mot], gen_mo]
+                    monames = ['source', 'target', 'overlaid', 
+                               'generated']
+                lof_mots = output2renderable(model,
+                                             mots_to_render)
+                # output_path = Path('/home/nathanasiou/Desktop/conditional_action_gen/modilex')
+                for elem_id in range(no_of_motions):
+                    cur_group_of_vids = []
+                    curid = keyids[elem_id]
+                    for moid in range(len(monames)):
+                        one_motion = lof_mots[moid]
+                        cur_mol = []
+                        cur_colors = []
+                        if isinstance(one_motion, list):
+                            for xx in one_motion:
+                                cur_mol.append({k: v[elem_id] 
+                                                for k, v in xx.items()})
+                            cur_colors = [color_map['source'],
+                                          color_map['target']]
+                        else:
+                            cur_mol.append({k: v[elem_id] 
+                                                for k, v in one_motion.items()})
+                            cur_colors.append(color_map[monames[moid]])
+
+                        fname = render_motion(aitrenderer, cur_mol,
+                                              output_path / f"movie_{elem_id}_{moid}",
+                                              pose_repr='aa',
+                                              text_for_vid=monames[moid],
+                                              color=cur_colors)
+                        cur_group_of_vids.append(fname)
+                    stacked_vid = stack_vids(cur_group_of_vids,
+                                             f'{output_path}/{elem_id}_stacked.mp4',
+                                             orient='h')
+                    fnal_fl = put_text(text=text_diff[elem_id],
+                                       fname=stacked_vid, 
+                                       outf=f'{output_path}/{curid}_text.mp4',
+                                       position='top_center')
+                    cleanup_files(cur_group_of_vids+[stacked_vid])
     else:
-        # sample
+        # --> Free for sampling :D <--
+        # sample You can do it :)
         with torch.no_grad():
             for batch_len_text in tqdm(chunker(len_text, 8)):
                 lengths, texts = zip(*batch_len_text)
@@ -284,4 +261,4 @@ if __name__ == '__main__':
     os.environ['DISPLAY'] = ":1"
     os.system("Xvfb :11 -screen 1 640x480x24 &")
 
-    _render()
+    _render_vids()

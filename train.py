@@ -85,16 +85,18 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     # temos_motion_enc = deepcopy(eval_model.motionencoder)
     # #####
     # logger.info(f'Loading model {cfg.model.modelname}')
+    if cfg.renderer is not None:
+        from aitviewer.configuration import CONFIG as AITVIEWER_CONFIG
+        from aitviewer.headless import HeadlessRenderer
+        body_models_path = f'{cfg.path.data}/body_models' if not cfg.data.debug else f'{cfg.path.minidata}/body_models'
 
-    from aitviewer.configuration import CONFIG as AITVIEWER_CONFIG
-    from aitviewer.headless import HeadlessRenderer
-    body_models_path = f'{cfg.path.data}/body_models' if not cfg.data.debug else f'{cfg.path.minidata}/body_models'
-
-    AITVIEWER_CONFIG.update_conf({"playback_fps": 30,
-                                   "auto_set_floor": True,
-                                   "smplx_models": body_models_path,
-                                   "z_up": True})
-    renderer = HeadlessRenderer()
+        AITVIEWER_CONFIG.update_conf({"playback_fps": 30,
+                                    "auto_set_floor": True,
+                                    "smplx_models": body_models_path,
+                                    "z_up": True})
+        renderer = HeadlessRenderer()
+    else: 
+        renderer=None
     list_of_all_feats = data_module.nfeats
     idx_for_inputs = [cfg.data.load_feats.index(infeat) 
                       for infeat in cfg.model.input_feats]

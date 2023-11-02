@@ -133,7 +133,6 @@ def spatial_compositions(segments: List[Tuple], actions_up_to=2) -> List[Tuple]:
     for offset, end_or_start, action in points:
         if end_or_start == '<s>':
             if last_start is not None:
-                #TODO avoid outputting empty or trivial ranges
                 ranges.append((last_start, offset, current_set.copy()))
             current_set.add(action)
             last_start = offset

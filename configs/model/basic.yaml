@@ -23,6 +23,7 @@ diff_params:
   guidance_scale_motion: 1.5
 
 motion_condition: null
+source_encoder: null # trans_enc 
 condition: text
 smpl_path: ${data.smplh_path}
 
