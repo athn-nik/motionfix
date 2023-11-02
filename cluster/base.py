@@ -109,14 +109,12 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
 
     if mode == "train":
         for experiment in configs: 
-            if experiment["expname"] != 'exp_name':
-                expname = experiment["expname"]
             run_id = experiment["run_id"]
             extra_args = experiment["args"]
             no_gpus = experiment["gpus"]
             sub_file = SUBMISSION_TEMPLATE
             sub_file = sub_file.replace('EXPMODE', mode)
-            sub_file = sub_file.replace('DESCRIPTION', f'{expname}_{run_id}')
+            sub_file = sub_file.replace('DESCRIPTION', f'{run_id}')
             if no_gpus > 1:
                 strategy = 'ddp'
             else:
@@ -126,7 +124,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
                    'export PATH=/home/nathanasiou/apps/imagemagick/bin:$PATH\n' \
                    'export LD_LIBRARY_PATH=/home/nathanasiou/apps/imagemagick/lib:$LD_LIBRARY_PATH\n' \
                    f'exec {sys.executable} train.py ' \
-                   f'run_id={run_id} experiment={expname} trainer.strategy={strategy} devices={no_gpus} machine.num_workers={int(cpus/2)} {extra_args}'
+                   f'run_id={run_id} trainer.strategy={strategy} devices={no_gpus} machine.num_workers={int(cpus/2)} {extra_args}'
             shell_dir.mkdir(parents=True, exist_ok=True)
             run_cmd_path = shell_dir / (run_id + '_' + mode + ID_EXP +".sh")
 
@@ -134,7 +132,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
                 f.write(bash)
             os.chmod(run_cmd_path, stat.S_IRWXU)
 
-            log = f'{mode}/{expname}/{run_id}'
+            log = f'{mode}/{run_id}'
             for x, y in [("NO_GPUS", str(no_gpus)), ("GPUS_REQS", gpus_requirements),
                          ("CNR_LOG_ID", f'{CONDOR_FD}/{log}/logs'),
                          ("CPUS", str(cpus)),
