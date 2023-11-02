@@ -1,6 +1,6 @@
 modelname: basic
 _target_: src.model.base_diffusion.MD
-latent_dim: 256
+latent_dim: 512
 
 ff_size: 1024
 num_layers: 9

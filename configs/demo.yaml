@@ -18,6 +18,9 @@ ckpt_name: 'last'
 last_ckpt_path: ${get_last_checkpoint:${folder},${ckpt_name}}
 logger_level: INFO
 
+infer_scheduler: ddpm
+steps: 100
+
 defaults:
   - _self_
   - model/infer_scheduler: ddpm
@@ -26,4 +29,6 @@ defaults:
   - override hydra/hydra_logging: rich # custom
 
 model:
-  infer_scheduler: ddpm
+  infer_scheduler: ${scheduler}
+model:
+  num_train_timesteps: ${steps}

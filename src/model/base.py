@@ -96,10 +96,6 @@ class BaseModel(LightningModule):
 
 
     def training_step(self, batch, batch_idx):
-        if 'source' in akey or 'target' in akey:
-            self.text2motion = True
-        else:
-            self.text2motion = False
         train_loss, step_loss_dict = self.allsplit_step("train", batch,
                                                         batch_idx)
         if self.loss_dict['train'] is None:
