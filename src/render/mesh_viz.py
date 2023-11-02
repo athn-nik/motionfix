@@ -87,67 +87,53 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     from aitviewer.models.smpl import SMPLLayer
     from aitviewer.renderables.smpl import SMPLSequence
     import trimesh
-    assert {'body_transl', 'body_orient', 'body_pose'}.issubset(set(datum.keys()))
+    from src.render.video import put_text
+    if isinstance(datum, dict): datum = [datum]
+    if not isinstance(color, list): 
+        colors = [color] 
+    else:
+        colors = color
+    # assert {'body_transl', 'body_orient', 'body_pose'}.issubset(set(datum[0].keys()))
     # os.environ['DISPLAY'] = ":11"
-    if len(datum['body_transl'].shape) > 2:
-        body_transl = datum['body_transl'].squeeze()
-    else:
-        body_transl = datum['body_transl']
-    # remove singleton batch dimention and  flatten axis-angle
-    if len(datum['body_orient'].shape) > 2:
-        global_orient = datum['body_orient'].squeeze()
-    else:
-        global_orient = datum['body_orient']
-
-    if len(datum['body_pose'].shape) > 2:
-        body_pose = datum['body_pose'].squeeze()
-    else:
-        body_pose = datum['body_pose']
-
-    if pose_repr != 'aa':
-        global_orient = transform_body_pose(global_orient,
-                                            f"{pose_repr}->aa")
-        body_pose = transform_body_pose(body_pose,
-                                        f"{pose_repr}->aa")
-
-
-    # use other information that might exist in the datum dictionary
-    sbj_vtemp = None
-    if 'v_template' in datum.keys():
-        sbj_mesh = os.path.join(datum['v_template'])
-        sbj_vtemp = np.array(trimesh.load(sbj_mesh).vertices)
     gender = 'neutral'
-
-    #  if 'gender' in datum.keys():
-    #  gender = datum['gender']
     only_skel = False
-    n_comps = 6  # default value of smplx
-    if 'n_comps' in datum.keys():
-        n_comps = datum['n_comps']
     import sys
-    sys.stdout.flush()
-    old = os.dup(1)
-    os.close(1)
-    os.open(os.devnull, os.O_WRONLY)
-    
-    smpl_layer = SMPLLayer(model_type='smplh', num_pca_comps=n_comps, 
-                           ext='npz',
-                           gender=gender)
-    
-    smpl_template = SMPLSequence(body_pose,
-                                 smpl_layer,
-                                 poses_root=global_orient,
-                                 trans=body_transl,
-                                 color=color,
-                                 z_up=True)
+    seqs_of_human_motions = []
+    for iid, mesh_seq in enumerate(datum):
 
-    renderer.scene.add(smpl_template)
+        if pose_repr != 'aa':
+            global_orient = transform_body_pose(mesh_seq['body_orient'],
+                                                f"{pose_repr}->aa")
+            body_pose = transform_body_pose(mesh_seq['body_pose'],
+                                            f"{pose_repr}->aa")
+        else:
+            global_orient = mesh_seq['body_orient']
+            body_pose = mesh_seq['body_pose']
+
+        body_transl = mesh_seq['body_transl']
+        sys.stdout.flush()
+
+        old = os.dup(1)
+        os.close(1)
+        os.open(os.devnull, os.O_WRONLY)
+        
+        smpl_layer = SMPLLayer(model_type='smplh', 
+                            ext='npz',
+                            gender=gender)
+        
+        smpl_template = SMPLSequence(body_pose,
+                                    smpl_layer,
+                                    poses_root=global_orient,
+                                    trans=body_transl,
+                                    color=colors[iid],
+                                    z_up=True)
+        if only_skel:
+            smpl_template.remove(smpl_template.mesh_seq)
+
+        seqs_of_human_motions.append(smpl_template)
+        renderer.scene.add(smpl_template)
     # camera follows smpl sequence
-    camera = renderer.lock_to_node(smpl_template, (2, 2, 2), smooth_sigma=5.0)
-    if return_verts:
-        mesh_seq_verts = smpl_template.vertices
-    if only_skel:
-        smpl_template.remove(smpl_template.mesh_seq)
+    camera = renderer.lock_to_node(seqs_of_human_motions[0], (2.5, 2.5, 2.5), smooth_sigma=5.0)
 
     renderer.save_video(video_dir=str(filename), output_fps=30)
     # aitviewer adds a counter to the filename, we remove it
@@ -156,7 +142,8 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     os.rename(str(filename) + '_0.mp4', str(filename) + '.mp4')
 
     # empty scene for the next rendering
-    renderer.scene.remove(smpl_template)
+    for mesh in seqs_of_human_motions:
+        renderer.scene.remove(mesh)
     renderer.scene.remove(camera)
 
     sys.stdout.flush()
@@ -165,42 +152,13 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     os.close(old)
 
     if text_for_vid is not None:
-        fname = put_text(text_for_vid, f'{filename}.mp4', f'{filename}_ts.mp4')
+        fname = put_text(text_for_vid, f'{filename}.mp4', f'{filename}_.mp4')
         os.remove(f'{filename}.mp4')
     else:
         fname = f'{filename}.mp4'
-    if return_verts:
-        return fname, mesh_seq_verts
     return fname
 
 
-def put_text(text: str, fname: str, outf: str,
-             position='bottom_center', 
-             v=False):
-    cmd_m = ['ffmpeg']
-    # -i inputClip.mp4 -vf f"drawtext=text='{method}':x=200:y=0:fontsize=22:fontcolor=white" -c:a copy {temp_path}.mp4
-
-    diff_pos = {
-    'top_left'		: 'x=10:y=10',
-    'top_center'	: 'x=(w-text_w)/2:y=10',
-    'top_right'		: 'x=w-tw-10:y=10',
-    'center'	    : 'x=(w-text_w)/2:y=(h-text_h)/2',
-    'bottom_left'	: 'x=10:y=h-th-10',
-    'bottom_center'	: 'x=(w-text_w)/2:y=h-th-10',
-    'bottom_right'	: 'x=w-tw-10:y=h-th-10'
-    }
-    
-    cmd_m.extend(['-i',fname, '-y', '-vf', 
-    f"drawtext=text='{text}':{diff_pos[position]}:fontsize=30::box=1:boxcolor=black@0.6:boxborderw=5:fontcolor=white",
-                  '-loglevel', 'quiet', '-c:a', 'copy',
-                  f'{outf}'])
-    
-
-    if v:
-        print('Executing', ' '.join(cmd_m))
-    x = subprocess.call(cmd_m)
-
-    return outf
 
 # import numpy as np
 # import torch

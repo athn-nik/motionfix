@@ -10,6 +10,9 @@ metric:
   name: losses/train/total_loss_epoch
   goal: minimize
 parameters:
+  experiment:
+    value: "GROUP-NAME" # to overwrite
+
   logger.project:
     value: "motion-editing"
   logger.name:

@@ -174,7 +174,6 @@ class SynthDataset(Dataset):
         """get body pelvis tranlation"""
         return to_tensor(data['trans'])
         # body.translation is NOT the same as the pelvis translation
-        # TODO: figure out why
         # return to_tensor(data.body.params.transl)
 
     def _get_body_transl_z(self, data):

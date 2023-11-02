@@ -140,13 +140,20 @@ class MldDenoiser(nn.Module):
                 text_emb_latent = self.emb_proj(text_embeds)
             else:
                 text_emb_latent = text_embeds
-            if motion_embeds is not None:
+            if motion_embeds is None:
+                emb_latent = torch.cat((time_emb, 
+                                        text_emb_latent), 0)
+
+            elif motion_embeds.shape[0] > 5: # ugly way to tell concat the motion or so
+                motion_embeds = self.pose_embd(motion_embeds)
                 emb_latent = torch.cat((time_emb, 
                                         text_emb_latent,
                                         motion_embeds), 0)
             else:
                 emb_latent = torch.cat((time_emb, 
-                                        text_emb_latent), 0)
+                                        text_emb_latent,
+                                        motion_embeds), 0)
+
         else:
             raise TypeError(f"condition type {self.condition} not supported")
         # 4. transformer

@@ -1,3 +1,4 @@
+from cgitb import text
 import logging
 import random
 from glob import glob
@@ -27,12 +28,15 @@ from src.tools.transforms3d import (
 from src.tools.transforms3d import canonicalize_rotations
 from src.model.utils.smpl_fast import smpl_forward_fast
 from src.utils.genutils import freeze
+from src.data.tools.amass_utils import fname_normalizer, path_normalizer
+from src.data.tools.amass_utils import flip_motion
+from src.utils.file_io import read_json, read_text_lines
 
 # A logger for this file
 log = logging.getLogger(__name__)
 
 
-class BodilexDataset(Dataset):
+class HumanML3DDataset(Dataset):
     def __init__(self, data: list, n_body_joints: int,
                  stats_file: str, norm_type: str,
                  smplh_path: str, rot_repr: str = "6d",
@@ -95,7 +99,7 @@ class BodilexDataset(Dataset):
         """
         item = self.__getitem__(0)
 
-        return [item[feat + '_source'].shape[-1] for feat in self.load_feats
+        return [item[feat + '_target'].shape[-1] for feat in self.load_feats
                 if feat in self._feat_get_methods.keys()]
 
     def normalize_feats(self, feats, feats_name):
@@ -186,7 +190,7 @@ class BodilexDataset(Dataset):
     def _get_body_transl(self, data):
         """get body pelvis tranlation"""
         return to_tensor(data['trans'])
-        # body.translation is NOT the same as the pelvis translation=
+        # body.translation is NOT the same as the pelvis translation
         # return to_tensor(data.body.params.transl)
 
     def _get_body_transl_z(self, data):
@@ -291,65 +295,34 @@ class BodilexDataset(Dataset):
 
     def __getitem__(self, idx):
         datum = self.data[idx]
-        # perform augmentations except when in test mode
-        # if self.do_augmentations:
-        #     datum = self.seq_parser.augment_npz(datum)
-
-        # CANONICALIZE MOTION AND BRING IT TO 0
-        # for mtype in ['motion_source', 'motion_target']:
-            
-        #     rots_can, trans_can = self._canonica_facefront(datum[mtype]['rots'],
-        #                                                    datum[mtype]['trans']
-        #                                                    )
-
-        #     datum[mtype]['rots'] = rots_can
-        #     datum[mtype]['trans'] = trans_can
-
-        data_dict_source = {f'{feat}_source': self._feat_get_methods[feat](datum['motion_source'])
-                            for feat in self.load_feats}
-        data_dict_target = {f'{feat}_target': self._feat_get_methods[feat](datum['motion_target'])
+        data_dict_target = {f'{feat}_target': self._feat_get_methods[feat](datum)
                             for feat in self.load_feats}
         meta_data_dict = {feat: method(datum)
                           for feat, method in self._meta_data_get_methods.items()}
-        data_dict = {**data_dict_source, **data_dict_target, **meta_data_dict}
-        data_dict['length_source'] = len(data_dict['body_pose_source'])
+        data_dict = {**data_dict_target, **meta_data_dict}
         data_dict['length_target'] = len(data_dict['body_pose_target'])
-        data_dict['text'] = datum['text']
+
+        text_idx = 0
+        if datum['split'] == 0:
+            text_idx = np.random.randint(len(datum['text']))
+        data_dict['text'] = datum['text'][text_idx]
+
         data_dict['split'] = datum['split']
         data_dict['id'] = datum['id']
         # data_dict['dims'] = self._feat_dims
         return DotDict(data_dict)
 
-    def npz2feats(self, idx, npz):
-        """turn npz data to a proper features dict"""
-        data_dict = {feat: self._feat_get_methods[feat](npz)
-                     for feat in self.load_feats}
-        if self.stats is not None:
-            norm_feats = {f"{feat}_norm": self.normalize_feats(data, feat)
-                        for feat, data in data_dict.items()
-                        if feat in self.stats.keys()}
-            data_dict = {**data_dict, **norm_feats}
-        meta_data_dict = {feat: method(npz)
-                          for feat, method in self._meta_data_get_methods.items()}
-        data_dict = {**data_dict, **meta_data_dict}
-        data_dict['filename'] = self.file_list[idx]['filename']
-        # data_dict['split'] = self.file_list[idx]['split']
-        return DotDict(data_dict)
-
     def get_all_features(self, idx):
         datum = self.data[idx]
-
-        data_dict_source = {f'{feat}_source': self._feat_get_methods[feat](datum['motion_source'])
-                            for feat in self.load_feats}
-        data_dict_target = {f'{feat}_target': self._feat_get_methods[feat](datum['motion_target'])
+        data_dict_target = {f'{feat}_target': self._feat_get_methods[feat](datum)
                             for feat in self.load_feats}
         meta_data_dict = {feat: method(datum)
                           for feat, method in self._meta_data_get_methods.items()}
-        data_dict = {**data_dict_source, **data_dict_target, **meta_data_dict}
+        data_dict = {**data_dict_target, **data_dict_target, **meta_data_dict}
         return DotDict(data_dict)
 
 
-class BodilexDataModule(BASEDataModule):
+class HumanML3DDataModule(BASEDataModule):
 
     def __init__(self,
                  load_feats: List[str],
@@ -362,6 +335,7 @@ class BodilexDataModule(BASEDataModule):
                  smplh_path: str = "",
                  dataname: str = "",
                  rot_repr: str = "6d",
+                 annot_path: str = "",
                  **kwargs):
         super().__init__(batch_size=batch_size,
                          num_workers=num_workers,
@@ -378,7 +352,7 @@ class BodilexDataModule(BASEDataModule):
         self.preproc = preproc
         self.smpl_p = smplh_path if not debug else kwargs['smplh_path_dbg']
         self.rot_repr = rot_repr
-        self.Dataset = BodilexDataset
+        self.Dataset = HumanML3DDataset
         # calculate splits
         self.body_model = smplx.SMPLHLayer(f'{smplh_path}/smplh',
                                            model_type='smplh',
@@ -407,44 +381,72 @@ class BodilexDataModule(BASEDataModule):
         dataset_dict_raw = cast_dict_to_tensors(dataset_dict_raw)
         for k, v in dataset_dict_raw.items():
             
-            if len(v['motion_source']['rots'].shape) > 2:
-                rots_flat_src = v['motion_source']['rots'].flatten(-2).float()
-                dataset_dict_raw[k]['motion_source']['rots'] = rots_flat_src
-            if len(v['motion_target']['rots'].shape) > 2:
-                rots_flat_tgt = v['motion_target']['rots'].flatten(-2).float()
-                dataset_dict_raw[k]['motion_target']['rots'] = rots_flat_tgt
+            if len(v['rots'].shape) > 2:
+                rots_flat_tgt = v['rots'].flatten(-2).float()
+                dataset_dict_raw[k]['rots'] = rots_flat_tgt
 
-            for mtype in ['motion_source', 'motion_target']:
             
-                rots_can, trans_can = self._canonica_facefront(v[mtype]['rots'],
-                                                               v[mtype]['trans']
-                                                               )
-                dataset_dict_raw[k][mtype]['rots'] = rots_can
-                dataset_dict_raw[k][mtype]['trans'] = trans_can
-                seqlen, jts_no = rots_can.shape[:2]
-                
-                rots_can_rotm = transform_body_pose(rots_can,
-                                                  'aa->rot')
-                # self.body_model.batch_size = seqlen * jts_no
+            rots_can, trans_can = self._canonica_facefront(v['rots'],
+                                                           v['trans'])
+            dataset_dict_raw[k]['rots'] = rots_can
+            dataset_dict_raw[k]['trans'] = trans_can
+        data_dict = cast_dict_to_tensors(dataset_dict_raw)
+        base_path = Path(annot_path).parent
+        path2key = read_json(base_path.parent.parent / 'amass-mappings/amass_p2k.json')
+        key2path = read_json(base_path.parent.parent / 'amass-mappings/amass_k2p.json')
+        hml3d_annots = read_json(annot_path)
+        hml3d_data_dict = {}
+        for hml3d_key, key_annot in hml3d_annots.items():
+            if 'humanact12/' in key_annot['path']:
+                continue
+            amass_norm_path = fname_normalizer(path_normalizer(key_annot['path']))
+            cur_amass_key = path2key[amass_norm_path]
+            if cur_amass_key not in dataset_dict_raw:
+                continue
+            text_and_durs = key_annot['annotations']
+            cur_amass_data = dataset_dict_raw[cur_amass_key]
+            dur_key = [sub_ann['end'] - sub_ann['start'] 
+                       for sub_ann in text_and_durs]
+            max_dur_id = dur_key.index(max(dur_key))
+            text_annots = []
+            for sub_ann in text_and_durs:
+                if sub_ann['end'] - sub_ann['start'] <= 2:
+                    continue
+                if sub_ann['end'] - sub_ann['start'] >= 10.1:
+                    continue
+                text_annots.append(sub_ann['text'])
+            if not text_annots:
+                continue
 
-                jts_can_ds = self.body_model.smpl_forward_fast(transl=trans_can,
-                                                 body_pose=rots_can_rotm[:, 1:],
-                                             global_orient=rots_can_rotm[:, :1])
+            hml3d_data_dict[hml3d_key] = {}
+            begin = int(text_and_durs[max_dur_id]['start'] * 30)
+            end = int(text_and_durs[max_dur_id]['end'] * 30)
+            rots_hml3d = cur_amass_data['rots'][begin:end]
+            trans_hml3d = cur_amass_data['trans'][begin:end]
 
-                jts_can = jts_can_ds.joints[:, :22]
-                dataset_dict_raw[k][mtype]['joint_positions'] = jts_can
-                # from src.tools.interpolation import flip_motion
-                # from src.render.mesh_viz import render_skeleton, render_motion
-                # from src.model.utils.tools import remove_padding, pack_to_render
-                # from src.render.video import get_offscreen_renderer
-                # r = get_offscreen_renderer(self.smpl_p)
-                # smpl_params = pack_to_render(trans=trans_can, rots=rots_can, pose_repr='aa')
+            if hml3d_key.startswith('M'):
+                rots_mirr, trans_mirr = flip_motion(rots_hml3d,
+                                                    trans_hml3d)
+                rots_mirr_rotm = transform_body_pose(rots_mirr,
+                                                    'aa->rot')
+           
+                jts_mirr_ds = self.body_model.smpl_forward_fast(transl=trans_mirr,
+                                                body_pose=rots_mirr_rotm[:, 1:],
+                                            global_orient=rots_mirr_rotm[:, :1])
 
-                # render_motion(r, smpl_params, pose_repr='aa',
-                #               filename='/home/nathanasiou/Desktop/conditional_action_gen/modilex/markos_can')
-                # render_skeleton(r,
-                #                 positions=jts_can.detach().numpy(),
-                #                 filename='/home/nathanasiou/Desktop/conditional_action_gen/modilex/jts.mp4')
+                jts_can_mirr = jts_mirr_ds.joints[:, :22]
+                jts_hml3d = jts_can_mirr
+                hml3d_data_dict[hml3d_key]['rots'] = rots_mirr
+                hml3d_data_dict[hml3d_key]['trans'] = trans_mirr
+            else:
+                jts_hml3d = cur_amass_data['joint_positions'][begin:end]
+                hml3d_data_dict[hml3d_key]['rots'] = rots_hml3d
+                hml3d_data_dict[hml3d_key]['trans'] = trans_hml3d
+
+            hml3d_data_dict[hml3d_key]['joint_positions'] = jts_hml3d
+            hml3d_data_dict[hml3d_key]['fps'] = cur_amass_data['fps']
+            hml3d_data_dict[hml3d_key]['fname'] = cur_amass_data['fname']
+            hml3d_data_dict[hml3d_key]['text'] = text_annots
 
         # debug overfitting
         # less frames less motions
@@ -459,36 +461,21 @@ class BodilexDataModule(BASEDataModule):
         #     dataset_dict_raw[k]['motion_target']['rots'] = dataset_dict_raw[k]['motion_target']['rots'][:60]
         #     dataset_dict_raw[k]['motion_target']['trans'] = dataset_dict_raw[k]['motion_target']['trans'][:60] 
         #     dataset_dict_raw[k]['motion_target']['joint_positions'] = dataset_dict_raw[k]['motion_target']['joint_positions'][:60] 
+        k2id = {'train': 0 , 'val': 1, 'test': 2}
+        keys_for_split = {}
+        for set in k2id.keys():
+            keys_for_split[set] = read_text_lines(base_path / 'splits',
+                                                  split=set)
+        id_split_dict = {}
+        for split, split_keys in keys_for_split.items():
+            for k in split_keys:
+                id_split_dict[k] = k2id[split]
 
-        data_dict = cast_dict_to_tensors(dataset_dict_raw)
-
-        # add id fiels in order to turn the dict into a list without loosing it
-        # random.seed(self.preproc.split_seed)
- 
-        data_ids = list(data_dict.keys())
-        data_ids.sort()
-        # random.shuffle(data_ids)
-        if self.debug:
-            # 70-10-20% train-val-test for each sequence
-            num_train = int(len(data_ids) * 0.8)
-            num_val = int(len(data_ids) * 0.1)
-        else:
-            # 70-10-20% train-val-test for each sequence
-            num_train = int(len(data_ids) * 0.7)
-            num_val = int(len(data_ids) * 0.1)
-        # give ids to data sets--> 0:train, 1:val, 2:test
-
-        split = np.zeros(len(data_ids))
-        split[num_train:num_train + num_val] = 1
-        split[num_train + num_val:] = 2
-        id_split_dict = {id: split[i] for i, id in enumerate(data_ids)}
-        # random.random()  # restore randomness in life (maybe randomness is life)
-        # calculate feature statistics
-        for k, v in data_dict.items():
+        for k, v in hml3d_data_dict.items():
             v['id'] = k
             v['split'] = id_split_dict[k]
-        self.stats = self.calculate_feature_stats(BodilexDataset([v for k,
-                                                                  v in data_dict.items()
+        self.stats = self.calculate_feature_stats(HumanML3DDataset([v for k,
+                                                                  v in hml3d_data_dict.items()
                                                        if id_split_dict[k] <= 1],
                                                       self.preproc.n_body_joints,
                                                       self.preproc.stats_file,
@@ -503,7 +490,7 @@ class BodilexDataModule(BASEDataModule):
         # self.collate_fn = lambda b: collate_batch(b, self.cfg.load_feats)
         # create datasets
         self.dataset['train'], self.dataset['val'], self.dataset['test'] = (
-           BodilexDataset([v for k, v in data_dict.items() if id_split_dict[k] == 0],
+           HumanML3DDataset([v for k, v in hml3d_data_dict.items() if id_split_dict[k] == 0],
                         self.preproc.n_body_joints,
                         self.preproc.stats_file,
                         self.preproc.norm_type,
@@ -511,7 +498,7 @@ class BodilexDataModule(BASEDataModule):
                         self.rot_repr,
                         self.load_feats,
                         do_augmentations=True), 
-           BodilexDataset([v for k, v in data_dict.items() if id_split_dict[k] == 1],
+           HumanML3DDataset([v for k, v in hml3d_data_dict.items() if id_split_dict[k] == 1],
                         self.preproc.n_body_joints,
                         self.preproc.stats_file,
                         self.preproc.norm_type,
@@ -519,7 +506,7 @@ class BodilexDataModule(BASEDataModule):
                         self.rot_repr,
                         self.load_feats,
                         do_augmentations=True), 
-           BodilexDataset([v for k, v in data_dict.items() if id_split_dict[k] == 2],
+           HumanML3DDataset([v for k, v in hml3d_data_dict.items() if id_split_dict[k] == 2],
                         self.preproc.n_body_joints,
                         self.preproc.stats_file,
                         self.preproc.norm_type,
@@ -529,8 +516,7 @@ class BodilexDataModule(BASEDataModule):
                         do_augmentations=False) 
         )
         for splt in ['train', 'val', 'test']:
-            log.info("Set up {} set with {} items."\
-                     .format(splt, len(self.dataset[splt])))
+            log.info(f'Set up {splt} set with {len(self.dataset[splt])} items.')
         self.nfeats = self.dataset['train'].nfeats
 
     # def setup(self, stage):
@@ -556,7 +542,7 @@ class BodilexDataModule(BASEDataModule):
         return rots_motion_aa_can, translation_can
 
 
-    def calculate_feature_stats(self, dataset: BodilexDataset):
+    def calculate_feature_stats(self, dataset: HumanML3DDataset):
         stat_path = self.preproc.stats_file
         if self.debug:
             stat_path = stat_path.replace('.npy', '_debug.npy')
@@ -565,13 +551,13 @@ class BodilexDataModule(BASEDataModule):
             log.info(f"No dataset stats found. Calculating and saving to {stat_path}")
             
             feature_names = dataset.get_all_features(0).keys()
-            feature_dict = {name.replace('_source', ''): [] for name in feature_names
-                            if '_target' not in name}
+            feature_dict = {name.replace('_target', ''): [] 
+                            for name in feature_names}
+
             for i in tqdm(range(len(dataset))):
                 x = dataset.get_all_features(i)
                 for name in feature_names:
                     x_new = x[name]
-                    name = name.replace('_source', '')
                     name = name.replace('_target', '')
                     if torch.is_tensor(x_new):
                         feature_dict[name].append(x_new)
@@ -584,9 +570,6 @@ class BodilexDataModule(BASEDataModule):
                             'std': x.std(0).numpy()}
                      for name, x in feature_dict.items()}
             
-            # stats_source = {f'{name}_source': v for name, v in stats.items()}
-            # stats_target = {f'{name}_target': v for name, v in stats.items()}
-            # stats_dup = stats_source | stats_target
             log.info("Calculated statistics for the following features:")
             log.info(feature_names)
             log.info(f"saving to {stat_path}")

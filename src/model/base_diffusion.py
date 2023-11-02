@@ -56,7 +56,8 @@ class MD(BaseModel):
                  scale_loss_on_positions: Optional[int] = None,
                  loss_func_pos: str = 'mse', # l1 mse
                  loss_func_feats: str = 'mse', # l1 mse
-                 renderer= None,
+                 renderer = None,
+                 source_encoder: str = 'trans_enc',
                  **kwargs):
 
         super().__init__(statistics_path, nfeats, norm_type, input_feats,
@@ -86,7 +87,11 @@ class MD(BaseModel):
         self.condition = condition
         self.motion_condition = motion_condition
         if self.motion_condition == 'source':
-            self.motion_cond_encoder = instantiate(motion_condition_encoder)
+            if source_encoder == 'trans_enc':
+                self.motion_cond_encoder = instantiate(motion_condition_encoder)
+            elif source_encoder:
+                self.motion_cond_encoder = None
+                
         self.text_encoder = instantiate(text_encoder)
         self.loss_on_positions = loss_on_positions
         # from torch import nn
@@ -208,8 +213,6 @@ class MD(BaseModel):
         # if "eta" in set(
         #         inspect.signature(self.scheduler.step).parameters.keys()):
         #     extra_step_kwargs["eta"] = 0.0 # self.diff_params.scheduler.eta
-
-
 
         inp_motion_mask = torch.cat([inp_motion_mask] * 2)
         #  both_rows, uncond_rows, text_rows1, motion_rows2
@@ -347,14 +350,12 @@ class MD(BaseModel):
         return timesteps_sampled
 
     @torch.no_grad()
-    def visualize_denoising(self, dif_out, target_lens, keyids,
+    def denoise_motions(self, dif_out, target_lens, keyids,
                             texts_diff, curepoch, return_fnames=False):       
         ##### DEBUG THE MODEL #####
         import os
         cur_epoch = curepoch
         # if not self.training
-        curdir = f'debug/epoch-{cur_epoch}'
-        os.makedirs(curdir, exist_ok=True)
         input_motion_feats = dif_out['input_motion_feats']
         timesteps = dif_out['timesteps']
         noisy_motion = dif_out['noised_motion_feats']
@@ -448,7 +449,7 @@ class MD(BaseModel):
         bsz = input_motion_feats.shape[0]
         # Sample a random timestep for each motion
         timesteps = self.sample_timesteps(samples=bsz,
-                                          sample_mode=sample)
+                                          sample_mode='uniform')
         timesteps = timesteps.long()
 
         # Add noise to the latents according to the noise magnitude at each timestep
@@ -551,9 +552,12 @@ class MD(BaseModel):
         cond_emb_motion = None
         if self.motion_condition == 'source':
             source_motion_condition = batch['source_motion']
-            cond_emb_motion = self.motion_cond_encoder(source_motion_condition,
-                                                       mask_source_motion)
-            cond_emb_motion = cond_emb_motion.unsqueeze(0)
+            if self.motion_cond_encoder is not None:
+                cond_emb_motion = self.motion_cond_encoder(source_motion_condition,
+                                                        mask_source_motion)
+                cond_emb_motion = cond_emb_motion.unsqueeze(0)
+            else:
+                cond_emb_motion = source_motion_condition
 
         feats_for_denois = batch['target_motion']
         target_lens = batch['length_target']
@@ -623,11 +627,14 @@ class MD(BaseModel):
                                 mask_target_motion):
 
         cond_emb_motion = None
-        if self.motion_condition == 'source':
+        if self.motion_condition == 'source':    
             source_motion_condition = batch['source_motion']
-            cond_emb_motion = self.motion_cond_encoder(source_motion_condition,
-                                                       mask_source_motion)
-            cond_emb_motion = cond_emb_motion.unsqueeze(0)
+            if self.motion_cond_encoder is not None:
+                cond_emb_motion = self.motion_cond_encoder(source_motion_condition,
+                                                        mask_source_motion)
+                cond_emb_motion = cond_emb_motion.unsqueeze(0)
+            else:
+                cond_emb_motion = source_motion_condition
 
         feats_for_denois = batch['target_motion']
         target_lens = batch['length_target']
@@ -927,7 +934,8 @@ class MD(BaseModel):
     #                         'global_joints_loss': loss_joints,
     #                         }
 
-    def batch2motion(self, batch, slice_til=None):
+    def batch2motion(self, batch, pack_to_dict=True,
+                     slice_til=None, single_motion=False):
         # batch_to_cpu = { k: v.detach().cpu() for k, v in batch.items() 
         #                 if torch.is_tensor(v) }
         tot_dim_deltas = 0
@@ -935,28 +943,36 @@ class MD(BaseModel):
             for idx_feat, in_feat in enumerate(self.input_feats):
                 if 'delta' in in_feat:
                     tot_dim_deltas += self.input_feats_dims[idx_feat]
-        # source motion
-        source_motion = batch['source_motion']
-        # source_motion = self.unnorm_delta(source_motion)[..., tot_dim_deltas:]
-        source_motion = self.diffout2motion(source_motion.detach().permute(1,
-                                                                           0,
-                                                                           2))
-        source_motion = source_motion.detach().cpu()
-        source_motion_gt = pack_to_render(rots=source_motion[..., 3:],
-                                          trans=source_motion[...,:3])
+        source_motion_gt = None
+        if batch['source_motion'] is not None:
+            # source motion
+            source_motion = batch['source_motion']
+            # source_motion = self.unnorm_delta(source_motion)[..., tot_dim_deltas:]
+            source_motion = self.diffout2motion(source_motion.detach().permute(1,
+                                                                            0,
+                                                                            2))
+            source_motion = source_motion.detach().cpu()
+            if pack_to_dict:
+                source_motion_gt = pack_to_render(rots=source_motion[..., 3:],
+                                                  trans=source_motion[...,:3])
+            else:
+                source_motion_gt = source_motion
+            if slice_til is not None:
+                source_motion_gt = {k: v[:slice_til] 
+                                    for k, v in source_motion_gt.items()}
 
         # target motion
         target_motion = batch['target_motion']
         target_motion = self.diffout2motion(target_motion.detach().permute(1,
-                                                                           0,
-                                                                           2))
+                                                                        0,
+                                                                        2))
         target_motion = target_motion.detach().cpu()
-        target_motion_gt = pack_to_render(rots=target_motion[..., 3:],
-                                          trans=target_motion[...,:3])
-        
+        if pack_to_dict:
+            target_motion_gt = pack_to_render(rots=target_motion[..., 3:],
+                                            trans=target_motion[...,:3])
+        else:
+            target_motion_gt = target_motion
         if slice_til is not None:
-            source_motion_gt = {k: v[:slice_til] 
-                                for k, v in source_motion_gt.items()}
             target_motion_gt = {k: v[:slice_til] 
                                 for k, v in target_motion_gt.items()}
 
@@ -975,15 +991,23 @@ class MD(BaseModel):
         cond_emb_motion = None
         cond_motion_mask = None
         if self.motion_condition == 'source':
-            source_motion_condition = motions_cond
-            cond_emb_motion = self.motion_cond_encoder(source_motion_condition, 
-                                                       mask_source)
-            cond_motion_mask = torch.ones((cond_emb_motion.shape[0],
-                                           1),
-                                          dtype=bool, device=self.device)
-            cond_emb_motion = torch.cat([cond_emb_motion, cond_emb_motion],
-                                        dim=0).unsqueeze(0)
-            
+            if self.motion_cond_encoder is not None:
+                source_motion_condition = motions_cond
+                cond_emb_motion = self.motion_cond_encoder(source_motion_condition, 
+                                                           mask_source)
+                cond_motion_mask = torch.ones((cond_emb_motion.shape[0],
+                                            1),
+                                            dtype=bool, device=self.device)
+                cond_emb_motion = torch.cat([cond_emb_motion, cond_emb_motion],
+                                            dim=0).unsqueeze(0)
+            else:
+                source_motion_condition = motions_cond
+                cond_emb_motion = source_motion_condition
+                lens_src = [source_motion_condition.shape[1] for x in source_motion_condition]
+                cond_motion_mask =  lengths_to_mask(lens_src, self.device)
+                cond_emb_motion = torch.cat([cond_emb_motion, cond_emb_motion],
+                                            dim=0).unsqueeze(0)
+                            
         with torch.no_grad():
             diff_out = self._diffusion_reverse(text_emb, text_mask,
                                                cond_emb_motion,
@@ -1219,62 +1243,16 @@ class MD(BaseModel):
 
         ##### DEBUG THE MODEL #####
     def prepare_mot_masks(self, source_lens, target_lens):
-        # mask_for_features_source = []
-        # mask_for_features_target = []
-
-        # mask_source = lengths_to_mask([l - 1 
-        #                                       for l in source_lens],
-        #                                       self.device)
-        # mask_target = lengths_to_mask([l - 1 
-        #                                       for l in target_lens],
-        #                                       self.device)
-
-        # mask_deltas_source = torch.cat((torch.zeros(len(mask_deltas_source),
-        #                                 1, dtype=torch.bool,
-        #                                 device=self.device), 
-        #                                 mask_deltas_source),
-        #                                dim=1)
-        # mask_deltas_target = torch.cat((torch.zeros(len(mask_deltas_source),
-        #                                             1, dtype=torch.bool,
-        #                                 device=self.device), mask_deltas_target),
-        #                                dim=1)
 
         mask_target = lengths_to_mask(target_lens,
                                               self.device)
         mask_source = lengths_to_mask(source_lens,
                                               self.device)
-        # for feat_name in self.input_feats:
-        #     if 'delta' in feat_name:
-        #         mask_for_features_source.append(mask_deltas_source)
-        #         mask_for_features_target.append(mask_deltas_target)
-        #     else:
-        #         mask_for_features_source.append(mask_source)
-        #         mask_for_features_target.append(mask_target)
-        # mask_source = torch.cat(mask_for_features_source,
-        #                         dim=1)
-        # mask_target = torch.cat(mask_for_features_target,
-        #                         dim=1)
         return mask_source, mask_target
-
+    
 
     def allsplit_step(self, split: str, batch, batch_idx):
-        # bs = len(texts)
-        # number of texts for each motion
-        # state_features:
-        # - "body_transl"
-        # - "body_orient"
-        # - "body_pose"
 
-        # delta_features:
-        # - "body_transl_delta_pelv_xy"
-        # - "body_orient_delta"
-        # - "body_pose_delta"
-
-        # x_features:
-        # - "body_transl_z"
-        # - "body_orient_xy"
-        # - "body_pose"
-        
         input_batch = self.norm_and_cat(batch, self.input_feats)
         for k, v in input_batch.items():
             if self.input_deltas:
@@ -1282,9 +1260,17 @@ class MD(BaseModel):
             else:
                 batch[f'{k}_motion'] = v
                 batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
+        if self.motion_condition:
+            mask_source, mask_target = self.prepare_mot_masks(batch['length_source'],
+                                                            batch['length_target'])
+        else:
+            mask_target = lengths_to_mask(batch['length_target'],
+                                          device=self.device)
+            actual_target_lens = batch['length_target']
+            batch['length_source'] = None
+            batch['source_motion'] = None
+            mask_source = None
 
-        mask_source, mask_target = self.prepare_mot_masks(batch['length_source'],
-                                                        batch['length_target'])
         if self.input_deltas:
             batch = self.append_first_frame(batch, which_motion='target')
             batch['length_target'] = [leng - 1 for leng in batch['length_target']]
@@ -1312,10 +1298,6 @@ class MD(BaseModel):
                                         gt_keyids, gt_texts, 
                                         self.trainer.current_epoch)
         # rs_set Bx(S+1)xN --> first pose included 
-        target_smpl = torch.cat([batch['body_orient_target'], 
-                                 batch['body_pose_target']],
-                                 dim=-1)
-
         total_loss, loss_dict = self.compute_losses(dif_dict,
                                                     batch['body_joints_target'],
                                                     mask_source, 
@@ -1356,19 +1338,24 @@ class MD(BaseModel):
                                                     3:].detach().cpu(),
                                                trans=motion_unnorm[...,
                                                     :3].detach().cpu())
-    
-            self.metrics(dict_to_device(source_motion_gt, self.device), 
-                         dict_to_device(gen_to_render, self.device),
-                         dict_to_device(target_motion_gt, self.device),
-                         gt_lens_src, actual_target_lens)
+            if source_motion_gt is not None:
+                self.metrics(dict_to_device(source_motion_gt, self.device), 
+                            dict_to_device(gen_to_render, self.device),
+                            dict_to_device(target_motion_gt, self.device),
+                            gt_lens_src, actual_target_lens)
 
         if batch_idx == 0 and self.global_rank == 0:
             nvds = self.num_vids_to_render
             source_motion_gt, target_motion_gt = self.batch2motion(batch, 
                                                                 slice_til=nvds)
+            source_to_cond = batch['source_motion'][:, :nvds]\
+                if batch['source_motion'] is not None else None
+            mask_source = mask_source[:nvds]\
+                if batch['source_motion'] is not None else None
+
             motion_out = self.generate_motion(gt_texts[:nvds],
-                                              batch['source_motion'][:, :nvds],
-                                              mask_source[:nvds], 
+                                              source_to_cond,
+                                              mask_source, 
                                               mask_target[:nvds])
             if self.input_deltas:
                 motion_unnorm = self.diffout2motion(motion_out,
@@ -1392,11 +1379,12 @@ class MD(BaseModel):
                                            trans=motion_unnorm[...,
                                                             :3].detach().cpu())
 
-            self.render_data_buffer[split].append({
-                                             'source_motion': source_motion_gt,
-                                             'target_motion': target_motion_gt,
-                                             'generation': gen_to_render,
-                                             'text_diff': gt_texts[:nvds],
-                                             'keyids': gt_keyids[:nvds]}
-                                             )
+            dict_to_render = {'target_motion': target_motion_gt,
+                              'generation': gen_to_render,
+                              'text_descr': gt_texts[:nvds],
+                              'keyids': gt_keyids[:nvds]}
+            if source_motion_gt is not None:
+                dict_to_render['source_motion'] =  source_motion_gt
+
+            self.render_data_buffer[split].append(dict_to_render)
         return total_loss

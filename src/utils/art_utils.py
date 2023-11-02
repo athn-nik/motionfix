@@ -13,6 +13,7 @@ color_map = {
              'input': rgba('olivedrab'),
              'target': rgba('olivedrab'),
              'generation': rgba('purple'),
+             'generated': rgba('purple'),
              'denoised': rgba('purple'),
              'noised': rgba('darkgrey')
              }
