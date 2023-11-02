@@ -109,7 +109,8 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
 
     if mode == "train":
         for experiment in configs: 
-            expname = experiment["expname"]
+            if experiment["expname"] != 'exp_name':
+                expname = experiment["expname"]
             run_id = experiment["run_id"]
             extra_args = experiment["args"]
             no_gpus = experiment["gpus"]
