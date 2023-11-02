@@ -79,7 +79,10 @@ def render_vids(newcfg: DictConfig) -> None:
     
     # Overload it
     cfg = OmegaConf.merge(prevcfg, newcfg)
-    
+    # change scheduler for inference
+    cfg.model.infer_scheduler = newcfg.model.infer_scheduler
+    cfg.model.infer_scheduler.num_train_timesteps = newcfg.steps
+
     output_path = exp_folder / cfg.mode
     output_path.mkdir(exist_ok=True, parents=True)
     logger.info(f"Sample script. The outputs will be stored in:{output_path}")
