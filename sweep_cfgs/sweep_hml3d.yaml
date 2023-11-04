@@ -24,15 +24,19 @@ parameters:
   # wandb_logger.tags:
   #   value: ['circle', 'smplx', 'intention']
   model.input_feats:
-    values: [["body_transl", "body_orient" ,"body_pose"]]
+    values: [["body_transl_delta_pelv", "body_orient" ,"body_pose"]]
   machine.batch_size:
-    values: [16]
+    values: [64, 128]
+  data:
+    values: ['hml3d']
+  model.latent_dim:
+    values: [256, 512]
   model.diff_params.num_inference_timesteps:
     values: [1000]
   model.diff_params.guidance_scale_text:
-    values: [2.5, 5]
+    values: [2.5]
   model.diff_params.guidance_scale_motion:
-    values: [2.5, 5]
+    values: [2.5]
   model.train_scheduler.beta_schedule:
-    values: ['linear', 'scaled_linear', 'squaredcos_cap_v2']
+    values: ['squaredcos_cap_v2']
 
