@@ -25,7 +25,7 @@ class ActorAgnosticEncoder(nn.Module):
         # Action agnostic: only one set of params
         self.emb_token = nn.Parameter(torch.randn(latent_dim))
 
-        self.sequence_pos_encoding = PositionalEncoding(latent_dim, dropout, batch_first=True) # multi-GPU
+        self.sequence_pos_encoding = PositionalEncoding(latent_dim, dropout) # multi-GPU
 
         seq_trans_encoder_layer = nn.TransformerEncoderLayer(d_model=latent_dim,
                                                              nhead=num_heads,

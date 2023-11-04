@@ -50,17 +50,12 @@ def output2renderable(model, lst_of_tensors: list[Tensor]):
         if isinstance(el, list):
             render_readies = []
             for sub_el in el:
-                print(sub_el.shape)
-                # motion_unnorm_nest = model.diffout2motion(sub_el)
                 modict_nest = pack_to_render(rots=sub_el[...,
                                                             3:].detach().cpu(),
                                              trans=sub_el[...,
                                                             :3].detach().cpu())
                 render_readies.append(modict_nest)
         else:
-            # print(el.shape)
-
-            # motion_unnorm = model.diffout2motion(el)
             render_readies = pack_to_render(rots=el[...,
                                                             3:].detach().cpu(),
                                             trans=el[...,
@@ -68,7 +63,20 @@ def output2renderable(model, lst_of_tensors: list[Tensor]):
         l_of_renders.append(render_readies)
 
     return l_of_renders
-    
+
+
+def get_folder_name(config,):
+    sched_name = config.model.infer_scheduler._target_.split('.')[-1]
+    sched_name = sched_name.replace('Scheduler', '').lower()
+    mot_guid = config.model.diff_params.guidance_scale_motion
+    text_guid = config.model.diff_params.guidance_scale_text
+    infer_steps = config.model.diff_params.num_inference_timesteps
+    if config.model.motion_condition is not None:
+        return f'{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
+    else:
+        return f'{sched_name}_text{text_guid}_steps{infer_steps}'
+
+
 def render_vids(newcfg: DictConfig) -> None:
     from pathlib import Path
 
@@ -81,9 +89,12 @@ def render_vids(newcfg: DictConfig) -> None:
     cfg = OmegaConf.merge(prevcfg, newcfg)
     # change scheduler for inference
     cfg.model.infer_scheduler = newcfg.model.infer_scheduler
-    cfg.model.infer_scheduler.num_train_timesteps = newcfg.steps
+    cfg.model.diff_params.num_inference_timesteps = newcfg.steps
+    cfg.model.diff_params.guidance_scale_motion = newcfg.guidance_scale_motion
+    cfg.model.diff_params.guidance_scale_text = newcfg.guidance_scale_text
 
-    output_path = exp_folder / cfg.mode
+    fd_name = get_folder_name(cfg)
+    output_path = exp_folder / cfg.mode / fd_name
     output_path.mkdir(exist_ok=True, parents=True)
     logger.info(f"Sample script. The outputs will be stored in:{output_path}")
 
@@ -106,9 +117,9 @@ def render_vids(newcfg: DictConfig) -> None:
     # Instantiate all modules specified in the configs
     # FIXME 
     AITVIEWER_CONFIG.update_conf({"playback_fps": 30,
-                                "auto_set_floor": True,
-                                "smplx_models": 'data/body_models',
-                                'z_up': True})
+                                  "auto_set_floor": True,
+                                  "smplx_models": 'data/body_models',
+                                  'z_up': True})
 
     aitrenderer = HeadlessRenderer()
 
@@ -121,11 +132,18 @@ def render_vids(newcfg: DictConfig) -> None:
     # Load the last checkpoint
     model = model.load_from_checkpoint(last_ckpt_path,
                                        renderer=aitrenderer,
+                                       infer_scheduler=cfg.model.infer_scheduler,
+                                       diff_params=cfg.model.diff_params,
                                        strict=False)
     model.freeze()
     logger.info("Model weights restored")
 
     logger.info("Trainer initialized")
+    logger.info('------Generating using Scheduler------\n\n'\
+                f'{model.infer_scheduler}')
+    logger.info('------Diffusion Parameters------\n\n'\
+                f'{model.diff_params}')
+
     import numpy as np
 
     data_module = instantiate(cfg.data)
@@ -156,7 +174,8 @@ def render_vids(newcfg: DictConfig) -> None:
                                                  collate_fn=collate_fn)
         ds_iterator = testloader 
     from src.utils.art_utils import color_map
-
+    
+    init_diff_from = cfg.init_from
     if cfg.mode in ['denoise', 'sample']:
         with torch.no_grad():
             for batch in tqdm(ds_iterator):
@@ -184,7 +203,8 @@ def render_vids(newcfg: DictConfig) -> None:
                     diffout = model.generate_motion(text_diff,
                                                     batch['source_motion'],
                                                     mask_source,
-                                                    mask_target)
+                                                    mask_target,
+                                                    init_vec=init_diff_from)
                     gen_mo = model.diffout2motion(diffout)
 
                     if model.motion_condition is not None:

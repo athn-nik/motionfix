@@ -24,8 +24,6 @@ class MldDenoiser(nn.Module):
                  position_embedding: str = "actor",
                  arch: str = "trans_enc",
                  freq_shift: int = 0,
-                 guidance_scale: float = 7.5,
-                 guidance_uncondp: float = 0.1,
                  text_encoded_dim: int = 768,
                  use_deltas: bool = False,
                  **kwargs) -> None:
@@ -126,15 +124,12 @@ class MldDenoiser(nn.Module):
         timesteps = timestep.expand(bs).clone()
         time_emb = self.time_proj(timesteps)
         time_emb = time_emb.to(dtype=noised_motion.dtype)
-        # [1, bs, latent_dim] <= [bs, latent_dim]
+        # make it S first
         time_emb = self.time_embedding(time_emb).unsqueeze(0)
 
-        # 2. condition + time embedding
         if self.condition in ["text", "text_uncond"]:
-            # text_emb [seq_len, batch_size, text_encoded_dim] <= [batch_size, seq_len, text_encoded_dim]
+            # make it seq first
             text_embeds = text_embeds.permute(1, 0, 2)
-              # [num_words, bs, latent_dim]
-            # textembedding projection
             if self.text_encoded_dim != self.latent_dim:
                 # [1 or 2, bs, latent_dim] <= [1 or 2, bs, text_encoded_dim]
                 text_emb_latent = self.emb_proj(text_embeds)
@@ -185,7 +180,6 @@ class MldDenoiser(nn.Module):
             # if self.diffusion_only:
             denoised_motion_proj = tokens[emb_latent.shape[0]:]
             if self.use_deltas:
-
                 denoised_first_pose = self.first_pose_proj(denoised_motion_proj[:1])            
                 denoised_motion_only = self.pose_proj(denoised_motion_proj[1:])
                 denoised_motion_only[~motion_in_mask.T[1:]] = 0

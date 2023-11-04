@@ -384,16 +384,12 @@ class HumanML3DDataModule(BASEDataModule):
             if len(v['rots'].shape) > 2:
                 rots_flat_tgt = v['rots'].flatten(-2).float()
                 dataset_dict_raw[k]['rots'] = rots_flat_tgt
-
-            
             rots_can, trans_can = self._canonica_facefront(v['rots'],
                                                            v['trans'])
             dataset_dict_raw[k]['rots'] = rots_can
             dataset_dict_raw[k]['trans'] = trans_can
-        data_dict = cast_dict_to_tensors(dataset_dict_raw)
         base_path = Path(annot_path).parent
         path2key = read_json(base_path.parent.parent / 'amass-mappings/amass_p2k.json')
-        key2path = read_json(base_path.parent.parent / 'amass-mappings/amass_k2p.json')
         hml3d_annots = read_json(annot_path)
         hml3d_data_dict = {}
         for hml3d_key, key_annot in hml3d_annots.items():
