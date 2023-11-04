@@ -1,6 +1,6 @@
 modelname: basic
 _target_: src.model.base_diffusion.MD
-latent_dim: 512
+latent_dim: 256
 
 ff_size: 1024
 num_layers: 9
@@ -17,7 +17,7 @@ norm_type: standardize # min_max standardize
 
 # diffusion related
 diff_params:
-  num_inference_timesteps: 1000
+  num_inference_timesteps: 100
   prob_uncondp: 0.1 # 0.1 0.25
   guidance_scale_text: 2.5 #
   guidance_scale_motion: 1.5
@@ -49,7 +49,7 @@ loss_func_feats: mse # l1 mse
 defaults:
   # diffusion stuff
   - train_scheduler: ddpm
-  - infer_scheduler: ddpm
+  - infer_scheduler: ddim
   - denoiser: denoiser
   # VAE stuff
   - text_encoder: clip_enc # distilbert_enc

@@ -326,11 +326,11 @@ class BaseModel(LightningModule):
                     self.logger.experiment.log(log_render_dic)
         self.render_data_buffer[split].clear()
 
-        if split == "val":
-            metrics_dict = self.metrics.compute()
-            metrics_dict = {f"Metrics/{metric}": value for metric, value in metrics_dict.items()}
-            metrics_dict.update({"epoch": float(self.trainer.current_epoch)})
-            self.log_dict(metrics_dict)
+        # if split == "val":
+        #     metrics_dict = self.metrics.compute()
+        #     metrics_dict = {f"Metrics/{metric}": value for metric, value in metrics_dict.items()}
+        #     metrics_dict.update({"epoch": float(self.trainer.current_epoch)})
+        #     self.log_dict(metrics_dict)
 
         return
 
