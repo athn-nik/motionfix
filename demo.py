@@ -242,7 +242,7 @@ def render_vids(newcfg: DictConfig) -> None:
                             dic_blend = out2blender(cur_mol)
                             pkl_p = f'{output_path}/{monames[moid]}_{curid}.pth.tar'
                             joblib.dump(dic_blend, pkl_p)
-                            pkl_p.replace('pth.tar', '')
+                            pkl_p.replace('.pth.tar', '')
                             tot_pkls.append(pkl_p)
 
                 elif cfg.save_vid:

@@ -1306,6 +1306,11 @@ class MD(BaseModel):
                                                 mask_source,
                                                 mask_target)
 
+
+        dif_dict = self.train_diffusion_forward(batch,
+                                                mask_source,
+                                                mask_target)
+
         if self.trainer.current_epoch % 100 == 0 and self.trainer.current_epoch != 0:
             if self.global_rank == 0 and split=='train' and batch_idx == 0:
                 if self.renderer is not None:

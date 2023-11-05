@@ -42,6 +42,7 @@ input_feats:
 
 loss_on_positions: false
 scale_loss_on_positions: 500
+
 loss_func_pos: mse # l1 mse
 loss_func_feats: mse # l1 mse
 
