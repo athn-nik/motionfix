@@ -29,3 +29,11 @@ def regroup_metrics(metrics):
 def sanitize(dico):
     dico = {key: "{:.5f}".format(float(val)) for key, val in dico.items()}
     return dico
+
+import torch
+def out2blender(dicto):
+    blender_dic = {}
+    blender_dic['trans'] = dicto['body_transl']
+    blender_dic['rots'] = torch.cat([dicto['body_orient'],
+                                     dicto['body_pose']], dim=-1)
+    return blender_dic

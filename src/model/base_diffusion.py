@@ -1337,9 +1337,10 @@ class MD(BaseModel):
                 if batch['source_motion'] is not None else None
 
             with torch.no_grad():
-                motion_out = self.generate_motion(gt_texts, 
+                motion_out = self.generate_motion(gt_texts[:nvds], 
                                                   source_to_cond,
-                                                  mask_source, mask_target)
+                                                  mask_source,
+                                                  mask_target[:nvds])
                 if self.input_deltas:
                     motion_unnorm = self.diffout2motion(motion_out,
                                                         full_deltas=True)
@@ -1361,9 +1362,9 @@ class MD(BaseModel):
                                                trans=motion_unnorm[...,
                                                             :3].detach().cpu())
                 dict_to_render = {'target_motion': target_motion_gt,
-                              'generation': gen_to_render,
-                              'text_descr': gt_texts[:nvds],
-                              'keyids': gt_keyids[:nvds]}
+                                   'generation': gen_to_render,
+                                   'text_descr': gt_texts[:nvds],
+                                   'keyids': gt_keyids[:nvds]}
                 if source_motion_gt is not None:
                     dict_to_render['source_motion'] =  source_motion_gt
 

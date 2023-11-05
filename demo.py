@@ -1,6 +1,7 @@
 import os
 import logging
 import hydra
+import joblib
 from omegaconf import DictConfig
 from omegaconf import OmegaConf
 from src.render.mesh_viz import render_motion
@@ -170,6 +171,8 @@ def render_vids(newcfg: DictConfig) -> None:
     from src.utils.art_utils import color_map
     
     init_diff_from = cfg.init_from
+    tot_pkls = []
+
     if cfg.mode in ['denoise', 'sample']:
         with torch.no_grad():
             for batch in tqdm(ds_iterator):
@@ -218,38 +221,55 @@ def render_vids(newcfg: DictConfig) -> None:
                 lof_mots = output2renderable(model,
                                              mots_to_render)
                 # output_path = Path('/home/nathanasiou/Desktop/conditional_action_gen/modilex')
-                for elem_id in range(no_of_motions):
-                    cur_group_of_vids = []
-                    curid = keyids[elem_id]
-                    for moid in range(len(monames)):
-                        one_motion = lof_mots[moid]
-                        cur_mol = []
-                        cur_colors = []
-                        if isinstance(one_motion, list):
-                            for xx in one_motion:
+                if cfg.save_pkl:
+                    for elem_id in range(no_of_motions):
+                        curid = keyids[elem_id]
+                        for moid in range(len(monames)):
+                            one_motion = lof_mots[moid]
+                            if isinstance(one_motion, list):
+                                continue
+                            cur_mol = {k: v[elem_id] 
+                                       for k, v in one_motion.items()}
+                            from src.utils.eval_utils import out2blender
+                            dic_blend = out2blender(cur_mol)
+                            pkl_p = f'{output_path}/{monames[moid]}_{curid}.pth.tar'
+                            joblib.dump(dic_blend, pkl_p)
+                            pkl_p.replace('pth.tar', '')
+                            tot_pkls.append(pkl_p)
+                elif cfg.save_vid:
+                    for elem_id in range(no_of_motions):
+                        cur_group_of_vids = []
+                        curid = keyids[elem_id]
+                        for moid in range(len(monames)):
+                            one_motion = lof_mots[moid]
+                            cur_mol = []
+                            cur_colors = []
+                            if isinstance(one_motion, list):
+                                for xx in one_motion:
+                                    cur_mol.append({k: v[elem_id] 
+                                                    for k, v in xx.items()})
+                                cur_colors = [color_map['source'],
+                                            color_map['target']]
+                            else:
                                 cur_mol.append({k: v[elem_id] 
-                                                for k, v in xx.items()})
-                            cur_colors = [color_map['source'],
-                                          color_map['target']]
-                        else:
-                            cur_mol.append({k: v[elem_id] 
-                                                for k, v in one_motion.items()})
-                            cur_colors.append(color_map[monames[moid]])
+                                                    for k, v in one_motion.items()})
+                                cur_colors.append(color_map[monames[moid]])
 
-                        fname = render_motion(aitrenderer, cur_mol,
-                                              output_path / f"movie_{elem_id}_{moid}",
-                                              pose_repr='aa',
-                                              text_for_vid=monames[moid],
-                                              color=cur_colors)
-                        cur_group_of_vids.append(fname)
-                    stacked_vid = stack_vids(cur_group_of_vids,
-                                             f'{output_path}/{elem_id}_stacked.mp4',
-                                             orient='h')
-                    fnal_fl = put_text(text=text_diff[elem_id],
-                                       fname=stacked_vid, 
-                                       outf=f'{output_path}/{curid}_text.mp4',
-                                       position='top_center')
-                    cleanup_files(cur_group_of_vids+[stacked_vid])
+                            fname = render_motion(aitrenderer, cur_mol,
+                                                output_path / f"movie_{elem_id}_{moid}",
+                                                pose_repr='aa',
+                                                text_for_vid=monames[moid],
+                                                color=cur_colors)
+                            cur_group_of_vids.append(fname)
+                        stacked_vid = stack_vids(cur_group_of_vids,
+                                                f'{output_path}/{elem_id}_stacked.mp4',
+                                                orient='h')
+                        fnal_fl = put_text(text=text_diff[elem_id],
+                                        fname=stacked_vid, 
+                                        outf=f'{output_path}/{curid}_text.mp4',
+                                        position='top_center')
+
+                        cleanup_files(cur_group_of_vids+[stacked_vid])
     else:
         # --> Free for sampling :D <--
         # sample You can do it :)
@@ -277,7 +297,10 @@ def render_vids(newcfg: DictConfig) -> None:
                                 output_path / f"movie_{idx}_{jj}",
                                 pose_repr='aa')
                 idx += 1
-
+    from src.utils.file_io import write_json
+    
+    write_json(tot_pkls, output_path / 'tot_vids_to_render.json')
+    
 if __name__ == '__main__':
 
     os.environ['DISPLAY'] = ":1"
