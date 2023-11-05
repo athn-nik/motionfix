@@ -139,7 +139,9 @@ class MldDenoiser(nn.Module):
                 emb_latent = torch.cat((time_emb, 
                                         text_emb_latent), 0)
 
-            elif motion_embeds.shape[0] > 5: # ugly way to tell concat the motion or so
+            elif motion_embeds.shape[0] > 5: 
+                # ugly way to tell concat the motion or so
+                # first embed to low dim space then concat
                 motion_embeds = self.pose_embd(motion_embeds)
                 emb_latent = torch.cat((time_emb, 
                                         text_emb_latent,
