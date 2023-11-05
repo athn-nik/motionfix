@@ -18,14 +18,14 @@ ckpt_name: 'last'
 last_ckpt_path: ${get_last_checkpoint:${folder},${ckpt_name}}
 logger_level: INFO
 
-steps: 100
+steps: 1000
 guidance_scale_text: 2.5 #
 guidance_scale_motion: 1.5
 init_from: 'noise' # source
 
 defaults:
   - _self_
-  - model/infer_scheduler: ddim
+  - model/infer_scheduler: ddpm
   - /path@path
   - override hydra/job_logging: rich # custom
   - override hydra/hydra_logging: rich # custom

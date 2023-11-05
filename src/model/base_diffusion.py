@@ -841,10 +841,9 @@ class MD(BaseModel):
         pred_joints = rearrange(pred_joints[:, :22], '(b s) ... -> b s ...',
                                 s=S, b=B)
         
-
-        loss_joints = self.jts_scale * self.loss_func_pos(pred_joints, 
-                                                          joints_gt,
-                                                          reduction='none')
+        #  Could do this --> * self.jts_scale [does not work for now] 
+        loss_joints = self.loss_func_pos(pred_joints, joints_gt,
+                                         reduction='none')
         loss_joints = reduce(loss_joints, 's b j d -> s b', 'mean')
         loss_joints = (loss_joints * padding_mask).sum() / padding_mask.sum()
          
