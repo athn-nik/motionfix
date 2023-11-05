@@ -11,7 +11,6 @@ from roma import rotmat_to_rotvec, rotvec_to_rotmat
 from torch.nn.functional import pad
 
 
-
 def rotate_trajectory(traj, rotZ, inverse=False):
     if inverse:
         # transpose
