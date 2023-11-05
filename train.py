@@ -145,16 +145,10 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     else:
         cfg.trainer.strategy = "auto"
     logger.info(f"Training on: {cfg.devices} GPUS using {cfg.trainer.strategy} strategy.")
-    trainer = pl.Trainer(
-        **OmegaConf.to_container(cfg.trainer, resolve=True),
-        devices=cfg.devices,
-        logger=train_logger,
-        callbacks=callbacks,
-    )
+    trainer = pl.Trainer(**OmegaConf.to_container(cfg.trainer, resolve=True),
+                         devices=cfg.devices, logger=train_logger,
+                         callbacks=callbacks)
     logger.info("Trainer initialized")
-
-    # compiled_model = torch.compile(model)
-    # # logger.info("Model Compiled")
 
     logger.info("Fitting the model..")
     trainer.fit(model, datamodule=data_module, ckpt_path=ckpt_ft)

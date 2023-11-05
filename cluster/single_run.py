@@ -66,6 +66,9 @@ if __name__ == "__main__":
         experiments = [{"expname": expname, "run_id": run_id, "args": args, "gpus": gpus_no}]
     elif cluster_mode == 'sweep':
         experiments = [{"config": fd, "sweep-name":name}]
+    elif cluster_mode == 'demo':
+        experiments = [{"folder": fd,
+                        "args": args, "gpus": gpus_no}]
 
     launch_task_on_cluster(experiments, bid_amount=bid_for_exp, 
                            gpu_min_mem=gpu_mem,

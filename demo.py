@@ -65,7 +65,7 @@ def output2renderable(model, lst_of_tensors: list[Tensor]):
     return l_of_renders
 
 
-def get_folder_name(config,):
+def get_folder_name(config):
     sched_name = config.model.infer_scheduler._target_.split('.')[-1]
     sched_name = sched_name.replace('Scheduler', '').lower()
     mot_guid = config.model.diff_params.guidance_scale_motion
@@ -96,6 +96,7 @@ def render_vids(newcfg: DictConfig) -> None:
     fd_name = get_folder_name(cfg)
     output_path = exp_folder / cfg.mode / fd_name
     output_path.mkdir(exist_ok=True, parents=True)
+
     logger.info(f"Sample script. The outputs will be stored in:{output_path}")
 
     import pytorch_lightning as pl
@@ -103,19 +104,12 @@ def render_vids(newcfg: DictConfig) -> None:
     from hydra.utils import instantiate
     from src.render.video import put_text
     from src.render.video import stack_vids
+    from tqdm import tqdm
 
     seed_logger = logging.getLogger("pytorch_lightning.utilities.seed")
     seed_logger.setLevel(logging.WARNING)
 
     pl.seed_everything(cfg.seed)
-    # only pair evaluation to be fair
-    # keep same order
-
-    from tqdm import tqdm
-
-    logger.info("Loading model")
-    # Instantiate all modules specified in the configs
-    # FIXME 
     AITVIEWER_CONFIG.update_conf({"playback_fps": 30,
                                   "auto_set_floor": True,
                                   "smplx_models": 'data/body_models',
@@ -123,6 +117,7 @@ def render_vids(newcfg: DictConfig) -> None:
 
     aitrenderer = HeadlessRenderer()
 
+    logger.info("Loading model")
     model = instantiate(cfg.model,
                         renderer=aitrenderer,
                         _recursive_=False)
@@ -137,7 +132,6 @@ def render_vids(newcfg: DictConfig) -> None:
                                        strict=False)
     model.freeze()
     logger.info("Model weights restored")
-
     logger.info("Trainer initialized")
     logger.info('------Generating using Scheduler------\n\n'\
                 f'{model.infer_scheduler}')
@@ -207,15 +201,20 @@ def render_vids(newcfg: DictConfig) -> None:
                                                     init_vec=init_diff_from)
                     gen_mo = model.diffout2motion(diffout)
 
+                    src_mot_cond, tgt_mot = model.batch2motion(batch,
+                                                    pack_to_dict=False)
+                    tgt_mot = tgt_mot.to(model.device)
+
                     if model.motion_condition is not None:
-                        src_mot_cond, tgt_mot = model.batch2motion(batch,
-                                                        pack_to_dict=False)
                         src_mot_cond = src_mot_cond.to(model.device)
-                        tgt_mot = tgt_mot.to(model.device)
-                    mots_to_render = [src_mot_cond, tgt_mot, 
-                                      [src_mot_cond, tgt_mot], gen_mo]
-                    monames = ['source', 'target', 'overlaid', 
-                               'generated']
+                        mots_to_render = [src_mot_cond, tgt_mot, 
+                                            [src_mot_cond, tgt_mot], gen_mo]
+                        monames = ['source', 'target', 'overlaid', 
+                                    'generated']
+                    else:
+                        mots_to_render = [tgt_mot, gen_mo]
+                        monames = ['target', 'generated']
+
                 lof_mots = output2renderable(model,
                                              mots_to_render)
                 # output_path = Path('/home/nathanasiou/Desktop/conditional_action_gen/modilex')
