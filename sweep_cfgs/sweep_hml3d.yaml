@@ -31,12 +31,11 @@ parameters:
     values: ['hml3d']
   model.latent_dim:
     values: [256, 512]
-  model.diff_params.num_inference_timesteps:
-    values: [1000]
   model.diff_params.guidance_scale_text:
     values: [2.5]
-  model.diff_params.guidance_scale_motion:
-    values: [2.5]
+  model.loss_on_positions:
+    values: ['true', 'false']
   model.train_scheduler.beta_schedule:
     values: ['squaredcos_cap_v2']
-
+  model.motion_condition:
+    values: ['null']

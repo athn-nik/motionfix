@@ -21,8 +21,6 @@ parameters:
     value: "GROUP-NAME"
   machine.batch_size:
     values: [32, 64]
-  model.diff_params.num_inference_timesteps:
-    values: [1000]
   model.diff_params.guidance_scale_text:
     values: [2.5]
   model.diff_params.guidance_scale_motion:
@@ -37,5 +35,5 @@ parameters:
     values: ['mse']
   model.motion_condition:
     values: ['source']
-  model.motion_condition:
+  model.source_encoder:
     values: ['trans_enc', 'null']
