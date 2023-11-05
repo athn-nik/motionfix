@@ -20,7 +20,7 @@ parameters:
   logger.group:
     value: "GROUP-NAME"
   machine.batch_size:
-    values: [32, 64]
+    values: [128, 64]
   model.diff_params.guidance_scale_text:
     values: [2.5]
   model.diff_params.guidance_scale_motion:
