@@ -12,9 +12,7 @@ from src.render.video import save_video_samples
 import src.launch.prepare  # noqa
 from tqdm import tqdm
 import torch
-from aitviewer.headless import HeadlessRenderer
 import itertools
-from aitviewer.configuration import CONFIG as AITVIEWER_CONFIG
 from src.model.utils.tools import pack_to_render
 logger = logging.getLogger(__name__)
 
@@ -111,12 +109,16 @@ def render_vids(newcfg: DictConfig) -> None:
     seed_logger.setLevel(logging.WARNING)
 
     pl.seed_everything(cfg.seed)
-    AITVIEWER_CONFIG.update_conf({"playback_fps": 30,
-                                  "auto_set_floor": True,
-                                  "smplx_models": 'data/body_models',
-                                  'z_up': True})
-
-    aitrenderer = HeadlessRenderer()
+    if cfg.render_vids:
+        from aitviewer.headless import HeadlessRenderer
+        from aitviewer.configuration import CONFIG as AITVIEWER_CONFIG
+        AITVIEWER_CONFIG.update_conf({"playback_fps": 30,
+                                    "auto_set_floor": True,
+                                    "smplx_models": 'data/body_models',
+                                    'z_up': True})
+        aitrenderer = HeadlessRenderer()
+    else:
+        aitrenderer = None
 
     logger.info("Loading model")
     model = instantiate(cfg.model,
@@ -176,16 +178,22 @@ def render_vids(newcfg: DictConfig) -> None:
     if cfg.mode in ['denoise', 'sample']:
         with torch.no_grad():
             for batch in tqdm(ds_iterator):
-
-                source_lens = batch['length_source']
+     
                 text_diff = batch['text']
                 target_lens = batch['length_target']
                 keyids = batch['id']
                 no_of_motions = len(keyids)
                 batch = prepare_test_batch(model, batch)
-
-                mask_source, mask_target = model.prepare_mot_masks(source_lens,
-                                                                  target_lens)
+                if model.motion_condition == 'source':
+                    source_lens = batch['length_source']
+                    mask_source, mask_target = model.prepare_mot_masks(source_lens,
+                                                                       target_lens)
+                else:
+                    from src.data.tools.tensors import lengths_to_mask
+                    mask_target = lengths_to_mask(target_lens,
+                                                  model.device)
+                    batch['source_motion'] = None
+                    mask_source = None
 
                 if cfg.mode == 'denoise':
                     diffout = model.denoise_forward(batch, mask_source,
@@ -236,6 +244,7 @@ def render_vids(newcfg: DictConfig) -> None:
                             joblib.dump(dic_blend, pkl_p)
                             pkl_p.replace('pth.tar', '')
                             tot_pkls.append(pkl_p)
+
                 elif cfg.save_vid:
                     for elem_id in range(no_of_motions):
                         cur_group_of_vids = []
