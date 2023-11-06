@@ -1020,7 +1020,16 @@ class MD(BaseModel):
             init_diff_rev = None
         else:
             init_diff_rev = source_motion_condition
-
+            tgt_len = mask_target.shape[-1]
+            src_len = source_motion_condition.shape[0]
+            if tgt_len > src_len:
+                init_diff_rev = torch.cat([init_diff_rev,
+                                            torch.zeros((tgt_len-src_len,
+                                                          *init_diff_rev.shape[1:]),
+                                                        device=self.device)],
+                                            dim=0)
+            else:
+                init_diff_rev = init_diff_rev[:tgt_len]
         with torch.no_grad():
             diff_out = self._diffusion_reverse(text_emb, 
                                                text_mask,

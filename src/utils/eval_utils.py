@@ -25,6 +25,7 @@ def regroup_metrics(metrics):
 
     return dico
 
+good_examples_test_set = ["001755"]
 
 def sanitize(dico):
     dico = {key: "{:.5f}".format(float(val)) for key, val in dico.items()}

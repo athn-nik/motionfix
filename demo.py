@@ -70,10 +70,14 @@ def get_folder_name(config):
     mot_guid = config.model.diff_params.guidance_scale_motion
     text_guid = config.model.diff_params.guidance_scale_text
     infer_steps = config.model.diff_params.num_inference_timesteps
-    if config.model.motion_condition is not None:
-        return f'{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
+    if config.init_from == 'source':
+        init_from = 'src_init_'
     else:
-        return f'{sched_name}_text{text_guid}_steps{infer_steps}'
+        init_from = ''
+    if config.model.motion_condition is not None:
+        return f'{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
+    else:
+        return f'{init_from}{sched_name}_text{text_guid}_steps{infer_steps}'
 
 
 def render_vids(newcfg: DictConfig) -> None:
