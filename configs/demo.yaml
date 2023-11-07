@@ -8,7 +8,7 @@ hydra:
 
 
 folder: ???
-mode: denoise # denoise / sample / sthing else
+mode: sample # denoise / sample / sthing else
 
 savedir: null
 mean: false

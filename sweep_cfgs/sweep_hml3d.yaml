@@ -1,0 +1,41 @@
+# wandb agent markos_mpi/HOI-common-sense/fw1yp9u3
+interpreter: /home/nathanasiou/.venvs/modit/bin/python
+program: train.py
+command:
+  - ${interpreter}
+  - ${program}
+  - ${args_no_hyphens}
+method: grid
+metric:
+  name: losses/train/total_loss_epoch
+  goal: minimize
+parameters:
+  experiment:
+    value: "GROUP-NAME" # to overwrite
+
+  logger.project:
+    value: "motion-editing"
+  logger.name:
+    value: "'${run_id}'"
+  model:
+    value: basic
+  logger.group:
+    value: "GROUP-NAME"
+  # wandb_logger.tags:
+  #   value: ['circle', 'smplx', 'intention']
+  model.input_feats:
+    values: [["body_transl_delta_pelv", "body_orient" ,"body_pose"]]
+  machine.batch_size:
+    values: [128, 256]
+  data:
+    values: ['hml3d']
+  model.latent_dim:
+    values: [256]
+  model.diff_params.guidance_scale_text:
+    values: [2.5]
+  model.train_scheduler.beta_schedule:
+    values: ['squaredcos_cap_v2']
+  model.motion_condition:
+    values: ['null']
+  model.optim.lr:
+    values: [0.0001, 0.00001, 0.00006]

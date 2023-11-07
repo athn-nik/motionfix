@@ -66,7 +66,7 @@ if __name__ == "__main__":
         experiments = [{"expname": expname, "run_id": run_id, "args": args, "gpus": gpus_no}]
     elif cluster_mode == 'sweep':
         experiments = [{"config": fd, "sweep-name":name}]
-    elif cluster_mode == 'demo':
+    elif cluster_mode == 'sample':
         experiments = [{"folder": fd,
                         "args": args, "gpus": gpus_no}]
 

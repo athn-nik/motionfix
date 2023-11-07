@@ -5,41 +5,33 @@ import subprocess
 import re
 import argparse
 
-
-
-
 # the list() things is a hack to avoid by reference assignment
-cmd_no = 0
 def end_script(no_of_cmds):
     from inspect import currentframe, getframeinfo
     frameinfo = getframeinfo(currentframe())
     sys.exit(f'\nNumber of commands executed: {no_of_cmds}\nExited after line {frameinfo.filename} {frameinfo.lineno}')
 
 def run(cmd):
-    print(f"Executing: {' '.join(re.escape(x) for x in cmd)}")
+    print(f"Executing: {cmd}")
     x = subprocess.run(cmd)
-
-
-
 
 def main_loop(command, exp_paths,
               text_guidance_vals,
               motion_guidance_vals, schedulers):
-
+    
+    cmd_no=0
     cmd_sample = command
-
-    for sch in schedulers:
-        for fd in folders:
+    for fd in exp_paths:
+        for sched in schedulers:
             for gd_t in text_guidance_vals:
                 for gd_m in motion_guidance_vals:
                     cur_cmd = list(cmd_train)
                     idx_of_exp = cur_cmd.index("FOLDER")
-                    cur_cmd[idx_of_exp] = fd
-                    
+                    cur_cmd[idx_of_exp] = str(fd)
                     if sched == 'ddim':
                         stps = 200
                     else:
-                        stps = 100
+                        stps = 1000
 
                     list_of_args = [f" guidance_scale_text={gd_t} guidance_scale_motion={gd_m} model/infer_scheduler={sched} steps={stps} "]
                     cur_cmd.extend(list_of_args)
@@ -51,6 +43,8 @@ def main_loop(command, exp_paths,
 
 
 if __name__ == "__main__":
+    from pathlib import Path
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--bid', required=False, default=10, type=int,
@@ -64,15 +58,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--exp",
         type=str,
-        default='experiments/space',
+        required=True,
     )
-    arguments = parser.parse_args()
-    bid_for_exp = arguments.bid
+    args= parser.parse_args()
+    bid_for_exp = args.bid
     main_fd = args.exp
     subdirs = args.runs
 
-    user_dir = user_dir.replace('/lustre/fast', '')
-    'experiments/motion-editing/'
     # put base directory
     base_dir = Path(f'experiments/motion-editing/{main_fd}')
     print('The base directory is:', base_dir)
@@ -83,11 +75,11 @@ if __name__ == "__main__":
     cmd_train = ['python', 'cluster/single_run.py',
                 '--folder', 'FOLDER',
                 '--mode', 'sample',
-                '--bid', '30',
+                '--bid', '20',
                 '--extras']
-    gd_text = [1, 1.5, 2, 2.5, 3]
-    gd_motion = [1, 1.5, 2, 2.5, 3]
-    schedulers = ['ddim', 'ddpm']
+    gd_text = [1.5, 2, 2.5]
+    gd_motion = [1.5, 2, 2.5]
+    schedulers = ['ddpm']
 
-    main_loop(cmd_train, gd_text, exp_paths,
+    main_loop(cmd_train, exp_paths, gd_text,
               gd_motion, schedulers)

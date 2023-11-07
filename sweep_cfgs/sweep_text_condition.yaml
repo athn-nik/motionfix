@@ -11,7 +11,6 @@ metric:
 parameters:
   experiment:
     value: "GROUP-NAME" # to overwrite
-
   logger.project:
     value: "motion-editing"
   logger.name:
@@ -21,9 +20,7 @@ parameters:
   logger.group:
     value: "GROUP-NAME"
   machine.batch_size:
-    values: [16]
-  model.diff_params.num_inference_timesteps:
-    values: [1000]
+    values: [32, 64]
   model.diff_params.guidance_scale_text:
     values: [2.5]
   model.diff_params.guidance_scale_motion:
@@ -37,4 +34,4 @@ parameters:
   model.loss_func_feats:
     values: ['mse']
   model.motion_condition:
-    values: ['null', 'source']
+    values: ['null']

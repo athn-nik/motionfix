@@ -152,12 +152,13 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
             cmd = ['condor_submit_bid', f'{bid_amount}', str(submission_path)]
             logger.info('Executing ' + ' '.join(cmd))
             subprocess.run(cmd)
-    elif mode in ["demo"]:
+    elif mode in ["sample"]:
         for experiment in configs: 
             extra_args = experiment["args"]
             no_gpus = experiment["gpus"]
             folder = experiment["folder"]
- 
+            run_id = folder.split('/')[-2:]
+            run_id = '__'.join(run_id)
             sub_file = SUBMISSION_TEMPLATE
             sub_file = sub_file.replace('EXPMODE', mode)
             sub_file = sub_file.replace('DESCRIPTION', f'{run_id}')
@@ -166,7 +167,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
                    'export PATH=/home/nathanasiou/apps/imagemagick/bin:$PATH\n' \
                    'export LD_LIBRARY_PATH=/home/nathanasiou/apps/imagemagick/lib:$LD_LIBRARY_PATH\n' \
                    f'exec {sys.executable} demo.py ' \
-                   f'folder={run_id} {extra_args}'
+                   f'folder={folder} {extra_args}'
             shell_dir.mkdir(parents=True, exist_ok=True)
             run_cmd_path = shell_dir / (run_id + '_' + mode + ID_EXP +".sh")
 
