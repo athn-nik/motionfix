@@ -327,7 +327,7 @@ class BaseModel(LightningModule):
                     try:
                         self.logger.experiment.log(log_render_dic)
                     except:
-                        continue
+                        print('could not log this time!')
         self.render_data_buffer[split].clear()
 
         # if split == "val":
