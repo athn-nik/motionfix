@@ -313,8 +313,6 @@ class BaseModel(LightningModule):
                                                         split=split)
                     # # log videos to wandb
                     # self.render_buffer(self.render_data_buffer[split],split=split)
-
-        
                 if self.logger is not None and video_names:
                     log_render_dic = {}
                     for v in video_names:
