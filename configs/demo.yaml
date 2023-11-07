@@ -30,5 +30,10 @@ defaults:
   - model/infer_scheduler: ddpm
   - /path@path
   - override hydra/job_logging: rich # custom
-  - override hydra/hydra_logging: rich # custom
+  - override hydra/hydra_logging: rich # custom00 
+
+split_to_load: 
+- "test"
+
+datapath: ${path.data}/humanml3d_processed # amass_bodilex.pth.tar
 

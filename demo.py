@@ -71,9 +71,13 @@ def get_folder_name(config):
     text_guid = config.model.diff_params.guidance_scale_text
     infer_steps = config.model.diff_params.num_inference_timesteps
     if config.init_from == 'source':
-        init_from = 'src_init_'
+        init_from = '_src_init_'
     else:
         init_from = ''
+    if config.ckpt_name == 'last':
+        ckpt_n = ''
+    else:
+        init_from = 'ckpt-{config.ckpt_name}}'
     if config.model.motion_condition is not None:
         return f'{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
     else:
@@ -249,7 +253,7 @@ def render_vids(newcfg: DictConfig) -> None:
                             pkl_p.replace('.pth.tar', '')
                             tot_pkls.append(pkl_p)
 
-                elif cfg.save_vid:
+                elif cfg.render_vids:
                     for elem_id in range(no_of_motions):
                         cur_group_of_vids = []
                         curid = keyids[elem_id]

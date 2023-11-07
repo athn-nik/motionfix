@@ -374,9 +374,9 @@ class BaseModel(LightningModule):
                 if isinstance(data[k], dict):
                     motion_type = k
                     for body_repr_name, body_repr_data in data[motion_type].items():            
-                        data[motion_type][body_repr_name] = body_repr_data[:novids]
+                        data[motion_type][body_repr_name] = body_repr_data
                 else:
-                    data[k] = data[k][:novids]
+                    data[k] = data[k]
 
             for iid_tor in range(novids):
                 flname = folder / str(iid_tor).zfill(3)
@@ -390,10 +390,10 @@ class BaseModel(LightningModule):
 
                         # RENDER THE MOTION
                         fname = render_motion(self.renderer, mot_to_rend,
-                                                f'{flname}_{k}_{cur_key}',
-                                                text_for_vid=cur_text,
-                                                pose_repr='aa',
-                                                color=color_map[k])
+                                              f'{flname}_{k}_{cur_key}',
+                                              text_for_vid=cur_text,
+                                              pose_repr='aa',
+                                              color=color_map[k])
                         
                         video_names.append(fname)
 
