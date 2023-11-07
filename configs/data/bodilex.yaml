@@ -12,7 +12,7 @@ smplh_path_dbg: ${path.minidata}/body_models
 load_with_rot: true
 
 # Machine
-batch_size: ${machine.batch_size}
+batch_size: 64
 num_workers: ${machine.num_workers}
 rot_repr: '6d'
 preproc:
