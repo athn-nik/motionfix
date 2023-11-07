@@ -1335,9 +1335,11 @@ class MD(BaseModel):
                                                 mask_target)
 
 
-        dif_dict = self.train_diffusion_forward(batch,
-                                                mask_source,
-                                                mask_target)
+        # rs_set Bx(S+1)xN --> first pose included 
+        total_loss, loss_dict = self.compute_losses(dif_dict,
+                                                    batch['body_joints_target'],
+                                                    mask_source, 
+                                                    mask_target)
 
         if self.trainer.current_epoch % 100 == 0 and self.trainer.current_epoch != 0:
             if self.global_rank == 0 and split=='train' and batch_idx == 0:
@@ -1345,12 +1347,6 @@ class MD(BaseModel):
                     self.visualize_diffusion(dif_dict, actual_target_lens, 
                                             gt_keyids, gt_texts, 
                                             self.trainer.current_epoch)
-        # rs_set Bx(S+1)xN --> first pose included 
-        total_loss, loss_dict = self.compute_losses(dif_dict,
-                                                    batch['body_joints_target'],
-                                                    mask_source, 
-                                                    mask_target)
-
 
         # self.losses[split](rs_set)
         # if loss is None:

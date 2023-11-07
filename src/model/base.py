@@ -321,9 +321,15 @@ class BaseModel(LightningModule):
                         logname = f'{split}_renders/' + v.replace('.mp4',
                                                         '').split('/')[-1][4:-4]
                         logname = f'{logname}_kid'
-                        log_render_dic[logname] = wandb.Video(v, fps=30,
-                                                                format='mp4') 
-                    self.logger.experiment.log(log_render_dic)
+                        try:
+                            log_render_dic[logname] = wandb.Video(v, fps=30,
+                                                                  format='mp4') 
+                        except:
+                            break
+                    try:
+                        self.logger.experiment.log(log_render_dic)
+                    except:
+                        continue
         self.render_data_buffer[split].clear()
 
         # if split == "val":

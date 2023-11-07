@@ -172,10 +172,22 @@ def render_vids(newcfg: DictConfig) -> None:
         from src.data.tools.collate import collate_batch_last_padding
         collate_fn = lambda b: collate_batch_last_padding(b,
                                                           features_to_load)
+        from src.utils.eval_utils import test_keyds
+
+        if cfg.subset == 'cherries':
+            subset = []
+            for elem in test_dataset.data:
+                if elem['id'] in test_keyds:
+                    subset.append(elem)
+            batch_size_test = len(subset)
+            test_dataset.data = subset
+        else:
+            batch_size_test = 8
+
         testloader = torch.utils.data.DataLoader(test_dataset,
                                                  shuffle=False,
                                                  num_workers=0,
-                                                 batch_size=8,
+                                                 batch_size=batch_size_test,
                                                  collate_fn=collate_fn)
         ds_iterator = testloader 
     from src.utils.art_utils import color_map

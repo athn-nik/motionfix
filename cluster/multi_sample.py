@@ -51,7 +51,7 @@ if __name__ == "__main__":
                         help='bid money for cluster')
     parser.add_argument(
             "--runs",
-            nargs="*",  # expects ≥ 0 arguments
+            nargs="*",  # expects arguments
             type=str,
             default=[],  # default list if no arg value
         )
