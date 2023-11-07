@@ -77,11 +77,16 @@ def get_folder_name(config):
     if config.ckpt_name == 'last':
         ckpt_n = ''
     else:
-        init_from = f'ckpt-{config.ckpt_name}'
-    if config.model.motion_condition is not None:
-        return f'{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
+        ckpt_n = f'_ckpt-{config.ckpt_name}_'
+    if config.subset is None:
+        sset = ''
     else:
-        return f'{init_from}{sched_name}_text{text_guid}_steps{infer_steps}'
+        sset = f'{config.subset}'
+
+    if config.model.motion_condition is not None:
+        return f'{sset}{ckpt_n}{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
+    else:
+        return f'{sset}{ckpt_n}{init_from}{sched_name}_text{text_guid}_steps{infer_steps}'
 
 
 def render_vids(newcfg: DictConfig) -> None:
