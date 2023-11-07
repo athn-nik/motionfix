@@ -77,7 +77,7 @@ def get_folder_name(config):
     if config.ckpt_name == 'last':
         ckpt_n = ''
     else:
-        init_from = 'ckpt-{config.ckpt_name}}'
+        init_from = f'ckpt-{config.ckpt_name}'
     if config.model.motion_condition is not None:
         return f'{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
     else:
