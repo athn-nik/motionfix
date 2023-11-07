@@ -19,12 +19,8 @@ parameters:
     value: basic
   logger.group:
     value: "GROUP-NAME"
-  machine.batch_size:
-    values: [64]
   model.train_scheduler.beta_schedule:
     values: ['squaredcos_cap_v2']
-  model.loss_on_positions:
-    values: ['false', 'true']
   model.loss_func_pos:
     values: ['mse']
   model.loss_func_feats:
@@ -32,4 +28,4 @@ parameters:
   model.motion_condition:
     values: ['source']
   model.source_encoder:
-    values: ['trans_enc', 'null']
+    values: ['null', 'trans_enc']

@@ -2,7 +2,7 @@ dataname: hml_3d
 _target_: src.data.humanml3d.HumanML3DDataModule
 debug: ${debug}
 
-datapath: ${path.data}/amass_smplhn/amass.pth.tar # amass_bodilex.pth.tar
+datapath: ${path.data}/humanml3d_processed # amass_bodilex.pth.tar
 debug_datapath: ${path.minidata}/amass_small.pth.tar
 annot_path: ${path.data}/annotations/humanml3d/annotations.json
 
@@ -11,6 +11,11 @@ smplh_path: ${path.data}/body_models
 smplh_path_dbg: ${path.minidata}/body_models
 
 load_with_rot: true
+
+load_splits:
+- "train"
+- "val"
+- "test"
 
 # Machine
 batch_size: ${machine.batch_size}

@@ -71,13 +71,22 @@ def get_folder_name(config):
     text_guid = config.model.diff_params.guidance_scale_text
     infer_steps = config.model.diff_params.num_inference_timesteps
     if config.init_from == 'source':
-        init_from = 'src_init_'
+        init_from = '_src_init_'
     else:
         init_from = ''
-    if config.model.motion_condition is not None:
-        return f'{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
+    if config.ckpt_name == 'last':
+        ckpt_n = ''
     else:
-        return f'{init_from}{sched_name}_text{text_guid}_steps{infer_steps}'
+        ckpt_n = f'_ckpt-{config.ckpt_name}_'
+    if config.subset is None:
+        sset = ''
+    else:
+        sset = f'{config.subset}'
+
+    if config.model.motion_condition is not None:
+        return f'{sset}{ckpt_n}{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
+    else:
+        return f'{sset}{ckpt_n}{init_from}{sched_name}_text{text_guid}_steps{infer_steps}'
 
 
 def render_vids(newcfg: DictConfig) -> None:
@@ -168,10 +177,22 @@ def render_vids(newcfg: DictConfig) -> None:
         from src.data.tools.collate import collate_batch_last_padding
         collate_fn = lambda b: collate_batch_last_padding(b,
                                                           features_to_load)
+        from src.utils.eval_utils import test_keyds
+
+        if cfg.subset == 'cherries':
+            subset = []
+            for elem in test_dataset.data:
+                if elem['id'] in test_keyds:
+                    subset.append(elem)
+            batch_size_test = len(subset)
+            test_dataset.data = subset
+        else:
+            batch_size_test = 8
+
         testloader = torch.utils.data.DataLoader(test_dataset,
                                                  shuffle=False,
                                                  num_workers=0,
-                                                 batch_size=8,
+                                                 batch_size=batch_size_test,
                                                  collate_fn=collate_fn)
         ds_iterator = testloader 
     from src.utils.art_utils import color_map
@@ -249,7 +270,7 @@ def render_vids(newcfg: DictConfig) -> None:
                             pkl_p.replace('.pth.tar', '')
                             tot_pkls.append(pkl_p)
 
-                elif cfg.save_vid:
+                elif cfg.render_vids:
                     for elem_id in range(no_of_motions):
                         cur_group_of_vids = []
                         curid = keyids[elem_id]

@@ -2,7 +2,7 @@ dataname: bodilex
 _target_: src.data.bodilex.BodilexDataModule
 debug: ${debug}
 
-datapath: ${path.data}/amass_bodilex_v3.pth.tar # amass_bodilex.pth.tar
+datapath: ${path.data}/amass_bodilex_v4.pth.tar # amass_bodilex.pth.tar
 debug_datapath: ${path.minidata}/amass_small.pth.tar
 
 # Amass
@@ -10,6 +10,11 @@ smplh_path: ${path.data}/body_models
 smplh_path_dbg: ${path.minidata}/body_models
 
 load_with_rot: true
+
+load_splits:
+- "train"
+- "val"
+- "test"
 
 # Machine
 batch_size: 64

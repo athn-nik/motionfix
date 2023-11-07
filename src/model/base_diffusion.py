@@ -829,6 +829,7 @@ class MD(BaseModel):
                     tot_dim_deltas += self.input_feats_dims[idx_feat]
             motion_unnorm = motion_unnorm[..., tot_dim_deltas:]
 
+
         pred_smpl_params = pack_to_render(rots=motion_unnorm[..., 3:],
                                           trans=motion_unnorm[...,:3])
 
@@ -969,7 +970,7 @@ class MD(BaseModel):
             else:
                 source_motion_gt = source_motion
             if slice_til is not None:
-                source_motion_gt = {k: v[:slice_til] 
+                source_motion_gt = {k: v[slice_til] 
                                     for k, v in source_motion_gt.items()}
 
         # target motion
@@ -984,7 +985,7 @@ class MD(BaseModel):
         else:
             target_motion_gt = target_motion
         if slice_til is not None:
-            target_motion_gt = {k: v[:slice_til] 
+            target_motion_gt = {k: v[slice_til] 
                                 for k, v in target_motion_gt.items()}
 
         return source_motion_gt, target_motion_gt
@@ -1137,19 +1138,37 @@ class MD(BaseModel):
             # FIRST POSE FOR GENERATION & DELTAS FOR INTEGRATION
             first_trans = torch.zeros(*diffout.shape[:-1], 3,
                                       device=self.device)[:, [0]]
-            delta_trans = diffout[..., :3]
-            pelv_orient = diffout[..., 3:9]
-            # for i in range(1, delta_trans.shape[1]):
-            full_trans_unnorm = self.integrate_translation(pelv_orient[:, :-1],
-                                                           first_trans,
-                                                           delta_trans[:, 1:])
-            rots_unnorm = self.cat_inputs(self.unnorm_inputs(self.uncat_inputs(
-                                                            diffout[..., 3:],
-                                                    self.input_feats_dims[1:]),
-                                               self.input_feats[1:])
-                                               )[0]
-            full_motion_unnorm = torch.cat([full_trans_unnorm,
-                                            rots_unnorm], dim=-1)
+            if "body_orient_delta" in self.input_feats:
+                delta_trans = diffout[..., 6:9]
+                pelv_orient = diffout[..., 9:15]
+
+                # for i in range(1, delta_trans.shape[1]):
+                full_trans_unnorm = self.integrate_translation(pelv_orient[:, :-1],
+                                                            first_trans,
+                                                            delta_trans[:, 1:])
+                rots_unnorm = self.cat_inputs(self.unnorm_inputs(self.uncat_inputs(
+                                                                diffout[..., 9:],
+                                                        self.input_feats_dims[2:]),
+                                                self.input_feats[2:])
+                                                )[0]
+                full_motion_unnorm = torch.cat([full_trans_unnorm,
+                                                rots_unnorm], dim=-1)
+
+            else:
+                delta_trans = diffout[..., :3]
+                pelv_orient = diffout[..., 3:9]
+                # for i in range(1, delta_trans.shape[1]):
+                full_trans_unnorm = self.integrate_translation(pelv_orient[:, :-1],
+                                                            first_trans,
+                                                            delta_trans[:, 1:])
+                rots_unnorm = self.cat_inputs(self.unnorm_inputs(self.uncat_inputs(
+                                                                diffout[..., 3:],
+                                                        self.input_feats_dims[1:]),
+                                                self.input_feats[1:])
+                                                )[0]
+                full_motion_unnorm = torch.cat([full_trans_unnorm,
+                                                rots_unnorm], dim=-1)
+            
 
         return full_motion_unnorm
     
@@ -1316,9 +1335,11 @@ class MD(BaseModel):
                                                 mask_target)
 
 
-        dif_dict = self.train_diffusion_forward(batch,
-                                                mask_source,
-                                                mask_target)
+        # rs_set Bx(S+1)xN --> first pose included 
+        total_loss, loss_dict = self.compute_losses(dif_dict,
+                                                    batch['body_joints_target'],
+                                                    mask_source, 
+                                                    mask_target)
 
         if self.trainer.current_epoch % 100 == 0 and self.trainer.current_epoch != 0:
             if self.global_rank == 0 and split=='train' and batch_idx == 0:
@@ -1326,12 +1347,6 @@ class MD(BaseModel):
                     self.visualize_diffusion(dif_dict, actual_target_lens, 
                                             gt_keyids, gt_texts, 
                                             self.trainer.current_epoch)
-        # rs_set Bx(S+1)xN --> first pose included 
-        total_loss, loss_dict = self.compute_losses(dif_dict,
-                                                    batch['body_joints_target'],
-                                                    mask_source, 
-                                                    mask_target)
-
 
         # self.losses[split](rs_set)
         # if loss is None:
@@ -1340,21 +1355,27 @@ class MD(BaseModel):
                             loss_dict.items()}
         self.log_dict(loss_dict_to_log, on_epoch=True, 
                       batch_size=self.batch_size)
+        import random
  
         if split == 'val' and batch_idx == 0 and self.global_rank == 0:
             nvds = self.num_vids_to_render
+            randels = [random.randint(0, self.batch_size) for p in range(0, nvds)]
+
+            texts_rend = [el for idx, el in enumerate(gt_texts) if idx in randels]
+            keyids_rend = [el for idx, el in enumerate(gt_keyids) if idx in randels]
+
             source_motion_gt, target_motion_gt = self.batch2motion(batch, 
-                                                                slice_til=nvds)
-            source_to_cond = batch['source_motion'][:, :nvds]\
+                                                                slice_til=randels)
+            source_to_cond = batch['source_motion'][:, randels]\
                 if batch['source_motion'] is not None else None
-            mask_source = mask_source[:nvds]\
+            mask_source = mask_source[randels]\
                 if batch['source_motion'] is not None else None
 
             with torch.no_grad():
-                motion_out = self.generate_motion(gt_texts[:nvds], 
+                motion_out = self.generate_motion(texts_rend, 
                                                   source_to_cond,
                                                   mask_source,
-                                                  mask_target[:nvds])
+                                                  mask_target[randels])
                 if self.input_deltas:
                     motion_unnorm = self.diffout2motion(motion_out,
                                                         full_deltas=True)
@@ -1375,10 +1396,11 @@ class MD(BaseModel):
                                                             3:].detach().cpu(),
                                                trans=motion_unnorm[...,
                                                             :3].detach().cpu())
+
                 dict_to_render = {'target_motion': target_motion_gt,
                                    'generation': gen_to_render,
-                                   'text_descr': gt_texts[:nvds],
-                                   'keyids': gt_keyids[:nvds]}
+                                   'text_descr': texts_rend,
+                                   'keyids': keyids_rend}
                 if source_motion_gt is not None:
                     dict_to_render['source_motion'] =  source_motion_gt
 

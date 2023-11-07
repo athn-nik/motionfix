@@ -53,12 +53,12 @@ class HumanML3DDataset(Dataset):
 
 
 
-        self.body_model = smplx.SMPLHLayer(f'{smplh_path}/smplh',
-                                           model_type='smplh',
-                                           gender='neutral',
-                                           ext='npz').eval();
-        setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
-        freeze(self.body_model)
+        # self.body_model = smplx.SMPLHLayer(f'{smplh_path}/smplh',
+        #                                    model_type='smplh',
+        #                                    gender='neutral',
+        #                                    ext='npz').eval();
+        # setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
+        # freeze(self.body_model)
 
         self.body_chain = bm.parents
         stat_path = join(stats_file)
@@ -336,6 +336,7 @@ class HumanML3DDataModule(BASEDataModule):
                  dataname: str = "",
                  rot_repr: str = "6d",
                  annot_path: str = "",
+                 load_splits: List[str] = ["val", "test", "train"],
                  **kwargs):
         super().__init__(batch_size=batch_size,
                          num_workers=num_workers,
@@ -353,167 +354,160 @@ class HumanML3DDataModule(BASEDataModule):
         self.smpl_p = smplh_path if not debug else kwargs['smplh_path_dbg']
         self.rot_repr = rot_repr
         self.Dataset = HumanML3DDataset
-        # calculate splits
-        self.body_model = smplx.SMPLHLayer(f'{smplh_path}/smplh',
-                                           model_type='smplh',
-                                           gender='neutral',
-                                           ext='npz').eval();
-        setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
-        freeze(self.body_model)
+        load_unproc = False
+        if load_unproc:
+            # calculate splits
+            self.body_model = smplx.SMPLHLayer(f'{smplh_path}/smplh',
+                                            model_type='smplh',
+                                            gender='neutral',
+                                            ext='npz').eval();
+            setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
+            freeze(self.body_model)
 
-        if self.debug:
-            # takes <2sec to load
-            ds_db_path = Path(self.debug_datapath)
-            
-        else:
-            # takes ~4min to load
-            ds_db_path = Path(self.datapath)
-        # define splits
-        # For example
-        # from itertools import islice
-        # def chunks(data, SIZE=10000):
-        # it = iter(data)
-        # for i in range(0, len(data), SIZE):
-        #     yield {k:data[k] for k in islice(it, SIZE)}
-        # and then process with the AmassDataset as you like
-        # pass this or split for dataloading into sets
-        dataset_dict_raw = joblib.load(ds_db_path)
-        dataset_dict_raw = cast_dict_to_tensors(dataset_dict_raw)
-        for k, v in dataset_dict_raw.items():
-            
-            if len(v['rots'].shape) > 2:
-                rots_flat_tgt = v['rots'].flatten(-2).float()
-                dataset_dict_raw[k]['rots'] = rots_flat_tgt
-            rots_can, trans_can = self._canonica_facefront(v['rots'],
-                                                           v['trans'])
-            dataset_dict_raw[k]['rots'] = rots_can
-            dataset_dict_raw[k]['trans'] = trans_can
-        base_path = Path(annot_path).parent
-        path2key = read_json(base_path.parent.parent / 'amass-mappings/amass_p2k.json')
-        hml3d_annots = read_json(annot_path)
-        hml3d_data_dict = {}
-        for hml3d_key, key_annot in hml3d_annots.items():
-            if 'humanact12/' in key_annot['path']:
-                continue
-            amass_norm_path = fname_normalizer(path_normalizer(key_annot['path']))
-            cur_amass_key = path2key[amass_norm_path]
-            if cur_amass_key not in dataset_dict_raw:
-                continue
-            text_and_durs = key_annot['annotations']
-            cur_amass_data = dataset_dict_raw[cur_amass_key]
-            dur_key = [sub_ann['end'] - sub_ann['start'] 
-                       for sub_ann in text_and_durs]
-            max_dur_id = dur_key.index(max(dur_key))
-            text_annots = []
-            for sub_ann in text_and_durs:
-                if sub_ann['end'] - sub_ann['start'] <= 2:
-                    continue
-                if sub_ann['end'] - sub_ann['start'] >= 10.1:
-                    continue
-                text_annots.append(sub_ann['text'])
-            if not text_annots:
-                continue
-
-            hml3d_data_dict[hml3d_key] = {}
-            begin = int(text_and_durs[max_dur_id]['start'] * 30)
-            end = int(text_and_durs[max_dur_id]['end'] * 30)
-            rots_hml3d = cur_amass_data['rots'][begin:end]
-            trans_hml3d = cur_amass_data['trans'][begin:end]
-
-            if hml3d_key.startswith('M'):
-                rots_mirr, trans_mirr = flip_motion(rots_hml3d,
-                                                    trans_hml3d)
-                rots_mirr_rotm = transform_body_pose(rots_mirr,
-                                                    'aa->rot')
-           
-                jts_mirr_ds = self.body_model.smpl_forward_fast(transl=trans_mirr,
-                                                body_pose=rots_mirr_rotm[:, 1:],
-                                            global_orient=rots_mirr_rotm[:, :1])
-
-                jts_can_mirr = jts_mirr_ds.joints[:, :22]
-                jts_hml3d = jts_can_mirr
-                hml3d_data_dict[hml3d_key]['rots'] = rots_mirr
-                hml3d_data_dict[hml3d_key]['trans'] = trans_mirr
+            if self.debug:
+                # takes <2sec to load
+                ds_db_path = Path(self.debug_datapath)
+                
             else:
-                jts_hml3d = cur_amass_data['joint_positions'][begin:end]
-                hml3d_data_dict[hml3d_key]['rots'] = rots_hml3d
-                hml3d_data_dict[hml3d_key]['trans'] = trans_hml3d
+                # takes ~4min to load
+                ds_db_path = Path(self.datapath)
+            # define splits
+            # For example
+            # from itertools import islice
+            # def chunks(data, SIZE=10000):
+            # it = iter(data)
+            # for i in range(0, len(data), SIZE):
+            #     yield {k:data[k] for k in islice(it, SIZE)}
+            # and then process with the AmassDataset as you like
+            # pass this or split for dataloading into sets
+            dataset_dict_raw = joblib.load(ds_db_path)
+            dataset_dict_raw = cast_dict_to_tensors(dataset_dict_raw)
+            for k, v in dataset_dict_raw.items():
+                
+                if len(v['rots'].shape) > 2:
+                    rots_flat_tgt = v['rots'].flatten(-2).float()
+                    dataset_dict_raw[k]['rots'] = rots_flat_tgt
+                rots_can, trans_can = self._canonica_facefront(v['rots'],
+                                                            v['trans'])
+                dataset_dict_raw[k]['rots'] = rots_can
+                dataset_dict_raw[k]['trans'] = trans_can
+            base_path = Path(annot_path).parent
+            path2key = read_json(base_path.parent.parent / 'amass-mappings/amass_p2k.json')
+            hml3d_annots = read_json(annot_path)
+            hml3d_data_dict = {}
+            for hml3d_key, key_annot in hml3d_annots.items():
+                if 'humanact12/' in key_annot['path']:
+                    continue
+                amass_norm_path = fname_normalizer(path_normalizer(key_annot['path']))
+                cur_amass_key = path2key[amass_norm_path]
+                if cur_amass_key not in dataset_dict_raw:
+                    continue
+                text_and_durs = key_annot['annotations']
+                cur_amass_data = dataset_dict_raw[cur_amass_key]
+                dur_key = [sub_ann['end'] - sub_ann['start'] 
+                        for sub_ann in text_and_durs]
+                max_dur_id = dur_key.index(max(dur_key))
+                text_annots = []
+                for sub_ann in text_and_durs:
+                    if sub_ann['end'] - sub_ann['start'] <= 2:
+                        continue
+                    if sub_ann['end'] - sub_ann['start'] >= 10.1:
+                        continue
+                    text_annots.append(sub_ann['text'])
+                if not text_annots:
+                    continue
 
-            hml3d_data_dict[hml3d_key]['joint_positions'] = jts_hml3d
-            hml3d_data_dict[hml3d_key]['fps'] = cur_amass_data['fps']
-            hml3d_data_dict[hml3d_key]['fname'] = cur_amass_data['fname']
-            hml3d_data_dict[hml3d_key]['text'] = text_annots
+                hml3d_data_dict[hml3d_key] = {}
+                begin = int(text_and_durs[max_dur_id]['start'] * 30)
+                end = int(text_and_durs[max_dur_id]['end'] * 30)
+                rots_hml3d = cur_amass_data['rots'][begin:end]
+                trans_hml3d = cur_amass_data['trans'][begin:end]
 
-        # debug overfitting
-        # less frames less motions
-        # subkeys = list(dataset_dict_raw.keys())[:20]
-        # dataset_dict_raw = { k: v for k, v in dataset_dict_raw.items()
-        #                      if k in subkeys }
-        # for k in dataset_dict_raw.keys():
-        #     dataset_dict_raw[k]['motion_source']['rots'] = dataset_dict_raw[k]['motion_source']['rots'][:60]
-        #     dataset_dict_raw[k]['motion_source']['trans'] = dataset_dict_raw[k]['motion_source']['trans'][:60] 
-        #     dataset_dict_raw[k]['motion_source']['joint_positions'] = dataset_dict_raw[k]['motion_source']['joint_positions'][:60] 
+                if hml3d_key.startswith('M'):
+                    rots_mirr, trans_mirr = flip_motion(rots_hml3d,
+                                                        trans_hml3d)
+                    rots_mirr_rotm = transform_body_pose(rots_mirr,
+                                                        'aa->rot')
+            
+                    jts_mirr_ds = self.body_model.smpl_forward_fast(transl=trans_mirr,
+                                                    body_pose=rots_mirr_rotm[:, 1:],
+                                                global_orient=rots_mirr_rotm[:, :1])
 
-        #     dataset_dict_raw[k]['motion_target']['rots'] = dataset_dict_raw[k]['motion_target']['rots'][:60]
-        #     dataset_dict_raw[k]['motion_target']['trans'] = dataset_dict_raw[k]['motion_target']['trans'][:60] 
-        #     dataset_dict_raw[k]['motion_target']['joint_positions'] = dataset_dict_raw[k]['motion_target']['joint_positions'][:60] 
-        k2id = {'train': 0 , 'val': 1, 'test': 2}
-        keys_for_split = {}
-        for set in k2id.keys():
-            keys_for_split[set] = read_text_lines(base_path / 'splits',
-                                                  split=set)
-        id_split_dict = {}
-        for split, split_keys in keys_for_split.items():
-            for k in split_keys:
-                id_split_dict[k] = k2id[split]
+                    jts_can_mirr = jts_mirr_ds.joints[:, :22]
+                    jts_hml3d = jts_can_mirr
+                    hml3d_data_dict[hml3d_key]['rots'] = rots_mirr
+                    hml3d_data_dict[hml3d_key]['trans'] = trans_mirr
+                else:
+                    jts_hml3d = cur_amass_data['joint_positions'][begin:end]
+                    hml3d_data_dict[hml3d_key]['rots'] = rots_hml3d
+                    hml3d_data_dict[hml3d_key]['trans'] = trans_hml3d
 
-        for k, v in hml3d_data_dict.items():
-            v['id'] = k
-            v['split'] = id_split_dict[k]
-        self.stats = self.calculate_feature_stats(HumanML3DDataset([v for k,
-                                                                  v in hml3d_data_dict.items()
-                                                       if id_split_dict[k] <= 1],
-                                                      self.preproc.n_body_joints,
-                                                      self.preproc.stats_file,
-                                                      self.preproc.norm_type,
-                                                      self.smpl_p,
-                                                      self.rot_repr,
-                                                      self.load_feats,
-                                                      do_augmentations=False))
+                hml3d_data_dict[hml3d_key]['joint_positions'] = jts_hml3d
+                hml3d_data_dict[hml3d_key]['fps'] = cur_amass_data['fps']
+                hml3d_data_dict[hml3d_key]['fname'] = cur_amass_data['fname']
+                hml3d_data_dict[hml3d_key]['text'] = text_annots
+
+            # debug overfitting
+            # less frames less motions
+            # subkeys = list(dataset_dict_raw.keys())[:20]
+            # dataset_dict_raw = { k: v for k, v in dataset_dict_raw.items()
+            #                      if k in subkeys }
+            # for k in dataset_dict_raw.keys():
+            #     dataset_dict_raw[k]['motion_source']['rots'] = dataset_dict_raw[k]['motion_source']['rots'][:60]
+            #     dataset_dict_raw[k]['motion_source']['trans'] = dataset_dict_raw[k]['motion_source']['trans'][:60] 
+            #     dataset_dict_raw[k]['motion_source']['joint_positions'] = dataset_dict_raw[k]['motion_source']['joint_positions'][:60] 
+
+            #     dataset_dict_raw[k]['motion_target']['rots'] = dataset_dict_raw[k]['motion_target']['rots'][:60]
+            #     dataset_dict_raw[k]['motion_target']['trans'] = dataset_dict_raw[k]['motion_target']['trans'][:60] 
+            #     dataset_dict_raw[k]['motion_target']['joint_positions'] = dataset_dict_raw[k]['motion_target']['joint_positions'][:60] 
+            k2id = {'train': 0 , 'val': 1, 'test': 2}
+            keys_for_split = {}
+            for set in k2id.keys():
+                keys_for_split[set] = read_text_lines(base_path / 'splits',
+                                                    split=set)
+            id_split_dict = {}
+            for split, split_keys in keys_for_split.items():
+                for k in split_keys:
+                    id_split_dict[k] = k2id[split]
+
+            for k, v in hml3d_data_dict.items():
+                v['id'] = k
+                v['split'] = id_split_dict[k]
+
+        hml3d_data_dict = {}
+        for split in load_splits:
+            list_for_split = joblib.load(f'{self.datapath}/{split}.pth.tar')
+            hml3d_data_dict[split] = list_for_split
+
+        if 'train' in load_splits and 'val' in load_splits:
+            lst_for_stats = hml3d_data_dict['train'] + hml3d_data_dict['val'] 
+
+            self.stats = self.calculate_feature_stats(HumanML3DDataset(lst_for_stats,
+                                                        self.preproc.n_body_joints,
+                                                        self.preproc.stats_file,
+                                                        self.preproc.norm_type,
+                                                        self.smpl_p,
+                                                        self.rot_repr,
+                                                        self.load_feats,
+                                                        do_augmentations=False))
         # import ipdb; ipdb.set_trace()
 
         # setup collate function meta parameters
         # self.collate_fn = lambda b: collate_batch(b, self.cfg.load_feats)
         # create datasets
-        self.dataset['train'], self.dataset['val'], self.dataset['test'] = (
-           HumanML3DDataset([v for k, v in hml3d_data_dict.items() if id_split_dict[k] == 0],
-                        self.preproc.n_body_joints,
-                        self.preproc.stats_file,
-                        self.preproc.norm_type,
-                        self.smpl_p,
-                        self.rot_repr,
-                        self.load_feats,
-                        do_augmentations=True), 
-           HumanML3DDataset([v for k, v in hml3d_data_dict.items() if id_split_dict[k] == 1],
-                        self.preproc.n_body_joints,
-                        self.preproc.stats_file,
-                        self.preproc.norm_type,
-                        self.smpl_p,
-                        self.rot_repr,
-                        self.load_feats,
-                        do_augmentations=True), 
-           HumanML3DDataset([v for k, v in hml3d_data_dict.items() if id_split_dict[k] == 2],
-                        self.preproc.n_body_joints,
-                        self.preproc.stats_file,
-                        self.preproc.norm_type,
-                        self.smpl_p,
-                        self.rot_repr,
-                        self.load_feats,
-                        do_augmentations=False) 
-        )
-        for splt in ['train', 'val', 'test']:
-            log.info(f'Set up {splt} set with {len(self.dataset[splt])} items.')
-        self.nfeats = self.dataset['train'].nfeats
+        for spl in load_splits:
+            self.dataset[spl] = HumanML3DDataset(hml3d_data_dict[spl] ,
+                                                 self.preproc.n_body_joints,
+                                                 self.preproc.stats_file,
+                                                 self.preproc.norm_type,
+                                                 self.smpl_p,
+                                                 self.rot_repr,
+                                                 self.load_feats,
+                                                 do_augmentations=True)
+
+            log.info(f'Set up {spl} set with {len(self.dataset[spl])} items.')
+
+        self.nfeats = self.dataset[spl].nfeats
 
     # def setup(self, stage):
     #     pass
