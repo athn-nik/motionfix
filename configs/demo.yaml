@@ -23,7 +23,7 @@ render_vids: false
 steps: 1000
 guidance_scale_text: 2.5 #
 guidance_scale_motion: 1.5
-init_from: 'noise' # source
+init_from: 'source' # source
 
 subset: cherries
 
@@ -32,10 +32,7 @@ defaults:
   - model/infer_scheduler: ddpm
   - /path@path
   - override hydra/job_logging: rich # custom
-  - override hydra/hydra_logging: rich # custom00 
-  - data: bodilex
+  - override hydra/hydra_logging: rich # custom
 
 split_to_load: 
 - "test"
-
-datapath: ${path.data}/humanml3d_processed # amass_bodilex.pth.tar
