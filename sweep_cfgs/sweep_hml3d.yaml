@@ -26,16 +26,16 @@ parameters:
   model.input_feats:
     values: [["body_transl_delta_pelv", "body_orient" ,"body_pose"]]
   machine.batch_size:
-    values: [64, 128]
+    values: [128, 256]
   data:
     values: ['hml3d']
   model.latent_dim:
-    values: [256, 512]
+    values: [256]
   model.diff_params.guidance_scale_text:
     values: [2.5]
-  model.loss_on_positions:
-    values: ['true', 'false']
   model.train_scheduler.beta_schedule:
     values: ['squaredcos_cap_v2']
   model.motion_condition:
     values: ['null']
+  model.optim.lr:
+    values: [0.0001, 0.00001, 0.00006]
