@@ -53,7 +53,6 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     import os
     import torch 
     os.environ['HYDRA_FULL_ERROR'] = '1'
-    os.system("Xvfb :12 -screen 1 640x480x24 &")
     os.environ['DISPLAY'] = ":12"
     os.environ['WANDB_SILENT']="true"
 

@@ -1341,12 +1341,12 @@ class MD(BaseModel):
                                                     mask_source, 
                                                     mask_target)
 
-        if self.trainer.current_epoch % 100 == 0 and self.trainer.current_epoch != 0:
-            if self.global_rank == 0 and split=='train' and batch_idx == 0:
-                if self.renderer is not None:
-                    self.visualize_diffusion(dif_dict, actual_target_lens, 
-                                            gt_keyids, gt_texts, 
-                                            self.trainer.current_epoch)
+        # if self.trainer.current_epoch % 100 == 0 and self.trainer.current_epoch != 0:
+        #     if self.global_rank == 0 and split=='train' and batch_idx == 0:
+        #         if self.renderer is not None:
+        #             self.visualize_diffusion(dif_dict, actual_target_lens, 
+        #                                     gt_keyids, gt_texts, 
+        #                                     self.trainer.current_epoch)
 
         # self.losses[split](rs_set)
         # if loss is None:

@@ -162,6 +162,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
             sub_file = SUBMISSION_TEMPLATE
             sub_file = sub_file.replace('EXPMODE', mode)
             sub_file = sub_file.replace('DESCRIPTION', f'{run_id}')
+            os.system("Xvfb :12 -screen 1 640x480x24 &")
 
             bash = 'export HYDRA_FULL_ERROR=1 export PYTHONFAULTHANDLER=1\nexport PYTHONUNBUFFERED=1\nexport PATH=$PATH\n' \
                    'export PATH=/home/nathanasiou/apps/imagemagick/bin:$PATH\n' \
