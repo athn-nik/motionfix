@@ -181,15 +181,25 @@ def render_vids(newcfg: DictConfig) -> None:
         from src.data.tools.collate import collate_batch_last_padding
         collate_fn = lambda b: collate_batch_last_padding(b,
                                                           features_to_load)
-        from src.utils.eval_utils import test_keyds
 
         if cfg.subset == 'cherries':
+            from src.utils.eval_utils import test_keyds
+
             subset = []
             for elem in test_dataset.data:
                 if elem['id'] in test_keyds:
                     subset.append(elem)
             batch_size_test = len(subset)
             test_dataset.data = subset
+        elif cfg.subset == 'cherries2':
+            from src.utils.eval_utils import keyids_for_testing
+            subset = []
+            for elem in test_dataset.data:
+                if elem['id'] in keyids_for_testing:
+                    subset.append(elem)
+            batch_size_test = len(subset)
+            test_dataset.data = subset
+
         else:
             batch_size_test = 8
 
