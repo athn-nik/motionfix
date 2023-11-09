@@ -9,5 +9,5 @@ enable_progress_bar: True
 check_val_every_n_epoch: 50 # if k --> happens every (k-1), 2*(k-1), ...
 limit_train_batches: 1.0
 limit_val_batches: 1.0
-num_sanity_val_steps: 2
+num_sanity_val_steps: 0 # 2
 precision: 32 # => 'bf16' | 16 | 32

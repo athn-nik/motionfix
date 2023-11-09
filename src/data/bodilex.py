@@ -49,12 +49,12 @@ class BodilexDataset(Dataset):
 
 
 
-        self.body_model = smplx.SMPLHLayer(f'{smplh_path}/smplh',
-                                           model_type='smplh',
-                                           gender='neutral',
-                                           ext='npz').eval();
-        setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
-        freeze(self.body_model)
+        # self.body_model = smplx.SMPLHLayer(f'{smplh_path}/smplh',
+        #                                    model_type='smplh',
+        #                                    gender='neutral',
+        #                                    ext='npz').eval();
+        # setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
+        # freeze(self.body_model)
 
         self.body_chain = bm.parents
         stat_path = join(stats_file)

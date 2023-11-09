@@ -63,7 +63,6 @@ def output2renderable(model, lst_of_tensors: list[Tensor]):
 
     return l_of_renders
 
-
 def get_folder_name(config):
     sched_name = config.model.infer_scheduler._target_.split('.')[-1]
     sched_name = sched_name.replace('Scheduler', '').lower()
@@ -82,11 +81,14 @@ def get_folder_name(config):
         sset = ''
     else:
         sset = f'{config.subset}'
-
-    if config.model.motion_condition is not None:
-        return f'{sset}{ckpt_n}{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
+    if config.render_vids:
+        vds = 'gens_'        
     else:
-        return f'{sset}{ckpt_n}{init_from}{sched_name}_text{text_guid}_steps{infer_steps}'
+        vds = ''
+    if config.model.motion_condition is not None:
+        return f'{vds}{sset}{ckpt_n}{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
+    else:
+        return f'{vds}{sset}{ckpt_n}{init_from}{sched_name}_text{text_guid}_steps{infer_steps}'
 
 
 def render_vids(newcfg: DictConfig) -> None:
@@ -198,6 +200,7 @@ def render_vids(newcfg: DictConfig) -> None:
     from src.utils.art_utils import color_map
     
     init_diff_from = cfg.init_from
+    mode_cond = cfg.condition_mode
     tot_pkls = []
 
     if cfg.mode in ['denoise', 'sample']:
@@ -234,7 +237,9 @@ def render_vids(newcfg: DictConfig) -> None:
                                                     batch['source_motion'],
                                                     mask_source,
                                                     mask_target,
-                                                    init_vec=init_diff_from)
+                                                    init_vec=batch['source_motion'],
+                                                    init_vec_method=init_diff_from,
+                                                    condition_mode=mode_cond)
                     gen_mo = model.diffout2motion(diffout)
 
                     src_mot_cond, tgt_mot = model.batch2motion(batch,
