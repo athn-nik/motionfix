@@ -81,14 +81,16 @@ def get_folder_name(config):
         sset = ''
     else:
         sset = f'{config.subset}'
+    cond_type = '_' + config.condition_mode + '_'
     if config.render_vids:
-        vds = 'gens_'        
+        vds = 'gens_'
     else:
         vds = ''
+
     if config.model.motion_condition is not None:
-        return f'{vds}{sset}{ckpt_n}{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
+        return f'{vds}{cond_type}{sset}{ckpt_n}{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
     else:
-        return f'{vds}{sset}{ckpt_n}{init_from}{sched_name}_text{text_guid}_steps{infer_steps}'
+        return f'{vds}{cond_type}{sset}{ckpt_n}{init_from}{sched_name}_text{text_guid}_steps{infer_steps}'
 
 
 def render_vids(newcfg: DictConfig) -> None:

@@ -354,26 +354,27 @@ class BaseModel(LightningModule):
         from src.render.video import stack_vids, put_text
         video_names = []
         # RENDER
-        curep = self.trainer.current_epoch
-        do_render = curep%self.render_vids_every_n_epochs
+        curep = str(self.trainer.current_epoch)
+        # do_render = curep%self.render_vids_every_n_epochs
         if self.renderer is not None:
             if self.global_rank == 0 and self.trainer.current_epoch != 0:
-                if split == 'val' and do_render == 0:
-                    folder = "epoch_" + epo.zfill(3)
+                if split == 'val': # and do_render == 0:
+                    folder = "epoch_" + curep.zfill(3)
                     folder =  Path('visuals') / folder 
                     folder.mkdir(exist_ok=True, parents=True)
 
                     vids_gt_src, vids_gt_tgt = self.render_subset_gt()
                     video_names_generations = self.render_gens_set(self.set_buf)
                     log_render_dic = {}
-                    
-                    self.set_buf['text_descr']
-                    vids_gt_src_sorted = sorted(vids_gt_src,
-                                           key=lambda x: os.path.basename(x).split('/')[0])
+
+                    indices, vids_gt_src_sorted = zip(*sorted(enumerate(vids_gt_src),
+                                           key=lambda x: os.path.basename(x[1]).split('/')[0]))
+                    indices = list(indices)
+                    vids_gt_src_sorted = list(vids_gt_src_sorted) 
+
                     vids_gt_tgt_sorted = sorted(vids_gt_tgt,
                                            key=lambda x: os.path.basename(x).split('/')[0])
-                    ids = np.argsort(vids_gt_src)
-                    texts_descrs = [self.set_buf['text_descr'][i] for i in ids]
+                    texts_descrs = [self.test_subset['text'] for i in indices]
 
                     cond_vids_sorted = {}
                     for cond_type, cond_vids in video_names_generations.items():
@@ -382,7 +383,6 @@ class BaseModel(LightningModule):
 
                     # Zip the sorted lists
                     all_zipped = zip(vids_gt_src_sorted, vids_gt_tgt_sorted)
-                    stacked_videos = []
                     for gen_var, vds_paths in cond_vids_sorted.items():
                         stacked_videos = []
 
@@ -395,7 +395,7 @@ class BaseModel(LightningModule):
                             stack_w_text = put_text(texts_descrs[idx],
                                                     stacked_fname,
                                                     f'{fname}_txt.mp4')
-                            stacked_videos.append(stacked_fname)
+                            stacked_videos.append(stack_w_text)
  
                         for v in stacked_videos:
                             logname = os.path.basename(v).split('_')[:2]

@@ -211,6 +211,7 @@ class MD(BaseModel):
             self.infer_scheduler.set_timesteps(rev_steps)
             log.info(f'Inference of: {rev_steps}')
         else:
+            rev_steps = self.diff_params.num_inference_timesteps
             self.infer_scheduler.set_timesteps(rev_steps)
 
         timesteps = self.infer_scheduler.timesteps.to(inp_motion_mask.device)
