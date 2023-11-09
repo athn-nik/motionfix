@@ -337,7 +337,8 @@ def render_vids(newcfg: DictConfig) -> None:
     
 if __name__ == '__main__':
 
-    os.environ['DISPLAY'] = ":1"
     os.system("Xvfb :11 -screen 1 640x480x24 &")
+    os.environ['DISPLAY'] = ":11"
+    #os.system("Xvfb :11 -screen 1 640x480x24 &")
 
     _render_vids()

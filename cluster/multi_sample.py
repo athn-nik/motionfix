@@ -79,8 +79,8 @@ if __name__ == "__main__":
                 '--mode', 'sample',
                 '--bid', '20',
                 '--extras']
-    gd_text = [1.5, 2, 2.5]
-    gd_motion = [1.5, 2]
+    gd_text = [7.5, 2.5]
+    gd_motion = [1.5, 7.5]
     schedulers = ['ddpm']
     init_from = ['source', 'noise']
     main_loop(cmd_train, exp_paths, gd_text,

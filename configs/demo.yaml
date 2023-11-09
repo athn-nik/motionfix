@@ -17,8 +17,8 @@ number_of_samples: 1
 ckpt_name: 'last'
 last_ckpt_path: ${get_last_checkpoint:${folder},${ckpt_name}}
 logger_level: INFO
-save_pkl: true
-render_vids: false
+save_pkl: false
+render_vids: true
 
 steps: 1000
 guidance_scale_text: 2.5 #
