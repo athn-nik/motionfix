@@ -333,7 +333,7 @@ class BaseModel(LightningModule):
 
                 for k, v in data_variant.items():
                     if k == 'generation':
-                        mot_to_rend = {bd_f: bd_v[iid_tor] 
+                        mot_to_rend = {bd_f: bd_v[iid_tor].detach().cpu()
                                        for bd_f, bd_v in v.items()}
 
                         # RENDER THE MOTION

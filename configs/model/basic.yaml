@@ -22,7 +22,7 @@ diff_params:
   prob_drop_text: 0.05 # 0.1 0.25
   prob_drop_motion: 0.05
   guidance_scale_text: 2.5 #
-  guidance_scale_motion: 1.5
+  guidance_scale_motion: 2.0
 
 motion_condition: null
 source_encoder: null # trans_enc 

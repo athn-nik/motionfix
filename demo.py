@@ -235,11 +235,12 @@ def render_vids(newcfg: DictConfig) -> None:
                     mots_to_render = [in_mot, no_mo, deno_mo]
                     monames = ['input', 'noised', 'denoised']
                 else:
+                    source_init = batch['source_motion'].permute(1, 0, 2)
                     diffout = model.generate_motion(text_diff,
                                                     batch['source_motion'],
                                                     mask_source,
                                                     mask_target,
-                                                    init_vec=batch['source_motion'],
+                                                    init_vec=source_init,
                                                     init_vec_method=init_diff_from,
                                                     condition_mode=mode_cond)
                     gen_mo = model.diffout2motion(diffout)
