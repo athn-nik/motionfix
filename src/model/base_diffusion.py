@@ -1058,9 +1058,10 @@ class MD(BaseModel):
                                                           *init_diff_rev.shape[1:]),
                                                         device=self.device)],
                                             dim=0)
+                init_diff_rev = init_diff_rev.permute(1, 0, 2)
             else:
                 init_diff_rev = init_diff_rev[:tgt_len]
-
+                init_diff_rev = init_diff_rev.permute(1, 0, 2)
         else:
             init_diff_rev = None
             # complete noise
