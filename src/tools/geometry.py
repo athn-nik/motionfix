@@ -9,7 +9,6 @@ import torch.nn.functional as F
 import numpy as np
 import torch
 from einops import rearrange
-import src.tools.geometry as geometry
 
 
 def rotate_trajectory(traj, rotZ, inverse=False):
@@ -51,20 +50,20 @@ def rotate_body_canonic(rots, trans, offset=0.0):
 
     # rots, trans = data.rots.clone(), data.trans.clone()
     global_poses = rots[..., 0, :, :]
-    global_euler = geometry.matrix_to_euler_angles(global_poses, "ZYX")
+    global_euler = matrix_to_euler_angles(global_poses, "ZYX")
     anglesZ, anglesY, anglesX = torch.unbind(global_euler, -1)
-    rotZ = geometry._axis_angle_rotation("Z", anglesZ)
+    rotZ = _axis_angle_rotation("Z", anglesZ)
 
     diff_mat_rotZ = rotZ[..., 1:, :, :] @ rotZ.transpose(-1, -2)[..., :-1, :, :]
-    vel_anglesZ = geometry.matrix_to_axis_angle(diff_mat_rotZ)[..., 2]
+    vel_anglesZ = matrix_to_axis_angle(diff_mat_rotZ)[..., 2]
     # padding "same"
     vel_anglesZ = torch.cat((vel_anglesZ[..., [0]], vel_anglesZ), dim=-1)
     # canonicalizing here
     new_anglesZ = torch.cumsum(vel_anglesZ, -1) + offset
-    new_rotZ = geometry._axis_angle_rotation("Z", new_anglesZ)
+    new_rotZ = _axis_angle_rotation("Z", new_anglesZ)
 
     new_global_euler = torch.stack((new_anglesZ, anglesY, anglesX), -1)
-    new_global_orient = geometry.euler_angles_to_matrix(new_global_euler, "ZYX")
+    new_global_orient = euler_angles_to_matrix(new_global_euler, "ZYX")
 
     rots[:, 0] = new_global_orient
     trans = rotate_trans(trans, rotZ[0], inverse=False)

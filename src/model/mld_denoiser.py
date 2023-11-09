@@ -26,11 +26,13 @@ class MldDenoiser(nn.Module):
                  freq_shift: int = 0,
                  text_encoded_dim: int = 768,
                  use_deltas: bool = False,
+                 pred_delta_motion: bool = False,
                  **kwargs) -> None:
 
         super().__init__()
         self.use_deltas = use_deltas
         self.latent_dim = latent_dim
+        self.pred_delta_motion = pred_delta_motion
         self.text_encoded_dim = text_encoded_dim
         self.condition = condition
         self.abl_plus = False
@@ -142,10 +144,10 @@ class MldDenoiser(nn.Module):
             elif motion_embeds.shape[0] > 5: 
                 # ugly way to tell concat the motion or so
                 # first embed to low dim space then concat
-                motion_embeds = self.pose_embd(motion_embeds)
+                motion_embeds_proj = self.pose_embd(motion_embeds)
                 emb_latent = torch.cat((time_emb, 
                                         text_emb_latent,
-                                        motion_embeds), 0)
+                                        motion_embeds_proj), 0)
             else:
                 emb_latent = torch.cat((time_emb, 
                                         text_emb_latent,
@@ -182,6 +184,7 @@ class MldDenoiser(nn.Module):
             # if self.diffusion_only:
             denoised_motion_proj = tokens[emb_latent.shape[0]:]
             if self.use_deltas:
+                # DROPPED
                 denoised_first_pose = self.first_pose_proj(denoised_motion_proj[:1])            
                 denoised_motion_only = self.pose_proj(denoised_motion_proj[1:])
                 denoised_motion_only[~motion_in_mask.T[1:]] = 0
@@ -189,8 +192,11 @@ class MldDenoiser(nn.Module):
                 denoised_motion[1:] = denoised_motion_only
                 denoised_motion[0] = denoised_first_pose
             else:
+                if self.pred_delta_motion:
+                    denoised_motion = denoised_motion_proj + motion_embeds_proj
                 denoised_motion = self.pose_proj(denoised_motion_proj)
                 denoised_motion[~motion_in_mask.T] = 0
+
             # zero for padded area
             # else:
             #     sample = tokens[:sample.shape[0]]

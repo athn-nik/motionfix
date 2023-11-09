@@ -1,7 +1,12 @@
+import torch
+
+test_keyds= ["001895", "001893", "001892", "001888", "001848", "001881",
+             "001827", "001845", "001858", "001812", "001798", "001755"]
 
 
-test_keyds= ["001895", "001893", "001892", "001888", "001848", "001881", "001827",
-"001845", "001858", "001812", "001798", "001755"]
+keyids_for_testing = ["001892", "001888", "001881", "001800", "001790"
+                      "001849", "001853", "001860", "001696", "001862"]
+
 def regroup_metrics(metrics):
     from src.info.joints import smplh_joints
     pose_names = smplh_joints[1:23]
@@ -29,13 +34,11 @@ def regroup_metrics(metrics):
 
     return dico
 
-good_examples_test_set = ["001755"]
 
 def sanitize(dico):
     dico = {key: "{:.5f}".format(float(val)) for key, val in dico.items()}
     return dico
 
-import torch
 def out2blender(dicto):
     blender_dic = {}
     blender_dic['trans'] = dicto['body_transl']

@@ -23,7 +23,8 @@ render_vids: true
 steps: 1000
 guidance_scale_text: 2.5 #
 guidance_scale_motion: 1.5
-init_from: 'source' # source
+init_from: 'source' # noise
+condition_mode: 'full_cond' # 'mot_cond' 'text_cond'
 
 subset: cherries
 

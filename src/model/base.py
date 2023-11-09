@@ -18,6 +18,9 @@ import smplx
 from os.path import exists, join
 from src.utils.genutils import cast_dict_to_tensors
 from src.utils.art_utils import color_map
+import joblib
+from src.model.utils.tools import remove_padding, pack_to_render
+
 # A logger for this file
 log = logging.getLogger(__name__)
 
@@ -36,9 +39,12 @@ class BaseModel(LightningModule):
 
         # Save visuals, one validation step per validation epoch
         self.render_data_buffer = {"train": [], "val":[]}
+        self.set_buf = []
+
         self.loss_dict = {'train': None,
                           'val': None,}
         self.stats = self.load_norm_statistics(statistics_path, self.device)
+
         self.nfeats = nfeats
         self.dim_per_feat = dim_per_feat
         self.norm_type = norm_type
@@ -54,7 +60,11 @@ class BaseModel(LightningModule):
         setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
         freeze(self.body_model)
         log.info(f'Training using these features: {self.input_feats}')
-
+        data_path =Path(hack_path(smpl_path, keyword='data')).parent
+        self.test_subset = joblib.load(data_path / 'test_kinedit.pth.tar')
+        self.paths_of_rendered_subset = []
+        self.paths_of_rendered_subset_tgt = []
+        self.paths_of_rendered_subset_src = []
         # Need to define:
         # forward
         # allsplit_step()
@@ -298,39 +308,133 @@ class BaseModel(LightningModule):
             x_unnorm.append(self.unnorm(x, self.stats[name]))
         return x_unnorm
 
+    @torch.no_grad()
+    def render_gens_set(self, buffer: list[dict]):
+        from src.render.video import stack_vids
+        from tqdm import tqdm
+        novids = self.num_vids_to_render
+        # create videos and save full paths
+        epo = str(self.trainer.current_epoch)
+        folder = "epoch_" + epo.zfill(3)
+        folder =  Path('visuals') / folder 
+        folder.mkdir(exist_ok=True, parents=True)
+
+        video_names_all = {'motion': [],
+                       'text': [],
+                       'motion_n_text': []}
+        for data_variant in buffer:
+            novids = len(data_variant['keyids'])
+            video_names_cur = []
+            variant = data_variant['set']
+            for iid_tor in tqdm(range(novids), 
+                                desc=f'Generating {variant} videos'):
+                cur_text = data_variant['text_descr'][iid_tor]
+                cur_key = data_variant['keyids'][iid_tor]
+
+                for k, v in data_variant.items():
+                    if k == 'generation':
+                        mot_to_rend = {bd_f: bd_v[iid_tor] 
+                                       for bd_f, bd_v in v.items()}
+
+                        # RENDER THE MOTION
+                        fname = render_motion(self.renderer, mot_to_rend,
+                                              folder/f'{cur_key}_{variant}_{epo}',
+                                              pose_repr='aa',
+                                              color=color_map['generation'])
+                        
+                        video_names_cur.append(fname)
+            video_names_all[variant].append(video_names_cur)
+
+        return video_names_all            
+
+
+
     def allsplit_epoch_end(self, split: str):
+        import os
+        from src.render.video import stack_vids, put_text
         video_names = []
         # RENDER
+        curep = self.trainer.current_epoch
+        do_render = curep%self.render_vids_every_n_epochs
         if self.renderer is not None:
             if self.global_rank == 0 and self.trainer.current_epoch != 0:
-                if split == 'train':
-                    if self.trainer.current_epoch%self.render_vids_every_n_epochs == 0:                        
-                        video_names = []
-                        # self.render_buffer(self.render_data_buffer[split],
-                                                        # split=split)
-                else:
-                    video_names = self.render_buffer(self.render_data_buffer[split],
-                                                        split=split)
-                    # # log videos to wandb
-                    # self.render_buffer(self.render_data_buffer[split],split=split)
+                if split == 'val' and do_render == 0:
+                    folder = "epoch_" + epo.zfill(3)
+                    folder =  Path('visuals') / folder 
+                    folder.mkdir(exist_ok=True, parents=True)
 
-        
-                if self.logger is not None and video_names:
+                    vids_gt_src, vids_gt_tgt = self.render_subset_gt()
+                    video_names_generations = self.render_gens_set(self.set_buf)
                     log_render_dic = {}
-                    for v in video_names:
-                        logname = f'{split}_renders/' + v.replace('.mp4',
-                                                        '').split('/')[-1][4:-4]
-                        logname = f'{logname}_kid'
-                        try:
+                    
+                    self.set_buf['text_descr']
+                    vids_gt_src_sorted = sorted(vids_gt_src,
+                                           key=lambda x: os.path.basename(x).split('/')[0])
+                    vids_gt_tgt_sorted = sorted(vids_gt_tgt,
+                                           key=lambda x: os.path.basename(x).split('/')[0])
+                    ids = np.argsort(vids_gt_src)
+                    texts_descrs = [self.set_buf['text_descr'][i] for i in ids]
+
+                    cond_vids_sorted = {}
+                    for cond_type, cond_vids in video_names_generations.items():
+                        cond_vids_sorted[cond_type] = sorted(cond_vids[0],
+                                key=lambda x: os.path.basename(x).split('/')[0])
+
+                    # Zip the sorted lists
+                    all_zipped = zip(vids_gt_src_sorted, vids_gt_tgt_sorted)
+                    stacked_videos = []
+                    for gen_var, vds_paths in cond_vids_sorted.items():
+                        stacked_videos = []
+
+                        for idx, (src, tgt) in enumerate(all_zipped):
+                            kid = src.split('/')[-1].split('_')[0]
+                            fname = folder / f'{gen_var}_{kid}_{curep}_stk'
+                            stacked_fname = stack_vids([src, tgt, vds_paths[idx]], 
+                                                    fname=f'{fname}.mp4',
+                                                    orient='h')
+                            stack_w_text = put_text(texts_descrs[idx],
+                                                    stacked_fname,
+                                                    f'{fname}_txt.mp4')
+                            stacked_videos.append(stacked_fname)
+ 
+                        for v in stacked_videos:
+                            logname = os.path.basename(v).split('_')[:2]
+                            logname = '_'.join(logname)
+                            logname = f'{gen_var}/' + logname
                             log_render_dic[logname] = wandb.Video(v, fps=30,
-                                                                  format='mp4') 
-                        except:
-                            break
-                    try:
+                                                                format='mp4') 
+                    if self.logger is not None:
                         self.logger.experiment.log(log_render_dic)
-                    except:
-                        print('could not log this time!')
-        self.render_data_buffer[split].clear()
+                self.set_buf.clear()
+    
+        #######################################################################
+        #     if self.global_rank == 0 and self.trainer.current_epoch != 0:
+        #         if split == 'train':
+        #             if self.trainer.current_epoch%self.render_vids_every_n_epochs == 0:                        
+        #                 video_names = []
+        #                 # self.render_buffer(self.render_data_buffer[split],
+        #                                                 # split=split)
+        #         else:
+        #             video_names = self.render_buffer(self.render_data_buffer[split],
+        #                                                 split=split)
+        #             # # log videos to wandb
+        #             # self.render_buffer(self.render_data_buffer[split],split=split)
+        #         if self.logger is not None and video_names:
+        #             log_render_dic = {}
+        #             for v in video_names:
+        #                 logname = f'{split}_renders/' + v.replace('.mp4',
+        #                                                 '').split('/')[-1][4:-4]
+        #                 logname = f'{logname}_kid'
+        #                 try:
+        #                     log_render_dic[logname] = wandb.Video(v, fps=30,
+        #                                                           format='mp4') 
+        #                 except:
+        #                     break
+        #             try:
+        #                 self.logger.experiment.log(log_render_dic)
+        #             except:
+        #                 print('could not log this time!')
+        # self.render_data_buffer[split].clear()
 
         # if split == "val":
         #     metrics_dict = self.metrics.compute()
@@ -362,7 +466,114 @@ class BaseModel(LightningModule):
         elif self.hparams.lr_scheduler == 'steplr':
             optim_dict['lr_scheduler'] = torch.optim.lr_scheduler.StepLR(optimizer, step_size=200)
 
-        return optim_dict 
+        return optim_dict
+    
+    def prepare_mot_masks(self, source_lens, target_lens):
+        from src.data.tools.tensors import lengths_to_mask
+
+        mask_target = lengths_to_mask(target_lens,
+                                              self.device)
+        mask_source = lengths_to_mask(source_lens,
+                                              self.device)
+        return mask_source, mask_target
+    
+    @torch.no_grad()
+    def process_batch(self, batch):
+        batch_to_gpu = { k: v.to(self.device) for k,
+                            v in self.test_subset.items() 
+                         if torch.is_tensor(v) }
+
+        input_batch = self.norm_and_cat(batch_to_gpu, self.input_feats)
+        for k, v in input_batch.items():
+            if self.input_deltas:
+                batch[f'{k}_motion'] = v[1:]
+            else:
+                batch[f'{k}_motion'] = v
+                batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
+        return batch
+
+        
+    def render_subset_gt(self):
+        batched = self.process_batch(self.test_subset)
+        mask_src, mask_tgt = self.prepare_mot_masks(batched['length_source'],
+                                                    batched['length_target'])
+        src_mot_cond = batched['source_motion']
+        gt_texts = batched['text']
+        gt_keyids = batched['id']
+        folder = "epoch_" + str(self.trainer.current_epoch).zfill(3)
+        folder =  Path('visuals') / folder 
+        folder.mkdir(exist_ok=True, parents=True)
+        if not self.paths_of_rendered_subset_src:
+            src_mots, tgt_mots = self.batch2motion(batched,
+                                                    pack_to_dict=True,
+                                                    slice_til=None)
+            for idx, keyid in enumerate(batched['id']):
+
+                src_mot = {k2: v2[idx] for k2,
+                            v2 in src_mots.items()}
+
+                # RENDER THE MOTION
+                fname = render_motion(self.renderer, src_mot,
+                                        folder / f'{keyid}_source',
+                                        # text_for_vid=gt_texts[idx],
+                                        pose_repr='aa',
+                                        color=color_map['source'])
+                self.paths_of_rendered_subset_src.append(fname)
+
+                tgt_mot = {k2: v2[idx] for k2,
+                            v2 in tgt_mots.items()}
+                # RENDER THE MOTION
+                fname = render_motion(self.renderer, tgt_mot,
+                                        folder / f'{keyid}_target',
+                                        # text_for_vid=gt_texts[idx],
+                                        pose_repr='aa',
+                                        color=color_map['target'])
+                self.paths_of_rendered_subset_tgt.append(fname)
+        return self.paths_of_rendered_subset_src, self.paths_of_rendered_subset_tgt
+
+    def batch2motion(self, batch, pack_to_dict=True,
+                     slice_til=None, single_motion=False):
+        # batch_to_cpu = { k: v.detach().cpu() for k, v in batch.items() 
+        #                 if torch.is_tensor(v) }
+        tot_dim_deltas = 0
+        if self.using_deltas:
+            for idx_feat, in_feat in enumerate(self.input_feats):
+                if 'delta' in in_feat:
+                    tot_dim_deltas += self.input_feats_dims[idx_feat]
+        source_motion_gt = None
+        if batch['source_motion'] is not None:
+            # source motion
+            source_motion = batch['source_motion']
+            # source_motion = self.unnorm_delta(source_motion)[..., tot_dim_deltas:]
+            source_motion = self.diffout2motion(source_motion.detach().permute(1,
+                                                                            0,
+                                                                            2))
+            source_motion = source_motion.detach().cpu()
+            if pack_to_dict:
+                source_motion_gt = pack_to_render(rots=source_motion[..., 3:],
+                                                  trans=source_motion[...,:3])
+            else:
+                source_motion_gt = source_motion
+            if slice_til is not None:
+                source_motion_gt = {k: v[slice_til] 
+                                    for k, v in source_motion_gt.items()}
+
+        # target motion
+        target_motion = batch['target_motion']
+        target_motion = self.diffout2motion(target_motion.detach().permute(1,
+                                                                        0,
+                                                                        2))
+        target_motion = target_motion.detach().cpu()
+        if pack_to_dict:
+            target_motion_gt = pack_to_render(rots=target_motion[..., 3:],
+                                            trans=target_motion[...,:3])
+        else:
+            target_motion_gt = target_motion
+        if slice_til is not None:
+            target_motion_gt = {k: v[slice_til] 
+                                for k, v in target_motion_gt.items()}
+
+        return source_motion_gt, target_motion_gt
 
     @torch.no_grad()
     def render_buffer(self, buffer: list[dict], split=False):
