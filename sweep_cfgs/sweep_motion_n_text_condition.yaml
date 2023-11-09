@@ -21,11 +21,15 @@ parameters:
     value: "GROUP-NAME"
   model.train_scheduler.beta_schedule:
     values: ['squaredcos_cap_v2']
-  model.loss_func_pos:
-    values: ['mse']
-  model.loss_func_feats:
-    values: ['mse']
   model.motion_condition:
     values: ['source']
   model.source_encoder:
     values: ['null', 'trans_enc']
+  model.denoiser.pred_delta_motion:
+    values: ['true', 'false']
+  model.prob_uncondp: 
+    values: [0.05, 0.15]
+  model.prob_drop_text: 
+    values: [0.05, 0.15]
+  model.prob_drop_motion:
+    values: [0.05, 0.15]
