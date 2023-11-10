@@ -1406,7 +1406,8 @@ class MD(BaseModel):
         import random
  
         if split == 'val' and batch_idx == 0 and self.global_rank == 0:
-            src_cond_mets = batch['source_motion'].clone()
+            if batch['source_motion'] is not None:
+                src_cond_mets = batch['source_motion'].clone()
             source_motion_gt, target_motion_gt = self.batch2motion(batch)
             with torch.no_grad():
                 mask_src_mets, mask_tgt_mets = self.prepare_mot_masks(
@@ -1497,28 +1498,24 @@ class MD(BaseModel):
                     
 
                     render_text = {'generation': gen_text,
-                                'text_descr': gt_texts,
-                                'keyids': gt_keyids,
-                                }
+                                   'text_descr': gt_texts,
+                                   'keyids': gt_keyids}
                     self.set_buf['text_cond'].append(render_text)
                     
                     render_mot_n_text = {'generation': gen_mot_n_text,
-                                        'text_descr': gt_texts,
-                                        'keyids': gt_keyids,
-                                        }
+                                         'text_descr': gt_texts,
+                                         'keyids': gt_keyids}
                     self.set_buf['full_cond'].append(render_mot_n_text)
 
                     render_motion = {'generation': gen_motion,
-                                    'text_descr': gt_texts,
-                                    'keyids': gt_keyids,
-                                    }
+                                     'text_descr': gt_texts,
+                                     'keyids': gt_keyids}                    
                     self.set_buf['mot_cond'].append(render_motion)
             else:
 
                 render_text = {'generation': gen_metrics,
-                            'text_descr': gt_texts,
-                            'keyids': gt_keyids,
-                            }
+                               'text_descr': gt_texts,
+                               'keyids': gt_keyids}
                 self.set_buf['text_cond'].append(render_text)
                 
                 # TODO do the same for dropped ones!

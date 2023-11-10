@@ -78,11 +78,11 @@ class ComputeMetrics(Metric):
 
         # Average the acceleration values across the sequence (S) and batch (B) dimensions
         # This will result in a tensor of shape (J, 3)
-        velocity = pred_target_verts[1:] - pred_target_verts[:-1]
+        velocity = pred_target_verts[:, 1:] - pred_target_verts[:, :-1]
 
         # Compute the acceleration (second derivative of position)
-        acceleration_tot = velocity[1:] - velocity[:-1]
-        mean_accel_per_seq += acceleration_tot.mean(dim=1)
+        acceleration_tot = velocity[:, 1:] - velocity[:, :-1]
+        mean_accel_per_seq = acceleration_tot.mean(dim=1)
 
         self.acceleration += mean_accel_per_seq.sum()
 

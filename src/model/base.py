@@ -328,15 +328,15 @@ class BaseModel(LightningModule):
                            'motion_n_text': []}
 
         for data_variant, variant_vals in buffer.items():
-            novids = len(variant_vals['keyids'])
+            novids = len(variant_vals[0]['keyids'])
             video_names_cur = []
             
             for iid_tor in tqdm(range(novids), 
                                 desc=f'Generating {data_variant} videos'):
-                cur_text = variant_vals['text_descr'][iid_tor]
-                cur_key = variant_vals['keyids'][iid_tor]
+                cur_text = variant_vals[0]['text_descr'][iid_tor]
+                cur_key = variant_vals[0]['keyids'][iid_tor]
 
-                gen_motion = variant_vals['generation'].items()
+                gen_motion = variant_vals[0]['generation']
                 mot_to_rend = {bd_f: bd_v[iid_tor].detach().cpu()
                                 for bd_f, bd_v in gen_motion.items()}
 
