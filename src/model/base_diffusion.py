@@ -1406,6 +1406,24 @@ class MD(BaseModel):
         import random
  
         if split == 'val' and batch_idx == 0 and self.global_rank == 0:
+            src_cond_mets = batch['source_motion'].clone()
+            source_motion_gt, target_motion_gt = self.batch2motion(batch)
+            with torch.no_grad():
+                mask_src_mets, mask_tgt_mets = self.prepare_mot_masks(
+                                                    batch['length_source'],
+                                                    batch['length_target'])
+                motion_out_metrs = self.generate_motion(texts_cond=gt_texts, 
+                                                       mask_source=mask_src_mets,
+                                                       mask_target=mask_tgt_mets,
+                                                       motions_cond=src_cond_mets,
+                                                       init_vec_method='noise',
+                                                       condition_mode='full_cond')
+            motion_unnorm_metrs = self.unnorm_delta(motion_out_metrs)
+            # do something with the full motion
+            gen_metrics = pack_to_render(rots=motion_unnorm_metrs[...,
+                                                                  3:].detach().cpu(),
+                                         trans=motion_unnorm_metrs[...,
+                                                                   :3].detach().cpu())
 
             batch_subset = { k: v.detach().cpu() for k,
                             v in self.test_subset.items() 
@@ -1418,87 +1436,95 @@ class MD(BaseModel):
             gt_texts = self.test_subset['text']
             gt_keyids = self.test_subset['id']
             nvds = self.num_vids_to_render
-            with torch.no_grad():
-                init_noise, motion_text_n_motion = self.generate_motion(
-                                                     texts_cond=gt_texts, 
-                                                     mask_source=mask_tgt,
-                                                     mask_target=mask_src,
-                                                     motions_cond=src_mot_cond,
-                                                     return_init_noise=True,
-                                                     init_vec_method='noise',
-                                                     condition_mode='full_cond')
-                motion_text = self.generate_motion(texts_cond=gt_texts, 
-                                                   mask_source=mask_src,
-                                                   mask_target=mask_tgt,
-                                                   motions_cond=None,
-                                                   init_vec_method='noise_prev',
-                                                   init_vec=init_noise,
-                                                   condition_mode='text_cond')
+            if self.motion_condition == 'source':
+                with torch.no_grad():
+                    init_noise, motion_text_n_motion = self.generate_motion(
+                                                        texts_cond=gt_texts, 
+                                                        mask_source=mask_tgt,
+                                                        mask_target=mask_src,
+                                                        motions_cond=src_mot_cond,
+                                                        return_init_noise=True,
+                                                        init_vec_method='noise',
+                                                        condition_mode='full_cond')
+                    motion_text = self.generate_motion(texts_cond=gt_texts, 
+                                                    mask_source=mask_src,
+                                                    mask_target=mask_tgt,
+                                                    motions_cond=None,
+                                                    init_vec_method='noise_prev',
+                                                    init_vec=init_noise,
+                                                    condition_mode='text_cond')
 
-                motion_motion = self.generate_motion(texts_cond=gt_texts, 
-                                                     mask_source=mask_src,
-                                                     mask_target=mask_tgt,
-                                                     motions_cond=src_mot_cond,
-                                                     init_vec_method='noise_prev',
-                                                     init_vec=init_noise,
-                                                     condition_mode='mot_cond')
+                    motion_motion = self.generate_motion(texts_cond=gt_texts, 
+                                                        mask_source=mask_src,
+                                                        mask_target=mask_tgt,
+                                                        motions_cond=src_mot_cond,
+                                                        init_vec_method='noise_prev',
+                                                        init_vec=init_noise,
+                                                        condition_mode='mot_cond')
 
-                if self.input_deltas:
-                    motion_unnorm = self.diffout2motion(motion_text_n_motion,
-                                                        full_deltas=True)
-                    motion_unnorm = motion_unnorm.permute(1, 0, 2)
-                if self.using_deltas_transl:
-                    motion_text_n_motion = self.diffout2motion(motion_text_n_motion)                    
-                    motion_text = self.diffout2motion(motion_text)
-                    motion_motion = self.diffout2motion(motion_motion)
-                else:
-                    motion_text_n_motion = self.diffout2motion(motion_text_n_motion)                    
-                    motion_text = self.diffout2motion(motion_text)
-                    motion_motion = self.diffout2motion(motion_motion)
-                # do something with the full motion
-                tot_dim_deltas = 0
-                if self.using_deltas:
-                    for idx_feat, in_feat in enumerate(self.input_feats):
-                        if 'delta' in in_feat:
-                            tot_dim_deltas += self.input_feats_dims[idx_feat]
-                    motion_unnorm = motion_unnorm[..., tot_dim_deltas:]
+                    if self.input_deltas:
+                        motion_unnorm = self.diffout2motion(motion_text_n_motion,
+                                                            full_deltas=True)
+                        motion_unnorm = motion_unnorm.permute(1, 0, 2)
+                    if self.using_deltas_transl:
+                        motion_text_n_motion = self.diffout2motion(motion_text_n_motion)                    
+                        motion_text = self.diffout2motion(motion_text)
+                        motion_motion = self.diffout2motion(motion_motion)
+                    else:
+                        motion_text_n_motion = self.diffout2motion(motion_text_n_motion)                    
+                        motion_text = self.diffout2motion(motion_text)
+                        motion_motion = self.diffout2motion(motion_motion)
+                    # do something with the full motion
+                    tot_dim_deltas = 0
+                    if self.using_deltas:
+                        for idx_feat, in_feat in enumerate(self.input_feats):
+                            if 'delta' in in_feat:
+                                tot_dim_deltas += self.input_feats_dims[idx_feat]
+                        motion_unnorm = motion_unnorm[..., tot_dim_deltas:]
 
-                gen_mot_n_text = pack_to_render(rots=motion_text_n_motion[...,
-                                                            3:].detach().cpu(),
-                                               trans=motion_text_n_motion[...,
-                                                            :3].detach().cpu())
-                gen_text = pack_to_render(rots=motion_text[...,
-                                                            3:].detach().cpu(),
-                                          trans=motion_text[...,
-                                                            :3].detach().cpu())
-                gen_motion = pack_to_render(rots=motion_motion[...,
-                                                            3:].detach().cpu(),
-                                          trans=motion_motion[...,
-                                                            :3].detach().cpu())
+                    gen_mot_n_text = pack_to_render(rots=motion_text_n_motion[...,
+                                                                3:].detach().cpu(),
+                                                trans=motion_text_n_motion[...,
+                                                                :3].detach().cpu())
+                    gen_text = pack_to_render(rots=motion_text[...,
+                                                                3:].detach().cpu(),
+                                            trans=motion_text[...,
+                                                                :3].detach().cpu())
+                    gen_motion = pack_to_render(rots=motion_motion[...,
+                                                                3:].detach().cpu(),
+                                            trans=motion_motion[...,
+                                                                :3].detach().cpu())
+                    
 
-                render_mot_n_text = {'generation': gen_mot_n_text,
-                                     'text_descr': gt_texts,
-                                     'keyids': gt_keyids,
-                                     'set': 'motion_n_text' }
-                self.set_buf.append(render_mot_n_text)
+                    render_text = {'generation': gen_text,
+                                'text_descr': gt_texts,
+                                'keyids': gt_keyids,
+                                }
+                    self.set_buf['text_cond'].append(render_text)
+                    
+                    render_mot_n_text = {'generation': gen_mot_n_text,
+                                        'text_descr': gt_texts,
+                                        'keyids': gt_keyids,
+                                        }
+                    self.set_buf['full_cond'].append(render_mot_n_text)
 
-                render_text = {'generation': gen_text,
-                               'text_descr': gt_texts,
-                               'keyids': gt_keyids,
-                               'set': 'text'}
-                self.set_buf.append(render_text)
+                    render_motion = {'generation': gen_motion,
+                                    'text_descr': gt_texts,
+                                    'keyids': gt_keyids,
+                                    }
+                    self.set_buf['mot_cond'].append(render_motion)
+            else:
 
-                render_motion = {'generation': gen_motion,
-                                 'text_descr': gt_texts,
-                                 'keyids': gt_keyids,
-                                 'set': 'motion'}
-                self.set_buf.append(render_motion)
-
+                render_text = {'generation': gen_metrics,
+                            'text_descr': gt_texts,
+                            'keyids': gt_keyids,
+                            }
+                self.set_buf['text_cond'].append(render_text)
+                
                 # TODO do the same for dropped ones!
-            # if source_motion_gt is not None:
-            #     self.metrics(dict_to_device(source_motion_gt, self.device), 
-            #                 dict_to_device(gen_to_render, self.device),
-            #                 dict_to_device(target_motion_gt, self.device),
-            #                 gt_lens_src, actual_target_lens)
+            self.metrics(dict_to_device(source_motion_gt, self.device), 
+                         dict_to_device(gen_metrics, self.device),
+                         dict_to_device(target_motion_gt, self.device),
+                         gt_lens_src, actual_target_lens)
 
         return total_loss

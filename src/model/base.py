@@ -39,7 +39,11 @@ class BaseModel(LightningModule):
 
         # Save visuals, one validation step per validation epoch
         self.render_data_buffer = {"train": [], "val":[]}
-        self.set_buf = []
+        self.set_buf = {
+                        'text_cond': [],
+                        'mot_cond': [],
+                        'full_cond': []
+                       }
 
         self.loss_dict = {'train': None,
                           'val': None,}
@@ -320,34 +324,32 @@ class BaseModel(LightningModule):
         folder.mkdir(exist_ok=True, parents=True)
 
         video_names_all = {'motion': [],
-                       'text': [],
-                       'motion_n_text': []}
-        for data_variant in buffer:
-            novids = len(data_variant['keyids'])
+                           'text': [],
+                           'motion_n_text': []}
+
+        for data_variant, variant_vals in buffer.items():
+            novids = len(variant_vals['keyids'])
             video_names_cur = []
-            variant = data_variant['set']
+            
             for iid_tor in tqdm(range(novids), 
-                                desc=f'Generating {variant} videos'):
-                cur_text = data_variant['text_descr'][iid_tor]
-                cur_key = data_variant['keyids'][iid_tor]
+                                desc=f'Generating {data_variant} videos'):
+                cur_text = variant_vals['text_descr'][iid_tor]
+                cur_key = variant_vals['keyids'][iid_tor]
 
-                for k, v in data_variant.items():
-                    if k == 'generation':
-                        mot_to_rend = {bd_f: bd_v[iid_tor].detach().cpu()
-                                       for bd_f, bd_v in v.items()}
+                gen_motion = variant_vals['generation'].items()
+                mot_to_rend = {bd_f: bd_v[iid_tor].detach().cpu()
+                                for bd_f, bd_v in gen_motion.items()}
 
-                        # RENDER THE MOTION
-                        fname = render_motion(self.renderer, mot_to_rend,
-                                              folder/f'{cur_key}_{variant}_{epo}',
-                                              pose_repr='aa',
-                                              color=color_map['generation'])
+                # RENDER THE MOTION
+                fname = render_motion(self.renderer, mot_to_rend,
+                                      folder/f'{cur_key}_{data_variant}_{epo}',
+                                      pose_repr='aa', 
+                                      color=color_map['generation'])
                         
-                        video_names_cur.append(fname)
-            video_names_all[variant].append(video_names_cur)
+                video_names_cur.append(fname)
+                video_names_all[data_variant].append(video_names_cur)
 
-        return video_names_all            
-
-
+        return video_names_all
 
     def allsplit_epoch_end(self, split: str):
         import os
@@ -368,12 +370,13 @@ class BaseModel(LightningModule):
                     log_render_dic = {}
 
                     indices, vids_gt_src_sorted = zip(*sorted(enumerate(vids_gt_src),
-                                           key=lambda x: os.path.basename(x[1]).split('/')[0]))
+                            key=lambda x: os.path.basename(x[1]).split('/')[0]))
                     indices = list(indices)
                     vids_gt_src_sorted = list(vids_gt_src_sorted) 
 
                     vids_gt_tgt_sorted = sorted(vids_gt_tgt,
                                            key=lambda x: os.path.basename(x).split('/')[0])
+
                     texts_descrs = [self.test_subset['text'] for i in indices]
 
                     cond_vids_sorted = {}
@@ -392,7 +395,7 @@ class BaseModel(LightningModule):
                             stacked_fname = stack_vids([src, tgt, vds_paths[idx]], 
                                                     fname=f'{fname}.mp4',
                                                     orient='h')
-                            stack_w_text = put_text(texts_descrs[idx],
+                            stack_w_text = put_text(self.test_subset['text'][idx],
                                                     stacked_fname,
                                                     f'{fname}_txt.mp4')
                             stacked_videos.append(stack_w_text)
@@ -400,7 +403,7 @@ class BaseModel(LightningModule):
                         for v in stacked_videos:
                             logname = os.path.basename(v).split('_')[:2]
                             logname = '_'.join(logname)
-                            logname = f'{gen_var}/' + logname
+                            logname = f'{gen_var}_cond/' + logname
                             log_render_dic[logname] = wandb.Video(v, fps=30,
                                                                 format='mp4') 
                     if self.logger is not None:
