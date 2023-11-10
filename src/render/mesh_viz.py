@@ -133,7 +133,14 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
         seqs_of_human_motions.append(smpl_template)
         renderer.scene.add(smpl_template)
     # camera follows smpl sequence
-    camera = renderer.lock_to_node(seqs_of_human_motions[0], (2.5, 2.5, 2.5), smooth_sigma=5.0)
+    seqs_of_human_motions[0]
+    from src.tools.transforms3d import transform_body_pose
+    from src.tools.transforms3d import get_z_rot
+    R_z = get_z_rot(global_orient[0], in_format='aa')
+    heading = -R_z[:, 1]
+    xy_facing = body_transl[0] + heading*2.5
+    camera = renderer.lock_to_node(seqs_of_human_motions[0],
+                                    (xy_facing[0], xy_facing[1], 1.5), smooth_sigma=5.0)
 
     renderer.save_video(video_dir=str(filename), output_fps=30)
     # aitviewer adds a counter to the filename, we remove it
