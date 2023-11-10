@@ -26,7 +26,7 @@ guidance_scale_motion: 1.5
 init_from: 'source' # noise
 condition_mode: 'full_cond' # 'mot_cond' 'text_cond'
 
-subset: cherries
+subset: cherries2
 
 defaults:
   - _self_
