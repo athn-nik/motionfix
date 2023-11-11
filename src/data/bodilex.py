@@ -27,11 +27,13 @@ from src.tools.transforms3d import (
 from src.tools.transforms3d import canonicalize_rotations
 from src.model.utils.smpl_fast import smpl_forward_fast
 from src.utils.genutils import freeze
-
 # A logger for this file
 log = logging.getLogger(__name__)
 
-
+SMPL_BODY_CHAIN = [-1,  0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  9,  9, 
+                   12, 13, 14,
+        16, 17, 18, 19, 20, 22, 23, 20, 25, 26, 20, 28, 29, 20, 31, 32, 20, 34,
+        35, 21, 37, 38, 21, 40, 41, 21, 43, 44, 21, 46, 47, 21, 49, 50]
 class BodilexDataset(Dataset):
     def __init__(self, data: list, n_body_joints: int,
                  stats_file: str, norm_type: str,
@@ -45,7 +47,7 @@ class BodilexDataset(Dataset):
         self.do_augmentations = do_augmentations
         
         # self.seq_parser = SequenceParserAmass(self.cfg)
-        bm = smplx.create(model_path=smplh_path, model_type='smplh', ext='npz')
+        # bm = smplx.create(model_path=smplh_path, model_type='smplh', ext='npz')
 
 
 
@@ -56,7 +58,7 @@ class BodilexDataset(Dataset):
         # setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
         # freeze(self.body_model)
 
-        self.body_chain = bm.parents
+        self.body_chain = torch.tensor(SMPL_BODY_CHAIN)
         stat_path = join(stats_file)
         self.stats = None
         self.n_body_joints = n_body_joints

@@ -56,7 +56,8 @@ def pad_batch(batch, feats, t2m):
                                                feats)
                             for k, v in b.items()}
                             for i, b in enumerate(batch)]
-
+        for x in collated_batch:
+            x['task'] = 't2m'
     else:
         max_frames_src = max(len(b['body_pose_source']) for b in batch)
         max_frames_tgt = max(len(b['body_pose_target']) for b in batch)
@@ -68,6 +69,8 @@ def pad_batch(batch, feats, t2m):
             if '_source' in k else _apply_on_feats(v, k, _pad_n(pad_length_tgt[i]), feats)
                 for k, v in b.items()}
             for i, b in enumerate(batch)]
+        for x in collated_batch:
+            x['task'] = 'edit'
     return collated_batch
 
 def _pad_n(n):

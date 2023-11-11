@@ -12,11 +12,9 @@ from src.data.tools.collate import collate_tensor_with_padding
 from torch.nn import functional as F
 from src.data.tools.tensors import lengths_to_mask
 from src.model.base import BaseModel
-from src.model.metrics import ComputeMetrics
 from src.model.utils.tools import remove_padding
 from src.model.losses.utils import LossTracker
 from src.data.tools import lengths_to_mask_njoints
-from torchmetrics import MetricCollection
 from src.model.losses.compute_mld import MLDLosses
 import inspect
 from src.model.utils.tools import remove_padding, pack_to_render
@@ -103,7 +101,7 @@ class MD(BaseModel):
 
         # for k, v in self.render_data_buffer.items():
         #     self.store_examples[k] = {'ref': [], 'ref_features': [], 'keyids': []}
-        self.metrics = ComputeMetrics(smpl_path)
+        # self.metrics = ComputeMetrics(smpl_path)
         self.input_feats = input_feats
         self.render_vids_every_n_epochs = render_vids_every_n_epochs
         self.num_vids_to_render = num_vids_to_render
@@ -1011,7 +1009,6 @@ class MD(BaseModel):
         # elif self.condition == 'text_uncond':
         #     uncond_tokens.extend(uncond_tokens)
         bsz, seqlen_tgt = mask_target.shape
-        bsz, seqlen_src = mask_source.shape
         feat_sz = sum(self.input_feats_dims)
         if texts_cond is not None:
             text_emb, text_mask = self.text_encoder(texts_cond)
@@ -1019,6 +1016,7 @@ class MD(BaseModel):
         cond_emb_motion = None
         cond_motion_mask = None
         if self.motion_condition == 'source':
+            bsz, seqlen_src = mask_source.shape
             if condition_mode == 'full_cond' or condition_mode == 'mot_cond' :
                 if self.motion_cond_encoder is not None:
                     source_motion_condition = motions_cond
@@ -1343,7 +1341,7 @@ class MD(BaseModel):
         ##### DEBUG THE MODEL #####
 
     def allsplit_step(self, split: str, batch, batch_idx):
-
+        from src.data.tools.tensors import lengths_to_mask
         input_batch = self.norm_and_cat(batch, self.input_feats)
         for k, v in input_batch.items():
             if self.input_deltas:
@@ -1408,24 +1406,15 @@ class MD(BaseModel):
         if split == 'val' and batch_idx == 0 and self.global_rank == 0:
             if batch['source_motion'] is not None:
                 src_cond_mets = batch['source_motion'].clone()
-            source_motion_gt, target_motion_gt = self.batch2motion(batch)
-            with torch.no_grad():
                 mask_src_mets, mask_tgt_mets = self.prepare_mot_masks(
                                                     batch['length_source'],
                                                     batch['length_target'])
-                motion_out_metrs = self.generate_motion(texts_cond=gt_texts, 
-                                                       mask_source=mask_src_mets,
-                                                       mask_target=mask_tgt_mets,
-                                                       motions_cond=src_cond_mets,
-                                                       init_vec_method='noise',
-                                                       condition_mode='full_cond')
-            motion_unnorm_metrs = self.unnorm_delta(motion_out_metrs)
-            # do something with the full motion
-            gen_metrics = pack_to_render(rots=motion_unnorm_metrs[...,
-                                                                  3:].detach().cpu(),
-                                         trans=motion_unnorm_metrs[...,
-                                                                   :3].detach().cpu())
-
+            else:
+                from src.data.tools.tensors import lengths_to_mask
+                mask_src_mets = None
+                src_cond_mets = None
+                mask_tgt_mets = lengths_to_mask(batch['length_target'],
+                                                self.device)
             batch_subset = { k: v.detach().cpu() for k,
                             v in self.test_subset.items() 
                             if torch.is_tensor(v) }
@@ -1434,10 +1423,11 @@ class MD(BaseModel):
                                                     sset_proc['length_source'],
                                                     sset_proc['length_target'])
             src_mot_cond = sset_proc['source_motion']
-            gt_texts = self.test_subset['text']
-            gt_keyids = self.test_subset['id']
             nvds = self.num_vids_to_render
             if self.motion_condition == 'source':
+                gt_texts = self.test_subset['text']
+                gt_keyids = self.test_subset['id']
+
                 with torch.no_grad():
                     init_noise, motion_text_n_motion = self.generate_motion(
                                                         texts_cond=gt_texts, 
@@ -1512,16 +1502,30 @@ class MD(BaseModel):
                                      'keyids': gt_keyids}                    
                     self.set_buf['mot_cond'].append(render_motion)
             else:
+                nvids = 2
+                gt_texts_sub = gt_texts[:nvids]
+                gt_keyids_sub = batch['id'][:nvids]
+                source_motion_gt, target_motion_gt = self.batch2motion(batch,
+                                                                    slice_til=nvids)
+                with torch.no_grad():
+                    motion_out_metrs = self.generate_motion(texts_cond=gt_texts[:nvids], 
+                                                        mask_source=None,
+                                                        mask_target=mask_tgt_mets[:nvids],
+                                                        motions_cond=None,
+                                                        init_vec_method='noise',
+                                                        condition_mode='text_cond')
+                motion_unnorm_metrs = self.unnorm_delta(motion_out_metrs)
+                # do something with the full motion
+                gen_metrics = pack_to_render(rots=motion_unnorm_metrs[...,
+                                                                    3:].detach().cpu(),
+                                            trans=motion_unnorm_metrs[...,
+                                                                    :3].detach().cpu())
 
                 render_text = {'generation': gen_metrics,
-                               'text_descr': gt_texts,
-                               'keyids': gt_keyids}
+                               'text_descr': gt_texts_sub,
+                               'keyids': gt_keyids_sub}
                 self.set_buf['text_cond'].append(render_text)
                 
                 # TODO do the same for dropped ones!
-            self.metrics(dict_to_device(source_motion_gt, self.device), 
-                         dict_to_device(gen_metrics, self.device),
-                         dict_to_device(target_motion_gt, self.device),
-                         gt_lens_src, actual_target_lens)
 
         return total_loss

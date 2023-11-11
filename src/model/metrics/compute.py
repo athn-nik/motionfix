@@ -13,7 +13,7 @@ def l2_norm(x1, x2, dim):
 class ComputeMetrics(Metric):
     def __init__(self, smpl_path: str):
         super().__init__()
-        self.add_state("local_motion_preservance", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("loc_motion_preservance", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("global_motion_preservance", default=torch.tensor(0.0), dist_reduce_fx="sum")
         
         self.add_state("local_motion_preservance_gt", default=torch.tensor(0.0), dist_reduce_fx="sum")
@@ -54,28 +54,31 @@ class ComputeMetrics(Metric):
         B, S_src, _ = source['body_pose'].shape
         B, S_tgt, _ = target['body_pose'].shape
         min_lens = [min(lengths_source[idx],
-                       lengths_target[idx]) for idx in range(B)]
+                        lengths_target[idx]) for idx in range(B)]
 
 
-        source_verts  = self.run_smpl_fwd(source['body_transl'],
-                                          source['body_orient'],
-                                          source['body_pose'].reshape(B, S_src,
+        source_verts  = self.run_smpl_fwd(source['body_transl'].detach(),
+                                          source['body_orient'].detach(),
+                                          source['body_pose'].detach().reshape(B, S_src,
                                                                       63))
         source_verts = source_verts.vertices.reshape(B, S_src, -1, 3)
+        local_source_verts = source_verts - source['body_transl'][:, :, None, :]
 
-        target_verts  = self.run_smpl_fwd(target['body_transl'],
-                                          target['body_orient'],
-                                          target['body_pose'].reshape(B, S_tgt,
+
+        target_verts  = self.run_smpl_fwd(target['body_transl'].detach(),
+                                          target['body_orient'].detach(),
+                                          target['body_pose'].detach().reshape(B, S_tgt,
                                                                       63))
         target_verts = target_verts.vertices.reshape(B, S_tgt, -1, 3)
+        local_target_verts = target_verts - target['body_transl'][:, :, None, :]
 
-        pred_target_verts  = self.run_smpl_fwd(preds['body_transl'],
-                                               preds['body_orient'],
-                                               preds['body_pose'].reshape(B,
+        pred_target_verts  = self.run_smpl_fwd(preds['body_transl'].detach(),
+                                               preds['body_orient'].detach(),
+                                               preds['body_pose'].detach().reshape(B,
                                                                           S_tgt,
                                                                           63))
         pred_target_verts = pred_target_verts.vertices.reshape(B, S_tgt, -1, 3)
-
+        local_pred_verts = pred_target_verts - preds['body_transl'][:, :, None, :]
         # Average the acceleration values across the sequence (S) and batch (B) dimensions
         # This will result in a tensor of shape (J, 3)
         velocity = pred_target_verts[:, 1:] - pred_target_verts[:, :-1]
