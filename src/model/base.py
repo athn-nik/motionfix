@@ -353,8 +353,10 @@ class BaseModel(LightningModule):
                                         color=color_map['generation'])
                             
                     video_names_cur.append(fname)
-            if video_names_cur:
+            if variant_vals:
                 video_names_all[data_variant] = video_names_cur
+            else:
+                video_names_all[data_variant] = []
 
         return video_names_all
 
@@ -366,7 +368,7 @@ class BaseModel(LightningModule):
         curep = str(self.trainer.current_epoch)
         # do_render = curep%self.render_vids_every_n_epochs
         if self.renderer is not None:
-            if self.global_rank == 0 :#and self.trainer.current_epoch != 0:
+            if self.global_rank == 0 and self.trainer.current_epoch != 0:
                 if split == 'val': # and do_render == 0:
                     folder = "epoch_" + curep.zfill(3)
                     folder =  Path('visuals') / folder 
@@ -403,21 +405,22 @@ class BaseModel(LightningModule):
                             if self.logger is not None:
                                 self.logger.experiment.log(log_render_dic)
                         else:
-                            for idx, vd_p in enumerate(vds_paths):
-                                kid = self.set_buf[gen_var][0]['keyids'][idx]
-                                fname = folder / f'{kid}_{gen_var}_{curep}'
-                                stack_w_text = put_text(self.set_buf[gen_var][0]['text_descr'][idx],
-                                                        vd_p,
-                                                        f'{fname}_txt.mp4')
-                                stacked_videos.append(stack_w_text)
-                            for v in stacked_videos:
-                                logname = os.path.basename(v).split('_')[:2]
-                                logname = '_'.join(logname)
-                                logname = f'{gen_var}/' + logname
-                                log_render_dic[logname] = wandb.Video(v, fps=30,
-                                                                    format='mp4') 
-                            if self.logger is not None:
-                                self.logger.experiment.log(log_render_dic)
+                            if self.set_buf[gen_var]:
+                                for idx, vd_p in enumerate(vds_paths):
+                                    kid = self.set_buf[gen_var][0]['keyids'][idx]
+                                    fname = folder / f'{kid}_{gen_var}_{curep}'
+                                    stack_w_text = put_text(self.set_buf[gen_var][0]['text_descr'][idx],
+                                                            vd_p,
+                                                            f'{fname}_txt.mp4')
+                                    stacked_videos.append(stack_w_text)
+                                for v in stacked_videos:
+                                    logname = os.path.basename(v).split('_')[:2]
+                                    logname = '_'.join(logname)
+                                    logname = f'{gen_var}/' + logname
+                                    log_render_dic[logname] = wandb.Video(v, fps=30,
+                                                                        format='mp4') 
+                                if self.logger is not None:
+                                    self.logger.experiment.log(log_render_dic)
 
         if split == 'val':
             for k, v in self.set_buf.items():
