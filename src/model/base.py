@@ -93,7 +93,7 @@ class BaseModel(LightningModule):
         stats = np.load(path, allow_pickle=True)[()]
         return cast_dict_to_tensors(stats, device=device)
 
-    def run_smpl_fwd(self, body_transl, body_orient, body_pose):
+    def run_smpl_fwd(self, body_transl, body_orient, body_pose, fast=True):
         if len(body_transl.shape) > 2:
             body_transl = body_transl.flatten(0, 1)
             body_orient = body_orient.flatten(0, 1)
@@ -102,11 +102,18 @@ class BaseModel(LightningModule):
         batch_size = body_transl.shape[0]
         from src.tools.transforms3d import transform_body_pose
         self.body_model.batch_size = batch_size
-        return self.body_model.smpl_forward_fast(transl=body_transl,
-                               body_pose=transform_body_pose(body_pose,
-                                                             'aa->rot'),
-                               global_orient=transform_body_pose(body_orient,
-                                                                 'aa->rot'))
+        if fast:
+            return self.body_model.smpl_forward_fast(transl=body_transl,
+                                body_pose=transform_body_pose(body_pose,
+                                                                'aa->rot'),
+                                global_orient=transform_body_pose(body_orient,
+                                                                    'aa->rot'))
+        else:
+            return self.body_model(transl=body_transl,
+                                body_pose=transform_body_pose(body_pose,
+                                                                'aa->rot'),
+                                global_orient=transform_body_pose(body_orient,
+                                                                    'aa->rot'))
 
 
     def training_step(self, batch, batch_idx):
@@ -323,31 +330,31 @@ class BaseModel(LightningModule):
         folder =  Path('visuals') / folder 
         folder.mkdir(exist_ok=True, parents=True)
 
-        video_names_all = {'motion': [],
-                           'text': [],
-                           'motion_n_text': []}
+        video_names_all = {}
 
         for data_variant, variant_vals in buffer.items():
-            novids = len(variant_vals['keyids'])
-            video_names_cur = []
-            
-            for iid_tor in tqdm(range(novids), 
-                                desc=f'Generating {data_variant} videos'):
-                cur_text = variant_vals['text_descr'][iid_tor]
-                cur_key = variant_vals['keyids'][iid_tor]
+            if variant_vals:
+                novids = len(variant_vals[0]['keyids'])
+                video_names_cur = []
+                
+                for iid_tor in tqdm(range(novids), 
+                                    desc=f'Generating {data_variant} videos'):
+                    cur_text = variant_vals[0]['text_descr'][iid_tor]
+                    cur_key = variant_vals[0]['keyids'][iid_tor]
 
-                gen_motion = variant_vals['generation'].items()
-                mot_to_rend = {bd_f: bd_v[iid_tor].detach().cpu()
-                                for bd_f, bd_v in gen_motion.items()}
+                    gen_motion = variant_vals[0]['generation']
+                    mot_to_rend = {bd_f: bd_v[iid_tor].detach().cpu()
+                                    for bd_f, bd_v in gen_motion.items()}
 
-                # RENDER THE MOTION
-                fname = render_motion(self.renderer, mot_to_rend,
-                                      folder/f'{cur_key}_{data_variant}_{epo}',
-                                      pose_repr='aa', 
-                                      color=color_map['generation'])
-                        
-                video_names_cur.append(fname)
-                video_names_all[data_variant].append(video_names_cur)
+                    # RENDER THE MOTION
+                    fname = render_motion(self.renderer, mot_to_rend,
+                                        folder/f'{cur_key}_{data_variant}_{epo}',
+                                        pose_repr='aa', 
+                                        color=color_map['generation'])
+                            
+                    video_names_cur.append(fname)
+            if video_names_cur:
+                video_names_all[data_variant] = video_names_cur
 
         return video_names_all
 
@@ -359,56 +366,63 @@ class BaseModel(LightningModule):
         curep = str(self.trainer.current_epoch)
         # do_render = curep%self.render_vids_every_n_epochs
         if self.renderer is not None:
-            if self.global_rank == 0 and self.trainer.current_epoch != 0:
+            if self.global_rank == 0 :#and self.trainer.current_epoch != 0:
                 if split == 'val': # and do_render == 0:
                     folder = "epoch_" + curep.zfill(3)
                     folder =  Path('visuals') / folder 
                     folder.mkdir(exist_ok=True, parents=True)
+                    if self.motion_condition == 'source':
+                        vids_gt_src, vids_gt_tgt = self.render_subset_gt()
+                        all_zipped = list(zip(vids_gt_src, vids_gt_tgt))
+                        texts_descrs = self.test_subset['text']
 
-                    vids_gt_src, vids_gt_tgt = self.render_subset_gt()
                     video_names_generations = self.render_gens_set(self.set_buf)
-                    log_render_dic = {}
-
-                    indices, vids_gt_src_sorted = zip(*sorted(enumerate(vids_gt_src),
-                            key=lambda x: os.path.basename(x[1]).split('/')[0]))
-                    indices = list(indices)
-                    vids_gt_src_sorted = list(vids_gt_src_sorted) 
-
-                    vids_gt_tgt_sorted = sorted(vids_gt_tgt,
-                                           key=lambda x: os.path.basename(x).split('/')[0])
-
-                    texts_descrs = [self.test_subset['text'] for i in indices]
-
-                    cond_vids_sorted = {}
-                    for cond_type, cond_vids in video_names_generations.items():
-                        cond_vids_sorted[cond_type] = sorted(cond_vids[0],
-                                key=lambda x: os.path.basename(x).split('/')[0])
 
                     # Zip the sorted lists
-                    all_zipped = zip(vids_gt_src_sorted, vids_gt_tgt_sorted)
-                    for gen_var, vds_paths in cond_vids_sorted.items():
-                        stacked_videos = []
+                    log_render_dic = {}
 
-                        for idx, (src, tgt) in enumerate(all_zipped):
-                            kid = src.split('/')[-1].split('_')[0]
-                            fname = folder / f'{gen_var}_{kid}_{curep}_stk'
-                            stacked_fname = stack_vids([src, tgt, vds_paths[idx]], 
-                                                    fname=f'{fname}.mp4',
-                                                    orient='h')
-                            stack_w_text = put_text(self.test_subset['text'][idx],
-                                                    stacked_fname,
-                                                    f'{fname}_txt.mp4')
-                            stacked_videos.append(stack_w_text)
- 
-                        for v in stacked_videos:
-                            logname = os.path.basename(v).split('_')[:2]
-                            logname = '_'.join(logname)
-                            logname = f'{gen_var}_cond/' + logname
-                            log_render_dic[logname] = wandb.Video(v, fps=30,
-                                                                format='mp4') 
-                    if self.logger is not None:
-                        self.logger.experiment.log(log_render_dic)
-                self.set_buf.clear()
+                    for gen_var, vds_paths in video_names_generations.items():
+                        stacked_videos = []
+                        if self.motion_condition == 'source':
+                            for idx, (src, tgt) in enumerate(all_zipped):
+                                kid = src.split('/')[-1].split('_')[0]
+                                fname = folder / f'{kid}_{gen_var}_{curep}_stk'
+                                stacked_fname = stack_vids([src, tgt, vds_paths[idx]], 
+                                                        fname=f'{fname}.mp4',
+                                                        orient='h')
+                                stack_w_text = put_text(self.test_subset['text'][idx],
+                                                        stacked_fname,
+                                                        f'{fname}_txt.mp4')
+                                stacked_videos.append(stack_w_text)
+                            for v in stacked_videos:
+                                logname = os.path.basename(v).split('_')[:2]
+                                logname = '_'.join(logname)
+                                logname = f'{gen_var}/' + logname
+                                log_render_dic[logname] = wandb.Video(v, fps=30,
+                                                                    format='mp4') 
+                            if self.logger is not None:
+                                self.logger.experiment.log(log_render_dic)
+                        else:
+                            for idx, vd_p in enumerate(vds_paths):
+                                kid = self.set_buf[gen_var][0]['keyids'][idx]
+                                fname = folder / f'{kid}_{gen_var}_{curep}'
+                                stack_w_text = put_text(self.set_buf[gen_var][0]['text_descr'][idx],
+                                                        vd_p,
+                                                        f'{fname}_txt.mp4')
+                                stacked_videos.append(stack_w_text)
+                            for v in stacked_videos:
+                                logname = os.path.basename(v).split('_')[:2]
+                                logname = '_'.join(logname)
+                                logname = f'{gen_var}/' + logname
+                                log_render_dic[logname] = wandb.Video(v, fps=30,
+                                                                    format='mp4') 
+                            if self.logger is not None:
+                                self.logger.experiment.log(log_render_dic)
+
+        if split == 'val':
+            for k, v in self.set_buf.items():
+                if v:
+                    self.set_buf[k].clear()
     
         #######################################################################
         #     if self.global_rank == 0 and self.trainer.current_epoch != 0:
