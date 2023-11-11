@@ -8,6 +8,7 @@ from src.launch.prepare import get_last_checkpoint
 from hydra.utils import to_absolute_path
 from pathlib import Path
 from typing import Optional
+from pytorch_lightning.callbacks import LearningRateMonitor
 import os
 
 logger = logging.getLogger(__name__)
@@ -135,6 +136,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
         instantiate(cfg.callback.progress, metric_monitor=metric_monitor),
         instantiate(cfg.callback.latest_ckpt),
         instantiate(cfg.callback.last_ckpt),
+        LearningRateMonitor(logging_interval='epoch')
         # instantiate(cfg.callback.render)
     ]
 
