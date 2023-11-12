@@ -27,6 +27,8 @@ def generate_id():
 
 
 def get_last_checkpoint(path, ckpt_name="last"):
+    if path is None:
+        return None
     output_dir = Path(hydra.utils.to_absolute_path(path))
     if ckpt_name != 'last':
         last_ckpt_path = output_dir / "checkpoints" / f'latest-epoch={ckpt_name}.ckpt'

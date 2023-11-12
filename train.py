@@ -60,8 +60,6 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
 
     os.environ['DISPLAY'] = ":12"
     os.environ['WANDB_SILENT'] = "true"
-    import socket
-    torch.autograd.set_detect_anomaly(True)
 
     # import multiprocessing
     # multiprocessing.set_start_method('spawn')
@@ -93,6 +91,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
         renderer=None
 
     if cfg.ftune is not None:
+        logger.info(f"Loading model from {cfg.ftune_ckpt_path}")
         model = instantiate(cfg.model,
                             renderer=renderer,
                             _recursive_=False)
@@ -113,6 +112,9 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
 
     logger.info(f"Model '{cfg.model.modelname}' loaded")
 
+    logger.info("Loading logger")
+    train_logger = instantiate_logger(cfg)
+
     logger.info(f'Loading data module: {cfg.data.dataname}')
     data_module = instantiate(cfg.data)
     # here you can access data_module.nfeats
@@ -128,8 +130,6 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     cfg.model.nfeats = nfeats
     cfg.model.dim_per_feat = total_feats_dim
 
-    logger.info("Loading logger")
-    train_logger = instantiate_logger(cfg)
     # train_logger.begin(cfg.path.code_dir, cfg.logger.project, cfg.run_id)
     logger.info("Loading callbacks")
 
