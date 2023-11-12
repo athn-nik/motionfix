@@ -55,8 +55,8 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     import torch 
     import socket
     os.environ['HYDRA_FULL_ERROR'] = '1'
-    if socket.gethostname() == 'ps018':
-        os.system("Xvfb :12 -screen 1 640x480x24 &")
+    #if socket.gethostname() == 'ps018':
+    os.system("Xvfb :12 -screen 1 640x480x24 &")
 
     os.environ['DISPLAY'] = ":12"
     os.environ['WANDB_SILENT'] = "true"

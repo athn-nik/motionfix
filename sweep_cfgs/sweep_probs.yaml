@@ -1,4 +1,3 @@
-# wandb agent markos_mpi/HOI-common-sense/fw1yp9u3
 interpreter: /home/nathanasiou/.venvs/modit/bin/python
 program: train.py
 command:
@@ -12,7 +11,6 @@ metric:
 parameters:
   experiment:
     value: "GROUP-NAME" # to overwrite
-
   logger.project:
     value: "motion-editing"
   logger.name:
@@ -21,21 +19,17 @@ parameters:
     value: basic
   logger.group:
     value: "GROUP-NAME"
-  # wandb_logger.tags:
-  #   value: ['circle', 'smplx', 'intention']
-  model.input_feats:
-    values: [["body_transl_delta_pelv", "body_orient" ,"body_pose"]]
-  machine.batch_size:
-    values: [128, 256]
-  data:
-    values: ['hml3d']
-  model.latent_dim:
-    values: [512, 256]
-  model.diff_params.guidance_scale_text:
-    values: [2.5]
   model.train_scheduler.beta_schedule:
     values: ['squaredcos_cap_v2']
   model.motion_condition:
+    values: ['source']
+  model.source_encoder:
     values: ['null']
-  model.optim.lr:
-    values: [0.0003, 0.0001]
+  model.denoiser.pred_delta_motion:
+    values: ['false']
+  model.diff_params.prob_uncondp:
+    values: [0.10, 0.30]
+  model.diff_params.prob_drop_text:
+    values: [0.05, 0.25]
+  model.diff_params.prob_drop_motion:
+    values: [0.05, 0.25]

@@ -18,7 +18,7 @@ def run(cmd):
 def main_loop(command, exp_paths,
               text_guidance_vals,
               motion_guidance_vals, schedulers,
-              init_from):
+              init_from, condition_modes):
     
     cmd_no=0
     cmd_sample = command
@@ -27,19 +27,20 @@ def main_loop(command, exp_paths,
             for gd_t in text_guidance_vals:
                 for gd_m in motion_guidance_vals:
                     for in_lat in init_from:
-                        cur_cmd = list(cmd_train)
-                        idx_of_exp = cur_cmd.index("FOLDER")
-                        cur_cmd[idx_of_exp] = str(fd)
-                        if sched == 'ddim':
-                            stps = 200
-                        else:
-                            stps = 1000
+                        for cond_mode in condition_modes:
+                            cur_cmd = list(cmd_train)
+                            idx_of_exp = cur_cmd.index("FOLDER")
+                            cur_cmd[idx_of_exp] = str(fd)
+                            if sched == 'ddim':
+                                stps = 200
+                            else:
+                                stps = 1000
 
-                        list_of_args = [f"init_from={in_lat} guidance_scale_text={gd_t} guidance_scale_motion={gd_m} model/infer_scheduler={sched} steps={stps} "]
-                        cur_cmd.extend(list_of_args)
-                        run(cur_cmd)
-                        time.sleep(1)
-                        cmd_no += 1
+                            list_of_args = [f"condition_mode={cond_mode} init_from={in_lat} guidance_scale_text={gd_t} guidance_scale_motion={gd_m} model/infer_scheduler={sched} steps={stps} "]
+                            cur_cmd.extend(list_of_args)
+                            run(cur_cmd)
+                            time.sleep(1)
+                            cmd_no += 1
 
     end_script(cmd_no)
 
@@ -79,9 +80,10 @@ if __name__ == "__main__":
                 '--mode', 'sample',
                 '--bid', '20',
                 '--extras']
-    gd_text = [1.5, 2, 2.5]
-    gd_motion = [1.5, 2]
+    gd_text = [2.5]
+    gd_motion = [2.0]
     schedulers = ['ddpm']
     init_from = ['source', 'noise']
+    condition_modes = ['full_cond'] #, 'mot_cond', 'text_cond']
     main_loop(cmd_train, exp_paths, gd_text,
-              gd_motion, schedulers, init_from)
+              gd_motion, schedulers, init_from, condition_modes)
