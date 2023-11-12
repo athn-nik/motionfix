@@ -89,6 +89,22 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
         renderer = HeadlessRenderer()
     else: 
         renderer=None
+    ######## DATA LOADING #########
+    logger.info(f'Loading data module: {cfg.data.dataname}')
+    data_module = instantiate(cfg.data)
+    # here you can access data_module.nfeats
+    logger.info(f"Data module '{cfg.data.dataname}' loaded")
+
+    list_of_all_feats = data_module.nfeats
+    idx_for_inputs = [cfg.data.load_feats.index(infeat) 
+                      for infeat in cfg.model.input_feats]
+    total_feats_dim = [list_of_all_feats[i] 
+                      for i in idx_for_inputs]
+    nfeats = sum(total_feats_dim) 
+
+    cfg.model.nfeats = nfeats
+    cfg.model.dim_per_feat = total_feats_dim
+    ######## /DATA LOADING #########
 
     if cfg.ftune is not None:
         logger.info(f"Loading model from {cfg.ftune_ckpt_path}")
@@ -115,20 +131,6 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     logger.info("Loading logger")
     train_logger = instantiate_logger(cfg)
 
-    logger.info(f'Loading data module: {cfg.data.dataname}')
-    data_module = instantiate(cfg.data)
-    # here you can access data_module.nfeats
-    logger.info(f"Data module '{cfg.data.dataname}' loaded")
-
-    list_of_all_feats = data_module.nfeats
-    idx_for_inputs = [cfg.data.load_feats.index(infeat) 
-                      for infeat in cfg.model.input_feats]
-    total_feats_dim = [list_of_all_feats[i] 
-                      for i in idx_for_inputs]
-    nfeats = sum(total_feats_dim) 
-
-    cfg.model.nfeats = nfeats
-    cfg.model.dim_per_feat = total_feats_dim
 
     # train_logger.begin(cfg.path.code_dir, cfg.logger.project, cfg.run_id)
     logger.info("Loading callbacks")
