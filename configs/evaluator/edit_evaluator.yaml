@@ -1,0 +1,10 @@
+_target_: src.evaluator.evaluate_edits.MotionEditEvaluator
+metrics_to_eval:
+# - 'foot_skating'
+- 'loc_pres' 
+- 'glo_pres' 
+- 'lc_pre_gt'
+- 'gb_pre_gt'
+- 'loc_edit' 
+- 'glob_edit'
+smplh_path: ${path.data}/body_models

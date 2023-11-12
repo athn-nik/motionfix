@@ -78,17 +78,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
 
     logger.info(f"Set the seed to {cfg.seed}")
     pl.seed_everything(cfg.seed, workers=True)
-    logger.info(f'Loading data module: {cfg.data.dataname}')
-    data_module = instantiate(cfg.data)
-    # here you can access data_module.nfeats
-    logger.info(f"Data module '{cfg.data.dataname}' loaded")
-    # in case you want to use torch.compile()
-    # torch._dynamo.config.debug=True
 
-    # from copy import deepcopy
-    # temos_motion_enc = deepcopy(eval_model.motionencoder)
-    # #####
-    # logger.info(f'Loading model {cfg.model.modelname}')
     if cfg.renderer is not None:
         from aitviewer.configuration import CONFIG as AITVIEWER_CONFIG
         from aitviewer.headless import HeadlessRenderer
@@ -101,6 +91,33 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
         renderer = HeadlessRenderer()
     else: 
         renderer=None
+
+    if cfg.ftune is not None:
+        model = instantiate(cfg.model,
+                            renderer=renderer,
+                            _recursive_=False)
+
+        model = model.load_from_checkpoint(cfg.ftune_ckpt_path,
+                                           renderer=renderer,
+                                           diff_params=cfg.model.diff_params,
+                                           motion_condition=cfg.model.motion_condition,
+                                           statistics_path=cfg.model.statistics_path,
+                                           strict=False)
+        
+    else:
+        # diffusion related
+        model = instantiate(cfg.model,                            
+                            renderer=renderer,
+                            _recursive_=False)
+
+
+    logger.info(f"Model '{cfg.model.modelname}' loaded")
+
+    logger.info(f'Loading data module: {cfg.data.dataname}')
+    data_module = instantiate(cfg.data)
+    # here you can access data_module.nfeats
+    logger.info(f"Data module '{cfg.data.dataname}' loaded")
+
     list_of_all_feats = data_module.nfeats
     idx_for_inputs = [cfg.data.load_feats.index(infeat) 
                       for infeat in cfg.model.input_feats]
@@ -110,12 +127,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
 
     cfg.model.nfeats = nfeats
     cfg.model.dim_per_feat = total_feats_dim
-    
-    model = instantiate(cfg.model,
-                        renderer=renderer,
-                        _recursive_=False)
 
-    logger.info(f"Model '{cfg.model.modelname}' loaded")
     logger.info("Loading logger")
     train_logger = instantiate_logger(cfg)
     # train_logger.begin(cfg.path.code_dir, cfg.logger.project, cfg.run_id)

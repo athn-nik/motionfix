@@ -31,7 +31,7 @@ from src.utils.file_io import hack_path
 class BaseModel(LightningModule):
     def __init__(self, statistics_path: str, nfeats: int, norm_type: str,
                  input_feats: List[str], dim_per_feat: List[int],
-                 smpl_path: str, num_vids_to_render: str,
+                 smpl_path: str, num_vids_to_render: str, loss_on_positions: bool,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.save_hyperparameters(logger=False, 
@@ -57,12 +57,13 @@ class BaseModel(LightningModule):
         self.input_feats_dims = list(dim_per_feat)
         self.input_feats = list(input_feats)
         self.num_vids_to_render = num_vids_to_render
-        smpl_path = hack_path(smpl_path, keyword='data')
-        self.body_model = smplx.SMPLHLayer(f'{smpl_path}/smplh', model_type='smplh',
-                                           gender='neutral',
-                                           ext='npz').to(self.device).eval();
-        setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
-        freeze(self.body_model)
+        if loss_on_positions:
+            smpl_path = hack_path(smpl_path, keyword='data')
+            self.body_model = smplx.SMPLHLayer(f'{smpl_path}/smplh', model_type='smplh',
+                                            gender='neutral',
+                                            ext='npz').to(self.device).eval();
+            setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
+            freeze(self.body_model)
         log.info(f'Training using these features: {self.input_feats}')
         data_path =Path(hack_path(smpl_path, keyword='data')).parent
         self.test_subset = joblib.load(data_path / 'test_kinedit.pth.tar')

@@ -61,7 +61,7 @@ class MD(BaseModel):
                  **kwargs):
 
         super().__init__(statistics_path, nfeats, norm_type, input_feats,
-                         dim_per_feat, smpl_path, num_vids_to_render)
+                         dim_per_feat, smpl_path, num_vids_to_render, loss_on_positions)
 
         if set(self.input_feats) == set(["body_transl_delta_pelv_xy",
                                          "body_orient_delta",
