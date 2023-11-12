@@ -165,7 +165,7 @@ def evaluate(newcfg: DictConfig) -> None:
         test_dataset.data = subset
 
     else:
-        batch_size_test = 8
+        batch_size_test = 32
 
     testloader = torch.utils.data.DataLoader(test_dataset,
                                              shuffle=False,
@@ -237,7 +237,7 @@ def evaluate(newcfg: DictConfig) -> None:
         # turn results_dict into panda dataframe
         results_df = pd.DataFrame.from_dict(results_dict)
         # save as csv
-        results_df.to_csv('./output_data/results.csv')
+        results_df.to_csv(output_path / 'results.csv')
         # if there is a wandb logger, then log it as a table
         wandb.log({"results": wandb.Table(dataframe=results_df)})
         wandb.log({'metrics': results['metrics_avg']})
