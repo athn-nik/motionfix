@@ -200,7 +200,7 @@ class MldDenoiser(nn.Module):
                     else:
                         denoised_motion = denoised_motion_proj + motion_embeds_proj[:tgt_len]
 
-                denoised_motion = self.pose_proj(denoised_motion_proj)
+                denoised_motion = self.pose_proj(denoised_motion)
                 denoised_motion[~motion_in_mask.T] = 0
 
             # zero for padded area
