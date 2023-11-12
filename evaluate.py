@@ -233,7 +233,7 @@ def evaluate(newcfg: DictConfig) -> None:
 
 
         results = evaluator.get_metrics()
-        results_dict = results['metrics_avg'] | results['meta_data'] | results['metrics']
+        results_dict = results['metrics_avg'] | results['metrics']
         # turn results_dict into panda dataframe
         results_df = pd.DataFrame.from_dict(results_dict)
         # save as csv

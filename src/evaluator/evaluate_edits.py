@@ -141,12 +141,15 @@ class MotionEditEvaluator:
         return metrics
 
     def get_metrics(self):
-        metrics = {metric: torch.cat([m[metric] for m in self.metrics_batch],
+        metrics = {metric: torch.cat([m[metric][None] for m in self.metrics_batch],
                                           dim=0)
                    for metric in self.metrics_to_eval}
-        metrics_avg = {metric+'_avg': torch.cat([m[metric] for m in self.metrics_batch],
+        metrics_avg = {metric+'_avg': torch.cat([m[metric][None] for m in self.metrics_batch],
                                           dim=0).mean()
                        for metric in self.metrics_to_eval}
+        metrics = {k: v.cpu().numpy() for k, v in metrics.items()}
+        metrics_avg = {k: v.cpu().numpy() for k, v in metrics_avg.items()}
+
         # meta_data = {k: np.([m[k] for m in self.meta_data],
         #                                dim=0)
         #              for k in self.meta_data[0].keys()}
