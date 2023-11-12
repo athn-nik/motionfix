@@ -30,7 +30,7 @@ parameters:
   data:
     values: ['hml3d']
   model.latent_dim:
-    values: [256]
+    values: [512, 256]
   model.diff_params.guidance_scale_text:
     values: [2.5]
   model.train_scheduler.beta_schedule:
@@ -38,4 +38,4 @@ parameters:
   model.motion_condition:
     values: ['null']
   model.optim.lr:
-    values: [0.0001, 0.00001, 0.00006]
+    values: [0.0003, 0.0001]

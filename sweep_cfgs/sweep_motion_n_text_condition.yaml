@@ -24,12 +24,12 @@ parameters:
   model.motion_condition:
     values: ['source']
   model.source_encoder:
-    values: ['null', 'trans_enc']
+    values: ['null']
   model.denoiser.pred_delta_motion:
-    values: ['true']
+    values: ['true', 'false']
   model.diff_params.prob_uncondp: 
-    values: [0.10]
+    values: [0.10, 0.05]
   model.diff_params.prob_drop_text: 
-    values: [0.05]
+    values: [0.05, 0.10]
   model.diff_params.prob_drop_motion:
     values: [0.05]
