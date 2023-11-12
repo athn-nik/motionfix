@@ -44,13 +44,19 @@ class BASEDataModule(pl.LightningDataModule):
         return self.Dataset(**sample_params)
 
     def train_dataloader(self):
-        return DataLoader(self.dataset['train'], **self.dataloader_options)
+        return DataLoader(self.dataset['train'],
+                          shuffle=True,
+                          **self.dataloader_options)
 
     def val_dataloader(self):
-        return DataLoader(self.dataset['val'], **self.dataloader_options)
+        return DataLoader(self.dataset['val'],
+                          shuffle=True,
+                          **self.dataloader_options)
 
     def test_dataloader(self):
-        return DataLoader(self.dataset['test'], **self.dataloader_options)
+        return DataLoader(self.dataset['test'],
+                          shuffle=False,
+                          **self.dataloader_options)
 
     # def train_dataloader(self):
     #     return DataLoader(self.train_dataset,

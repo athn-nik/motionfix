@@ -25,6 +25,11 @@ resume_ckpt_name: null
 renderer: ait # null
 devices: 1
 
+# For finetuning
+ftune: null
+ftune_ckpt_name: 'last' # 'all'
+ftune_ckpt_path: ${get_last_checkpoint:${ftune},${ftune_ckpt_name}}
+
 statistics_file: statistics_${data.dataname}${get_debug:${debug}}.npy
 # statistics_file: "statistics_amass_circle.py"
 statistics_path: ${path.deps}/stats/${statistics_file}
