@@ -52,14 +52,25 @@ class MotionEditEvaluator:
         avg_vels_norm[avg_vels_norm < 0.65] = 0
         return avg_vels_norm 
 
-    def motion_preservance(self, x, y):
+    def motion_preservance(self, x, y, force_cm=True):
         seqlen = x.shape[1]
-        local_motion_preservance_gt = l2_norm(x, y, dim=1)/seqlen
+        if force_cm:
+            mult = 100
+        else:
+            mult = 1
+        local_motion_preservance_gt = l2_norm(mult*x, mult*y, dim=1)/seqlen
         local_motion_preservance_gt = local_motion_preservance_gt.mean()
         return local_motion_preservance_gt
 
-    def edit_accuracy(self, x, y):
-        global_edit_accuracy = l2_norm(x, y, dim=1).sum()
+    def edit_accuracy(self, x, y, force_cm=True):
+        seqlen = x.shape[1]
+        if force_cm:
+            mult = 100
+        else:
+            mult = 1
+        global_edit_accuracy = l2_norm(mult*x, mult*y, dim=1) / seqlen
+        global_edit_accuracy = global_edit_accuracy.mean()
+
         return global_edit_accuracy
 
     def run_smpl_fwd(self, body_transl, body_orient, body_pose):
