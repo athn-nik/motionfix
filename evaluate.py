@@ -260,9 +260,12 @@ def evaluate(newcfg: DictConfig) -> None:
         # save as csv
         results_df.to_csv(output_path / 'results.csv')
         # if there is a wandb logger, then log it as a table
-        wandb.log({"results_table": wandb.Table(dataframe=results_df)})
-        wandb.log({"results_bar" : wandb.plot.bar(wandb.Table(dataframe=results_df), "label",
-                                    "value", title="Custom Bar Chart")})
+        wandb.log({"metrics_table": wandb.Table(dataframe=results_df)})
+        wandb.log({"metrics": results['metrics_avg']})
+
+        # wandb.log({"results_bar" : wandb.plot.bar(wandb.Table(dataframe=results_df), 
+        #                                           "label", "value",
+        #                                            title="Custom Bar Chart")})
 
         # print only the average results  as pandas dataframe
         print(results['metrics_avg'])
