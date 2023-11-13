@@ -69,7 +69,32 @@ def canonicalize_rotations(global_orient, trans, angle=torch.pi/4):
     return new_global_orient, new_trans
 
 
+def rotate_motion_canonical(rotations, translation, transl_zero=True):
+    """
+    Must be of shape S x (Jx3)
+    """
+    rots_motion = rotations
+    trans_motion = translation
+    datum_len = rotations.shape[0]
+    rots_motion_rotmat = transform_body_pose(rots_motion.reshape(datum_len,
+                                                        -1, 3),
+                                                        'aa->rot')
+    orient_R_can, trans_can = canonicalize_rotations(rots_motion_rotmat[:,
+                                                                            0],
+                                                        trans_motion)            
+    rots_motion_rotmat_can = rots_motion_rotmat
+    rots_motion_rotmat_can[:, 0] = orient_R_can
 
+    rots_motion_aa_can = transform_body_pose(rots_motion_rotmat_can,
+                                                'rot->aa')
+    rots_motion_aa_can = rearrange(rots_motion_aa_can, 'F J d -> F (J d)',
+                                    d=3)
+    if transl_zero:
+        translation_can = trans_can - trans_can[0]
+    else:
+        translation_can = trans_can
+
+    return rots_motion_aa_can, translation_can
 
 def transform_body_pose(pose, formats):
     """

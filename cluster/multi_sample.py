@@ -1,4 +1,6 @@
+import sched
 import sys
+from matplotlib.pylab import cond
 from rich import print
 import time
 import subprocess
@@ -18,29 +20,45 @@ def run(cmd):
 def main_loop(command, exp_paths,
               text_guidance_vals,
               motion_guidance_vals, schedulers,
-              init_from, condition_modes):
+              init_from, condition_modes, steps_nos):
     
     cmd_no=0
     cmd_sample = command
-    for fd in exp_paths:
-        for sched in schedulers:
-            for gd_t in text_guidance_vals:
-                for gd_m in motion_guidance_vals:
-                    for in_lat in init_from:
-                        for cond_mode in condition_modes:
-                            cur_cmd = list(cmd_train)
-                            idx_of_exp = cur_cmd.index("FOLDER")
-                            cur_cmd[idx_of_exp] = str(fd)
-                            if sched == 'ddim':
-                                stps = 200
-                            else:
-                                stps = 1000
+    from itertools import product
+    exp_grid = list(product(exp_paths, 
+                           schedulers,
+                           text_guidance_vals,
+                           motion_guidance_vals,
+                           init_from,
+                           condition_modes,
+                           steps_nos))
 
-                            list_of_args = [f"condition_mode={cond_mode} init_from={in_lat} guidance_scale_text={gd_t} guidance_scale_motion={gd_m} model/infer_scheduler={sched} steps={stps} "]
-                            cur_cmd.extend(list_of_args)
-                            run(cur_cmd)
-                            time.sleep(1)
-                            cmd_no += 1
+    # for fd in exp_paths:
+    #     for sched in schedulers:
+    #         for gd_t in text_guidance_vals:
+    #             for gd_m in motion_guidance_vals:
+    #                 for in_lat in init_from:
+    #                     for cond_mode in condition_modes:
+    #                         for stp_no in steps_nos:
+    for fd, sched, gd_t, gd_m, in_lat, cond_mode, stp_no in exp_grid:
+        cur_cmd = list(cmd_train)
+        idx_of_exp = cur_cmd.index("FOLDER")
+        cur_cmd[idx_of_exp] = str(fd)
+        if sched == 'ddim':
+            stps = 200
+        else:
+            stps = 1000
+
+        list_of_args = ' '.join([f"condition_mode={cond_mode}",
+                                 f"init_from={in_lat}",
+                                 f"guidance_scale_text={gd_t}",
+                                 f"guidance_scale_motion={gd_m}",
+                                 f"model/infer_scheduler={sched}", 
+                                 f"steps={stp_no}"])
+        cur_cmd.extend(list_of_args)
+        run(cur_cmd)
+        time.sleep(1)
+        cmd_no += 1
 
     end_script(cmd_no)
 
@@ -85,5 +103,8 @@ if __name__ == "__main__":
     schedulers = ['ddpm']
     init_from = ['source', 'noise']
     condition_modes = ['full_cond'] #, 'mot_cond', 'text_cond']
+    steps_size = [1000, 500, 200] #, 'mot_cond', 'text_cond']
+
     main_loop(cmd_train, exp_paths, gd_text,
-              gd_motion, schedulers, init_from, condition_modes)
+              gd_motion, schedulers, init_from, 
+              condition_modes, no_of_steps)

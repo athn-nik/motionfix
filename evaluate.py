@@ -127,10 +127,10 @@ def evaluate(newcfg: DictConfig) -> None:
     model_path = cfg.last_ckpt_path
     # load the model
     model = MD.load_from_checkpoint(model_path,
-                                       renderer=aitrenderer,
-                                       infer_scheduler=cfg.model.infer_scheduler,
-                                       diff_params=cfg.model.diff_params,
-                                       strict=False)
+                                    renderer=aitrenderer,
+                                    infer_scheduler=cfg.model.infer_scheduler,
+                                    diff_params=cfg.model.diff_params,
+                                    strict=False)
     model.freeze()
     model.cuda()
     logger.info('------Model Loaded---------')
@@ -226,6 +226,20 @@ def evaluate(newcfg: DictConfig) -> None:
             # do something with the full motion
             gen_metrics = pack_to_render(rots=gen_mo[..., 3:].detach().cpu(),
                                          trans=gen_mo[..., :3].detach().cpu())
+            # canonicalize the motions everywhere
+            from src.tools.transforms3d import rotate_motion_canonical
+            for mot in [gen_metrics, src_mot_cond, tgt_mot]:
+                rots_raw = torch.cat([mot['body_orient'], mot['body_pose']],
+                                      dim=-1)
+                for ix in range(rots_raw.shape[0]):
+                    rots, trans = rotate_motion_canonical(rots_raw[ix],
+                                                          mot['body_transl'][ix]
+                                                         )
+                    
+                    mot['body_orient'][ix] = rots[..., :3]
+                    mot['body_pose'][ix] = rots[..., 3:]
+                    mot['body_transl'][ix] = trans
+
             gen_metrics = dict_to_device(gen_metrics, 'cuda')
             src_mot_cond = dict_to_device(src_mot_cond, 'cuda')
             tgt_mot = dict_to_device(tgt_mot, 'cuda')
@@ -235,12 +249,16 @@ def evaluate(newcfg: DictConfig) -> None:
         results = evaluator.get_metrics()
         results_dict = results['metrics_avg'] | results['metrics']
         # turn results_dict into panda dataframe
-        results_df = pd.DataFrame.from_dict(results_dict)
+        results_df = pd.DataFrame.from_dict(results['metrics_avg'],
+                                            orient='index', columns=['values'])
+
         # save as csv
         results_df.to_csv(output_path / 'results.csv')
         # if there is a wandb logger, then log it as a table
-        wandb.log({"results": wandb.Table(dataframe=results_df)})
-        wandb.log({'metrics': results['metrics_avg']})
+        wandb.log({"results_table": wandb.Table(dataframe=results_df)})
+        wandb.log({"results_bar" : wandb.plot.bar(wandb.Table(dataframe=results_df), "label",
+                                    "value", title="Custom Bar Chart")})
+
         # print only the average results  as pandas dataframe
         print(results['metrics_avg'])
 
