@@ -110,7 +110,7 @@ def evaluate(newcfg: DictConfig) -> None:
     logger.info(f'Output path: {output_path}')
     # init wandb if it is not None
     if 'name' in cfg.logger:
-        cfg.logger.name = f'eval-{exp_folder.name}'
+        cfg.logger.name = f'eval-{exp_folder.name}-{fd_name}'
         cfg.logger.__delattr__('logger_name')
         cfg.logger.__delattr__('save_dir')
         cfg.logger.__delattr__('offline')
