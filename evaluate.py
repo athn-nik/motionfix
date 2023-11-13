@@ -54,31 +54,35 @@ def prepare_test_batch(model, batch):
 def get_folder_name(config):
     sched_name = config.model.infer_scheduler._target_.split('.')[-1]
     sched_name = sched_name.replace('Scheduler', '').lower()
+    sched_name = '' if sched_name == 'ddpm' else sched_name
     mot_guid = config.model.diff_params.guidance_scale_motion
     text_guid = config.model.diff_params.guidance_scale_text
     infer_steps = config.model.diff_params.num_inference_timesteps
     if config.init_from == 'source':
         init_from = '_src_init_'
     else:
-        init_from = ''
+        init_from = '_noise_init_'
     if config.ckpt_name == 'last':
         ckpt_n = ''
     else:
         ckpt_n = f'_ckpt-{config.ckpt_name}_'
-    if config.subset is None:
+    if config.subset is None or config.subset == 'test':
         sset = ''
     else:
         sset = f'{config.subset}'
-    cond_type = '_' + config.condition_mode + '_'
-    if config.render_vids:
-        vds = 'gens_'
+    if config.condition_mode == 'full_cond':
+        cond_type = ''
     else:
-        vds = ''
+        cond_type = config.condition_mode + '_'
+    # if config.render_vids:
+    #     vds = 'gens_'
+    # else:
+    #     vds = ''
 
     if config.model.motion_condition is not None:
-        return f'{vds}{cond_type}{sset}{ckpt_n}{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
+        return f'{cond_type}{sset}{ckpt_n}{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
     else:
-        return f'{vds}{cond_type}{sset}{ckpt_n}{init_from}{sched_name}_text{text_guid}_steps{infer_steps}'
+        return f'{cond_type}{sset}{ckpt_n}{init_from}{sched_name}_text{text_guid}_steps{infer_steps}'
 
 
 @hydra.main(version_base='1.2', config_path="configs", config_name="evaluate")
@@ -106,6 +110,7 @@ def evaluate(newcfg: DictConfig) -> None:
     logger.info(f'Output path: {output_path}')
     # init wandb if it is not None
     if 'name' in cfg.logger:
+        cfg.logger.name = f'eval-{exp_folder.name}'
         cfg.logger.__delattr__('logger_name')
         cfg.logger.__delattr__('save_dir')
         cfg.logger.__delattr__('offline')

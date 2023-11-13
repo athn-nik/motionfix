@@ -54,7 +54,7 @@ defaults:
   - infer_scheduler: ddpm
   - denoiser: denoiser
   # VAE stuff
-  - text_encoder: clip_enc # distilbert_enc
+  - text_encoder: clip_enc # distilbert_enc # t5_enc
   - motion_condition_encoder: actor
   - losses: basic
   - optim: adamw
