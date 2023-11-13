@@ -43,10 +43,6 @@ def main_loop(command, exp_paths,
         cur_cmd = list(cmd_train)
         idx_of_exp = cur_cmd.index("FOLDER")
         cur_cmd[idx_of_exp] = str(fd)
-        if sched == 'ddim':
-            stps = 200
-        else:
-            stps = 1000
 
         list_of_args = ' '.join([f"condition_mode={cond_mode}",
                                  f"init_from={in_lat}",
@@ -67,6 +63,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--mode', required=True, type=str,
+                        help='what to do')
+
     parser.add_argument('--bid', required=False, default=10, type=int,
                         help='bid money for cluster')
     parser.add_argument(
@@ -84,6 +83,7 @@ if __name__ == "__main__":
     bid_for_exp = args.bid
     main_fd = args.exp
     subdirs = args.runs
+    mode = args.mode
 
     # put base directory
     base_dir = Path(f'experiments/motion-editing/{main_fd}')
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     cmd_train = ['python', 'cluster/single_run.py',
                 '--folder', 'FOLDER',
-                '--mode', 'sample',
+                '--mode', mode,
                 '--bid', '20',
                 '--extras']
     gd_text = [2.5]
