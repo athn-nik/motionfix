@@ -140,12 +140,18 @@ class MotionEditEvaluator:
                 if 'edit' in metric:
                     metrics[metric] = func_metr(tgt_lc, pred_lc)
                 else:
-                    metrics[metric] = func_metr(src_lc, pred_lc)
+                    if '_gt' in metric:
+                        metrics[metric] = func_metr(src_lc, tgt_lc)
+                    else:
+                        metrics[metric] = func_metr(src_lc, pred_lc)
             else:
                 if 'edit' in metric:
                     metrics[metric] = func_metr(tgt, pred)
                 else:
-                    metrics[metric] = func_metr(src, pred)
+                    if '_gt' in metric:
+                        metrics[metric] = func_metr(src, tgt)
+                    else:
+                        metrics[metric] = func_metr(src, pred)
         self.metrics_batch.append(metrics)
         # metrics = {metric: self.eval_functions[metric](motion) 
         #            for metric in self.metrics_to_eval}
