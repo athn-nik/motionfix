@@ -1,6 +1,5 @@
 import sched
 import sys
-from matplotlib.pylab import cond
 from rich import print
 import time
 import subprocess
