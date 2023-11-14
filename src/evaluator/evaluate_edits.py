@@ -178,7 +178,7 @@ class MotionEditEvaluator:
                                       ).abs()
         })
         metrics_avg['loc_edit_avg ↓'] = metrics_avg.pop('loc_edit_avg')
-        metrics_avg['glob_edit ↓'] = metrics_avg.pop('glob_edit_avg')
+        metrics_avg['glob_edit_avg ↓'] = metrics_avg.pop('glob_edit_avg')
 
         metrics_batched = {k: v.cpu().numpy() for k, v in metrics_batched.items()}
         metrics_avg = {k: v.cpu().numpy() for k, v in metrics_avg.items()}
