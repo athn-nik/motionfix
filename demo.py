@@ -213,6 +213,12 @@ def render_vids(newcfg: DictConfig) -> None:
     
     init_diff_from = cfg.init_from
     mode_cond = cfg.condition_mode
+    if cfg.model.motion_condition is None:
+        # hml3D trained only!
+        mode_cond = 'text_cond'
+    else:
+        mode_cond = cfg.condition_mode
+
     tot_pkls = []
 
     if cfg.mode in ['denoise', 'sample']:
@@ -224,7 +230,7 @@ def render_vids(newcfg: DictConfig) -> None:
                 keyids = batch['id']
                 no_of_motions = len(keyids)
                 batch = prepare_test_batch(model, batch)
-                if model.motion_condition == 'source':
+                if model.motion_condition == 'source' or init_diff_from == 'source':
                     source_lens = batch['length_source']
                     mask_source, mask_target = model.prepare_mot_masks(source_lens,
                                                                        target_lens)
