@@ -5,7 +5,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--mode', required=True, choices=['train', 'sample', 'sweep',
-                                                          'eval', 'render', 'fast-render'], type=str,
+                                                          'eval', 'evaluate', 'render', 'fast-render'], type=str,
                             help='Mode is either train or sample or eval!')
     
     parser.add_argument('--folder', required=False, type=str, default=None,
@@ -66,7 +66,7 @@ if __name__ == "__main__":
         experiments = [{"expname": expname, "run_id": run_id, "args": args, "gpus": gpus_no}]
     elif cluster_mode == 'sweep':
         experiments = [{"config": fd, "sweep-name":name}]
-    elif cluster_mode == 'sample':
+    elif cluster_mode in ['sample', 'evaluate', 'eval']:
         experiments = [{"folder": fd,
                         "args": args, "gpus": gpus_no}]
 

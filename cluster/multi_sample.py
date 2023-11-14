@@ -31,7 +31,6 @@ def main_loop(command, exp_paths,
                            init_from,
                            condition_modes,
                            steps_nos))
-
     # for fd in exp_paths:
     #     for sched in schedulers:
     #         for gd_t in text_guidance_vals:
@@ -43,16 +42,16 @@ def main_loop(command, exp_paths,
         cur_cmd = list(cmd_train)
         idx_of_exp = cur_cmd.index("FOLDER")
         cur_cmd[idx_of_exp] = str(fd)
-
+        
         list_of_args = ' '.join([f"condition_mode={cond_mode}",
                                  f"init_from={in_lat}",
                                  f"guidance_scale_text={gd_t}",
                                  f"guidance_scale_motion={gd_m}",
                                  f"model/infer_scheduler={sched}", 
                                  f"steps={stp_no}"])
-        cur_cmd.extend(list_of_args)
+        cur_cmd.extend([list_of_args])
         run(cur_cmd)
-        time.sleep(1)
+        time.sleep(0.2)
         cmd_no += 1
 
     end_script(cmd_no)
@@ -87,9 +86,9 @@ if __name__ == "__main__":
 
     # put base directory
     base_dir = Path(f'experiments/motion-editing/{main_fd}')
-    print('The base directory is:', base_dir)
+    print('The base directory is:', str(base_dir))
     exp_paths = [base_dir/subd for subd in subdirs]
-    print('The current runs are:', exp_paths)
+    print('The current runs are:', subdirs)
 
     parser = argparse.ArgumentParser()
     cmd_train = ['python', 'cluster/single_run.py',
@@ -97,8 +96,8 @@ if __name__ == "__main__":
                 '--mode', mode,
                 '--bid', '20',
                 '--extras']
-    gd_text = [2.5]
-    gd_motion = [2.0]
+    gd_text = [2.5, 3.0]
+    gd_motion = [2.0, 1.5]
     schedulers = ['ddpm']
     init_from = ['source', 'noise']
     condition_modes = ['full_cond'] #, 'mot_cond', 'text_cond']
@@ -106,4 +105,4 @@ if __name__ == "__main__":
 
     main_loop(cmd_train, exp_paths, gd_text,
               gd_motion, schedulers, init_from, 
-              condition_modes, no_of_steps)
+              condition_modes, steps_size)

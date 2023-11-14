@@ -114,7 +114,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
             no_gpus = experiment["gpus"]
             sub_file = SUBMISSION_TEMPLATE
             sub_file = sub_file.replace('EXPMODE', mode)
-            sub_file = sub_file.replace('DESCRIPTION', f'{run_id}')
+            sub_file = sub_file.replace('DESCRIPTION', f'TRAIN_{run_id}')
             if no_gpus > 1:
                 strategy = 'ddp'
             else:
@@ -160,7 +160,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
             run_id = '__'.join(run_id)
             sub_file = SUBMISSION_TEMPLATE
             sub_file = sub_file.replace('EXPMODE', mode)
-            sub_file = sub_file.replace('DESCRIPTION', f'{run_id}')
+            sub_file = sub_file.replace('DESCRIPTION', f'SAMPLE_{run_id}')
             bash = 'export HYDRA_FULL_ERROR=1 export PYTHONFAULTHANDLER=1\nexport PYTHONUNBUFFERED=1\nexport PATH=$PATH\n' \
                    'export PATH=/home/nathanasiou/apps/imagemagick/bin:$PATH\n' \
                    'export LD_LIBRARY_PATH=/home/nathanasiou/apps/imagemagick/lib:$LD_LIBRARY_PATH\n' \
@@ -203,7 +203,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
             run_id = '__'.join(run_id)
             sub_file = SUBMISSION_TEMPLATE
             sub_file = sub_file.replace('EXPMODE', mode)
-            sub_file = sub_file.replace('DESCRIPTION', f'{run_id}')
+            sub_file = sub_file.replace('DESCRIPTION', f'EVAL_{run_id}')
             bash = 'export HYDRA_FULL_ERROR=1 export PYTHONFAULTHANDLER=1\nexport PYTHONUNBUFFERED=1\nexport PATH=$PATH\n' \
                    'export PATH=/home/nathanasiou/apps/imagemagick/bin:$PATH\n' \
                    'export LD_LIBRARY_PATH=/home/nathanasiou/apps/imagemagick/lib:$LD_LIBRARY_PATH\n' \
