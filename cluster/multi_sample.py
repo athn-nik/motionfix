@@ -96,12 +96,12 @@ if __name__ == "__main__":
                 '--mode', mode,
                 '--bid', '20',
                 '--extras']
-    gd_text = [2.5, 3.0]
-    gd_motion = [2.0, 1.5]
+    gd_text = [4.0, 2.5]
+    gd_motion = [2.5,  4.0]
     schedulers = ['ddpm']
-    init_from = ['source', 'noise']
+    init_from = ['noise', 'source']
     condition_modes = ['full_cond'] #, 'mot_cond', 'text_cond']
-    steps_size = [1000, 500, 200] #, 'mot_cond', 'text_cond']
+    steps_size = [300, 200] #, 'mot_cond', 'text_cond']
 
     main_loop(cmd_train, exp_paths, gd_text,
               gd_motion, schedulers, init_from, 

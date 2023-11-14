@@ -17,7 +17,7 @@ savedir: null
 mean: false
 fact: 1
 number_of_samples: 1
-ckpt_name: '699' # 'all'
+ckpt_name: 699 # 'all'
 last_ckpt_path: ${get_last_checkpoint:${folder},${ckpt_name}}
 logger_level: INFO
 render_vids: false
