@@ -58,9 +58,9 @@ class MotionEditEvaluator:
             mult = 100
         else:
             mult = 1
-        local_motion_preservance_gt = l2_norm(mult*x, mult*y, dim=1)/seqlen
-        local_motion_preservance_gt = local_motion_preservance_gt.mean()
-        return local_motion_preservance_gt
+        local_motion_preservance = l2_norm(mult*x, mult*y, dim=1)/seqlen
+        # local_motion_preservance_gt = local_motion_preservance_gt.mean()
+        return local_motion_preservance.mean((1,2))
 
     def edit_accuracy(self, x, y, force_cm=True):
         seqlen = x.shape[1]
@@ -69,9 +69,9 @@ class MotionEditEvaluator:
         else:
             mult = 1
         global_edit_accuracy = l2_norm(mult*x, mult*y, dim=1) / seqlen
-        global_edit_accuracy = global_edit_accuracy.mean()
+        # global_edit_accuracy = global_edit_accuracy.mean()
 
-        return global_edit_accuracy
+        return global_edit_accuracy.mean((1,2))
 
     def run_smpl_fwd(self, body_transl, body_orient, body_pose):
         if len(body_transl.shape) > 2:
@@ -158,21 +158,35 @@ class MotionEditEvaluator:
         return metrics
 
     def get_metrics(self):
-        metrics = {metric: torch.cat([m[metric][None] for m in self.metrics_batch],
-                                          dim=0)
+        metrics_batched = {metric: torch.cat([m[metric] for m in self.metrics_batch],
+                                          dim=0)#.sort()[0]
                    for metric in self.metrics_to_eval}
-        metrics_avg = {metric+'_avg': torch.cat([m[metric][None] for m in self.metrics_batch],
+        metrics_indices = {metric: torch.cat([m[metric] for m in self.metrics_batch],
+                                          dim=0)#.sort()[1]
+                   for metric in self.metrics_to_eval}
+
+        metrics_avg = {metric+'_avg': torch.cat([m[metric] for m in self.metrics_batch],
                                           dim=0).mean()
                        for metric in self.metrics_to_eval}
-        metrics = {k: v.cpu().numpy() for k, v in metrics.items()}
+        # for k, v in metrics '↓' '↑'
+        metrics_avg.update({
+        'gb_preserv_l2_diff_avg ↓' : (metrics_avg['glo_pres_avg'] -
+                                       metrics_avg['gb_pre_gt_avg']
+                                     ).abs(),
+        'loc_preserv_l2_diff_avg ↓' : (metrics_avg['loc_pres_avg'] -
+                                       metrics_avg['lc_pre_gt_avg']
+                                      ).abs()
+        })
+        metrics_avg['loc_edit_avg ↓'] = metrics_avg.pop('loc_edit_avg')
+        metrics_avg['glob_edit ↓'] = metrics_avg.pop('glob_edit_avg')
+
+        metrics_batched = {k: v.cpu().numpy() for k, v in metrics_batched.items()}
         metrics_avg = {k: v.cpu().numpy() for k, v in metrics_avg.items()}
 
         # meta_data = {k: np.([m[k] for m in self.meta_data],
         #                                dim=0)
         #              for k in self.meta_data[0].keys()}
-        return {'metrics': metrics,
+        return {'metrics': metrics_batched,
                 'metrics_avg': metrics_avg,
                 # 'meta_data': meta_data
                 }
-
-

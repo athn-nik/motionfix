@@ -128,6 +128,11 @@ def evaluate(newcfg: DictConfig) -> None:
         aitrenderer = HeadlessRenderer()
     else:
         aitrenderer = None
+    logger.info('------Logger & Config Loaded---------')
+
+    evaluator = instantiate(cfg.evaluator)
+
+    logger.info('------Evaluator Loaded---------')
 
     model_path = cfg.last_ckpt_path
     # load the model
@@ -184,23 +189,27 @@ def evaluate(newcfg: DictConfig) -> None:
 
     # delete the model file if we loaded it from an artifact
     # create output directory
-    evaluator = instantiate(cfg.evaluator)
+
 
     init_diff_from = cfg.init_from
-    mode_cond = cfg.condition_mode
+    if cfg.model.motion_condition is None:
+        # hml3D trained only!
+        mode_cond = 'text_cond'
+    else:
+        mode_cond = cfg.condition_mode
 
     #######################
     ### DATALOADER ########
     #######################
+    iter = 0
     with torch.no_grad():
         for batch in tqdm(ds_iterator):
-    
             text_diff = batch['text']
             target_lens = batch['length_target']
             keyids = batch['id']
             no_of_motions = len(keyids)
             batch = prepare_test_batch(model, batch)
-            if model.motion_condition == 'source':
+            if model.motion_condition == 'source' or init_diff_from == 'source':
                 source_lens = batch['length_source']
                 mask_source, mask_target = model.prepare_mot_masks(source_lens,
                                                                     target_lens)
@@ -249,7 +258,9 @@ def evaluate(newcfg: DictConfig) -> None:
             src_mot_cond = dict_to_device(src_mot_cond, 'cuda')
             tgt_mot = dict_to_device(tgt_mot, 'cuda')
             evaluator.evaluate_motion_batch(src_mot_cond, tgt_mot, gen_metrics)
-
+            iter += 1
+            # if iter == 2:
+            #     break            
 
         results = evaluator.get_metrics()
         results_dict = results['metrics_avg'] | results['metrics']
