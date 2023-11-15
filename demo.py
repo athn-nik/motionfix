@@ -200,6 +200,15 @@ def render_vids(newcfg: DictConfig) -> None:
             batch_size_test = len(subset)
             test_dataset.data = subset
 
+        # elif cfg.subset == 'test_cherries':
+        #     from src.utils.cherrypick import test_keyds_cherries
+        #     subset = []
+        #     for elem in test_dataset.data:
+        #         if elem['id'] in test_keyds_cherries:
+        #             subset.append(elem)
+        #     batch_size_test = min(len(subset), 12) 
+        #     test_dataset.data = subset
+
         else:
             batch_size_test = 8
 

@@ -202,11 +202,13 @@ def evaluate(newcfg: DictConfig) -> None:
     ### DATALOADER ########
     #######################
     iter = 0
+    all_keyids = []
     with torch.no_grad():
         for batch in tqdm(ds_iterator):
             text_diff = batch['text']
             target_lens = batch['length_target']
             keyids = batch['id']
+            all_keyids.append(keyids)
             no_of_motions = len(keyids)
             batch = prepare_test_batch(model, batch)
             if model.motion_condition == 'source' or init_diff_from == 'source':
@@ -262,7 +264,23 @@ def evaluate(newcfg: DictConfig) -> None:
             # if iter == 2:
             #     break            
 
-        results = evaluator.get_metrics()
+
+        results, indices = evaluator.get_metrics()
+        all_keyids_dict = {}
+        all_keyids = [item for sublist in all_keyids for item in sublist]
+
+        for k, v in indices.items():
+        # Zip the two lists together and sort
+
+            zipped_pairs = sorted(zip(v, all_keyids))
+            all_keyids_dict[k] = [item for _, item in zipped_pairs]
+
+        # select topK
+        # for k, v in all_keyids_dict.items():
+        #     all_keyids[k] = v[:50]
+
+        # Use list comprehension to extract the sorted list1
+    
         results_dict = results['metrics_avg'] | results['metrics']
         # turn results_dict into panda dataframe
         results_df = pd.DataFrame.from_dict(results['metrics_avg'],
