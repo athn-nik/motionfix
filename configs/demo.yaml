@@ -31,6 +31,7 @@ subset: cherries2
 defaults:
   - _self_
   - model/infer_scheduler: ddpm
+  - data: bodilex
   - /path@path
   - override hydra/job_logging: rich # custom
   - override hydra/hydra_logging: rich # custom

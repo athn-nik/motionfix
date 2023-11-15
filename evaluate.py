@@ -219,11 +219,13 @@ def evaluate(newcfg: DictConfig) -> None:
                 from src.data.tools.tensors import lengths_to_mask
                 mask_target = lengths_to_mask(target_lens,
                                                 model.device)
-                batch['source_motion'] = None
+                # batch['source_motion'] = None
+                # mask_source = None
+                batch_source = None
                 mask_source = None
             source_init = batch['source_motion']
             diffout = model.generate_motion(text_diff,
-                                            batch['source_motion'],
+                                            batch_source,
                                             mask_source,
                                             mask_target,
                                             init_vec=source_init,
@@ -297,6 +299,8 @@ def evaluate(newcfg: DictConfig) -> None:
         #                                            title="Custom Bar Chart")})
 
         # print only the average results  as pandas dataframe
+        results['metrics_avg'] = {k: round(v[0], 4) for k, v in results['metrics_avg'].items()}
+
         print(results['metrics_avg'])
 
 
