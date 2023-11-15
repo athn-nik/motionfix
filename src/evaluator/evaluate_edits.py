@@ -161,10 +161,21 @@ class MotionEditEvaluator:
         metrics_batched = {metric: torch.cat([m[metric] for m in self.metrics_batch],
                                           dim=0)#.sort()[0]
                    for metric in self.metrics_to_eval}
-        metrics_indices = {metric: torch.cat([m[metric] for m in self.metrics_batch],
-                                          dim=0)#.sort()[1]
-                   for metric in self.metrics_to_eval}
+        metrics_batched.update({
+        'gb_preserv_l2_diff ↓' : (metrics_batched['glo_pres'] -
+                                  metrics_batched['gb_pre_gt']).abs(),
+        'loc_preserv_l2_diff ↓' : (metrics_batched['loc_pres'] -
+                                   metrics_batched['lc_pre_gt']).abs()
+        })
+        del metrics_batched['glo_pres']
+        del metrics_batched['gb_pre_gt']
+        del metrics_batched['loc_pres']
+        del metrics_batched['lc_pre_gt']
 
+        metrics_indices = {metric: torch.cat([m[metric] for m in self.metrics_batch],
+                                          dim=0).sort()[1]
+                           for metric in self.metrics_to_eval}
+        ### AVERAGING
         metrics_avg = {metric+'_avg': torch.cat([m[metric] for m in self.metrics_batch],
                                           dim=0).mean()
                        for metric in self.metrics_to_eval}
@@ -180,8 +191,14 @@ class MotionEditEvaluator:
         metrics_avg['loc_edit_avg ↓'] = metrics_avg.pop('loc_edit_avg')
         metrics_avg['glob_edit_avg ↓'] = metrics_avg.pop('glob_edit_avg')
 
+        del metrics_avg['glo_pres_avg']
+        del metrics_avg['gb_pre_gt_avg']
+        del metrics_avg['loc_pres_avg']
+        del metrics_avg['lc_pre_gt_avg']
+
         metrics_batched = {k: v.cpu().numpy() for k, v in metrics_batched.items()}
         metrics_avg = {k: v.cpu().numpy() for k, v in metrics_avg.items()}
+        metrics_indices = {k: v.cpu().numpy() for k, v in metrics_indices.items()}
 
         # meta_data = {k: np.([m[k] for m in self.meta_data],
         #                                dim=0)
@@ -189,4 +206,4 @@ class MotionEditEvaluator:
         return {'metrics': metrics_batched,
                 'metrics_avg': metrics_avg,
                 # 'meta_data': meta_data
-                }
+                }, metrics_indices
