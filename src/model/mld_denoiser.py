@@ -145,13 +145,19 @@ class MldDenoiser(nn.Module):
                 # ugly way to tell concat the motion or so
                 # first embed to low dim space then concat
                 motion_embeds_proj = self.pose_embd(motion_embeds)
-                emb_latent = torch.cat((time_emb, 
+                emb_latent = torch.cat((motion_embeds_proj, 
+                                        time_emb, 
                                         text_emb_latent,
-                                        motion_embeds_proj), 0)
+                                        ), 0)
             else:
-                emb_latent = torch.cat((time_emb, 
+                if motion_embeds.shape[-1] != self.latent_dim:
+                    motion_embeds_proj = self.pose_embd(motion_embeds)
+                else:
+                    motion_embeds_proj = motion_embeds
+                emb_latent = torch.cat((motion_embeds_proj, 
+                                        time_emb, 
                                         text_emb_latent,
-                                        motion_embeds), 0)
+                                        ), 0)
 
         else:
             raise TypeError(f"condition type {self.condition} not supported")
@@ -175,7 +181,9 @@ class MldDenoiser(nn.Module):
             time_token_mask = torch.ones((bs, time_emb.shape[0]),
                                           dtype=bool, device=xseq.device)
             # condition_mask
-            aug_mask = torch.cat((time_token_mask, condition_mask,
+            aug_mask = torch.cat((condition_mask[:, text_emb_latent.shape[0]:],
+                                  time_token_mask, condition_mask[:,
+                                                                  :text_emb_latent.shape[0]],
                                   motion_in_mask), 1)
 
             tokens = self.encoder(xseq,

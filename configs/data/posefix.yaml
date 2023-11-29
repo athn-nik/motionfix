@@ -1,10 +1,9 @@
-dataname: hml_3d
-_target_: src.data.humanml3d.HumanML3DDataModule
+dataname: posefix
+_target_: src.data.posefix.PosefixDataModule
 debug: ${debug}
 
-datapath: ${path.data}/humanml3d_processed # amass_bodilex.pth.tar
+datapath: ${path.data}/posefix_processed # amass_bodilex.pth.tar
 debug_datapath: ${path.minidata}/amass_small.pth.tar
-annot_path: ${path.data}/annotations/humanml3d/annotations.json
 
 # Amass
 smplh_path: ${path.data}/body_models
@@ -35,16 +34,9 @@ framerate: 30
 sampler: ${sampler}
 
 load_feats:
-- "body_transl"
-- "body_transl_delta"
-- "body_transl_delta_pelv"
-- "body_transl_delta_pelv_xy"
-- "body_transl_z"
 - "body_orient"
 - "body_pose"
-- "body_orient_delta"
-- "body_pose_delta"
 - "body_orient_xy"
-- "body_joints"
+# - "body_joints"
 
 progress_bar: true
