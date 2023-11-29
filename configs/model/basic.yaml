@@ -17,7 +17,7 @@ norm_type: standardize # min_max standardize
 
 # diffusion related
 diff_params:
-  num_inference_timesteps: 1000
+  num_inference_timesteps: 200
   prob_uncondp: 0.1 # 0.1 0.25
   prob_drop_text: 0.05 # 0.1 0.25
   prob_drop_motion: 0.05
@@ -53,8 +53,7 @@ defaults:
   - train_scheduler: ddpm
   - infer_scheduler: ddpm
   - denoiser: denoiser
-  # VAE stuff
-  - text_encoder: clip_enc # distilbert_enc # t5_enc
+  - text_encoder: clip_enc #t5_enc  # distilbert_enc # t5_enc
   - motion_condition_encoder: actor
   - losses: basic
   - optim: adamw

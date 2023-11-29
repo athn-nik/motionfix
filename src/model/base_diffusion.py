@@ -178,7 +178,8 @@ class MD(BaseModel):
                            init_from='noise',
                            gd_text=None, gd_motion=None, 
                            mode='full_cond',
-                           return_init_noise=False):
+                           return_init_noise=False,
+                           steps_num=None):
         # guidance_scale_text: 7.5 #
         #  guidance_scale_motion: 1.5
         # init latents
@@ -204,7 +205,11 @@ class MD(BaseModel):
             gd_scale_motion = self.diff_params.guidance_scale_motion
 
         # set timesteps
-        if init_from == 'source':
+        if steps_num is not None:
+            rev_steps = steps_num
+            self.infer_scheduler.set_timesteps(rev_steps)
+            log.info(f'Inference of: {rev_steps}') 
+        elif init_from == 'source':
             rev_steps = self.diff_params.num_inference_timesteps // 5
             self.infer_scheduler.set_timesteps(rev_steps)
             log.info(f'Inference of: {rev_steps}')
@@ -1002,7 +1007,8 @@ class MD(BaseModel):
                         mask_source, mask_target, 
                         init_vec_method='noise', init_vec=None,
                         gd_text=None, gd_motion=None, 
-                        return_init_noise=False, condition_mode='full_cond'):
+                        return_init_noise=False, 
+                        condition_mode='full_cond', num_diff_steps=None):
         # uncond_tokens = [""] * len(texts_cond)
         # if self.condition == 'text':
         #     uncond_tokens.extend(texts_cond)
@@ -1076,7 +1082,8 @@ class MD(BaseModel):
                                                 gd_text=gd_text, 
                                                 gd_motion=gd_motion,
                                                 return_init_noise=return_init_noise,
-                                                mode=condition_mode)
+                                                mode=condition_mode,
+                                                steps_num=num_diff_steps)
                 return init_noise, diff_out.permute(1, 0, 2)
 
             else:
@@ -1090,7 +1097,8 @@ class MD(BaseModel):
                                                 gd_text=gd_text, 
                                                 gd_motion=gd_motion,
                                                 return_init_noise=return_init_noise,
-                                                mode=condition_mode)
+                                                mode=condition_mode,
+                                                steps_num=num_diff_steps)
 
             return diff_out.permute(1, 0, 2)
 
@@ -1381,11 +1389,18 @@ class MD(BaseModel):
                                                 mask_target)
 
 
-        # rs_set Bx(S+1)xN --> first pose included 
-        total_loss, loss_dict = self.compute_losses(dif_dict,
-                                                    batch['body_joints_target'],
-                                                    mask_source, 
-                                                    mask_target)
+        # rs_set Bx(S+1)xN --> first pose included
+        if self.loss_on_positions:
+            total_loss, loss_dict = self.compute_losses(dif_dict,
+                                                        batch['body_joints_target'],
+                                                        mask_source, 
+                                                        mask_target)
+
+        else:
+            total_loss, loss_dict = self.compute_losses(dif_dict,
+                                                        None,
+                                                        mask_source, 
+                                                        mask_target)
 
         # if self.trainer.current_epoch % 100 == 0 and self.trainer.current_epoch != 0:
         #     if self.global_rank == 0 and split=='train' and batch_idx == 0:
@@ -1404,6 +1419,8 @@ class MD(BaseModel):
         import random
  
         if split == 'val' and batch_idx == 0 and self.global_rank == 0:
+            if dif_dict['pred_motion_feats'].shape[1] == 1:
+                return total_loss
             if batch['source_motion'] is not None:
                 src_cond_mets = batch['source_motion'].clone()
                 mask_src_mets, mask_tgt_mets = self.prepare_mot_masks(
@@ -1427,7 +1444,6 @@ class MD(BaseModel):
             if self.motion_condition == 'source':
                 gt_texts = self.test_subset['text']
                 gt_keyids = self.test_subset['id']
-
                 with torch.no_grad():
                     init_noise, motion_text_n_motion = self.generate_motion(
                                                         texts_cond=gt_texts, 
@@ -1437,6 +1453,7 @@ class MD(BaseModel):
                                                         return_init_noise=True,
                                                         init_vec_method='noise',
                                                         condition_mode='full_cond')
+
                     motion_text = self.generate_motion(texts_cond=gt_texts, 
                                                     mask_source=mask_src,
                                                     mask_target=mask_tgt,
@@ -1458,6 +1475,7 @@ class MD(BaseModel):
                                                             full_deltas=True)
                         motion_unnorm = motion_unnorm.permute(1, 0, 2)
                     if self.using_deltas_transl:
+                        
                         motion_text_n_motion = self.diffout2motion(motion_text_n_motion)                    
                         motion_text = self.diffout2motion(motion_text)
                         motion_motion = self.diffout2motion(motion_motion)
