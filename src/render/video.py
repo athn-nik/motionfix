@@ -156,6 +156,7 @@ def stack_vids(vids_to_stack: List[str], fname: str, orient='v', v=False):
 def put_text(text: str, fname: str, outf: str,
              position='bottom_center', 
              v=False):
+    import subprocess
     cmd_m = ['ffmpeg']
     # -i inputClip.mp4 -vf f"drawtext=text='{method}':x=200:y=0:fontsize=22:fontcolor=white" -c:a copy {temp_path}.mp4
 
@@ -170,7 +171,7 @@ def put_text(text: str, fname: str, outf: str,
     }
     
     cmd_m.extend(['-i',fname, '-y', '-vf', 
-    f"drawtext=text='{text}':{diff_pos[position]}:fontsize=30::box=1:boxcolor=black@0.6:boxborderw=5:fontcolor=white",
+    f"drawtext=text='{text}':{diff_pos[position]}:fontsize=45::box=1:boxcolor=black@0.6:boxborderw=5:fontcolor=white",
                   '-loglevel', 'quiet', '-c:a', 'copy',
                   f'{outf}'])
     

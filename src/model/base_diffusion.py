@@ -201,8 +201,13 @@ class MD(BaseModel):
 
         if gd_text is None:
             gd_scale_text = self.diff_params.guidance_scale_text
+        else:
+            gd_scale_text = gd_text
+
         if gd_motion is None:
             gd_scale_motion = self.diff_params.guidance_scale_motion
+        else:
+            gd_scale_motion = gd_motion
 
         # set timesteps
         if steps_num is not None:
@@ -214,7 +219,10 @@ class MD(BaseModel):
             self.infer_scheduler.set_timesteps(rev_steps)
             log.info(f'Inference of: {rev_steps}')
         else:
-            rev_steps = self.diff_params.num_inference_timesteps
+            if self.diff_params.num_inference_timesteps > len(self.infer_scheduler):
+                rev_steps = len(self.infer_scheduler)
+            else:
+                rev_steps = self.diff_params.num_inference_timesteps
             self.infer_scheduler.set_timesteps(rev_steps)
 
         timesteps = self.infer_scheduler.timesteps.to(inp_motion_mask.device)
@@ -364,8 +372,8 @@ class MD(BaseModel):
             if self.motion_condition == 'source' and mode=='full_cond':
                 motion_pred = mot_pred_uncond +\
                             gd_scale_text * (
-                            mot_pred_text - mot_pred_uncond)*\
-                            gd_scale_motion*(
+                            mot_pred_text - mot_pred_uncond)+\
+                            gd_scale_motion * (
                                 mot_pred_both - mot_pred_text
                             )
 
@@ -1179,7 +1187,14 @@ class MD(BaseModel):
 
 
     def diffout2motion(self, diffout, full_deltas=False):
-        if full_deltas:
+        if diffout.shape[1] == 1:
+            rots_unnorm = self.cat_inputs(self.unnorm_inputs(self.uncat_inputs(
+                                                            diffout,
+                                                            self.input_feats_dims
+                                                            ),
+                                          self.input_feats))[0]
+            full_motion_unnorm = rots_unnorm
+        elif full_deltas:
             # FIRST POSE FOR GENERATION & DELTAS FOR INTEGRATION
             first_pose = diffout[:, :1]
             delta_feats = diffout[:, 1:]

@@ -1,4 +1,3 @@
-name: clip_text_encoder
 _target_: src.model.textencoder.clip_encoder.ClipTextEncoder
 variant: clip_hidden
 finetune: false # if false, model weights are frozen

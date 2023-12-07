@@ -61,8 +61,6 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
 
         os.environ['DISPLAY'] = ":12"
         os.environ['WANDB_SILENT'] = "true"
-
-    # import multiprocessing
     # multiprocessing.set_start_method('spawn')
     logger.info("Training script. The outputs will be stored in:")
     working_dir = cfg.path.working_dir
@@ -84,9 +82,9 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
         body_models_path = f'{cfg.path.data}/body_models' if not cfg.data.debug else f'{cfg.path.minidata}/body_models'
 
         AITVIEWER_CONFIG.update_conf({"playback_fps": 30,
-                                    "auto_set_floor": True,
-                                    "smplx_models": body_models_path,
-                                    "z_up": True})
+                                      "auto_set_floor": True,
+                                      "smplx_models": body_models_path,
+                                      "z_up": True})
         renderer = HeadlessRenderer()
     else: 
         renderer=None

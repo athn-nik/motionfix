@@ -43,23 +43,24 @@ class T5TextEncoder(pl.LightningModule):
         texts: List[str],
     ):
         inputs = texts
-        outputs = texts
+        
+        # outputs = texts
 
-        # Tokenize
-        source_encoding = self.tokenizer(inputs,
-                                         padding='max_length',
-                                         max_length=self.max_length,
-                                         truncation=True,
-                                         return_attention_mask=True,
-                                         add_special_tokens=True,
-                                         return_tensors="pt")
+        # # Tokenize
+        # source_encoding = self.tokenizer(inputs,
+        #                                  padding='max_length',
+        #                                  max_length=self.max_length,
+        #                                  truncation=True,
+        #                                  return_attention_mask=True,
+        #                                  add_special_tokens=True,
+        #                                  return_tensors="pt")
 
 
-        input_ids = tokenizer(texts, return_tensors="pt").input_ids  # Batch size 1
-        text_input_ids = text_inputs.input_ids.to(self.text_model.device)
-        txt_att_mask = text_inputs.attention_mask.to(self.text_model.device)
+        # input_ids = tokenizer(texts, return_tensors="pt").input_ids  # Batch size 1
+        # text_input_ids = text_inputs.input_ids.to(self.text_model.device)
+        # txt_att_mask = text_inputs.attention_mask.to(self.text_model.device)
 
-        outputs = self.language_model(input_ids=text_input_ids, attention_mask=txt_att_mask)
-        last_hidden_states = outputs.last_hidden_state
+        # outputs = self.language_model(input_ids=text_input_ids, attention_mask=txt_att_mask)
+        # last_hidden_states = outputs.last_hidden_state
 
-        return outputs
+        # return outputs

@@ -10,6 +10,10 @@ keyids_for_testing = ["001892", "001881", "001800", "001790",
                       "001762", "001794", "001694", "001812", "001874",
                       "001883"]
 
+
+
+
+
 def regroup_metrics(metrics):
     from src.info.joints import smplh_joints
     pose_names = smplh_joints[1:23]
