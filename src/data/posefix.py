@@ -321,7 +321,10 @@ class PosefixDataset(Dataset):
         data_dict = {**data_dict_source, **data_dict_target, **meta_data_dict}
         data_dict['length_source'] = len(data_dict['body_pose_source'])
         data_dict['length_target'] = len(data_dict['body_pose_target'])
-        data_dict['text'] = random.choice(datum['text'])
+        if datum['split'] != 0:
+            data_dict['text'] = datum['text'][0]
+        else:
+            data_dict['text'] = random.choice(datum['text'])
         data_dict['split'] = datum['split']
         data_dict['id'] = datum['id']
         # data_dict['dims'] = self._feat_dims
@@ -423,13 +426,13 @@ class PosefixDataModule(BASEDataModule):
         # create datasets
         for spl in load_splits:
             self.dataset[spl] = PosefixDataset(posefix_data_dict[spl] ,
-                                                 self.preproc.n_body_joints,
-                                                 self.preproc.stats_file,
-                                                 self.preproc.norm_type,
-                                                 self.smpl_p,
-                                                 self.rot_repr,
-                                                 self.load_feats,
-                                                 do_augmentations=True)
+                                               self.preproc.n_body_joints,
+                                               self.preproc.stats_file,
+                                               self.preproc.norm_type,
+                                               self.smpl_p,
+                                               self.rot_repr,
+                                               self.load_feats,
+                                               do_augmentations=True)
 
             log.info(f'Set up {spl} set with {len(self.dataset[spl])} items.')
 

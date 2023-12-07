@@ -133,7 +133,7 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
         seqs_of_human_motions.append(smpl_template)
         renderer.scene.add(smpl_template)
     # camera follows smpl sequence
-    seqs_of_human_motions[0]
+    # FIX CAMERA
     from src.tools.transforms3d import transform_body_pose
     from src.tools.transforms3d import get_z_rot
     R_z = get_z_rot(global_orient[0], in_format='aa')
@@ -142,11 +142,19 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     camera = renderer.lock_to_node(seqs_of_human_motions[0],
                                     (xy_facing[0], xy_facing[1], 1.5), smooth_sigma=5.0)
 
-    renderer.save_video(video_dir=str(filename), output_fps=30)
+    # /FIX CAMERA
+    if len(mesh_seq['body_pose']) == 1:
+        renderer.save_frame(file_path=str(filename) + '.png')
+        sfx = 'png'
+    else:
+        renderer.save_video(video_dir=str(filename), output_fps=30)
+        sfx = 'mp4'
+
     # aitviewer adds a counter to the filename, we remove it
     # filename.split('_')[-1].replace('.mp4', '')
     # os.rename(filename + '_0.mp4', filename[:-4] + '.mp4')
-    os.rename(str(filename) + '_0.mp4', str(filename) + '.mp4')
+    if sfx == 'mp4':
+        os.rename(str(filename) + f'_0.{sfx}', str(filename) + f'.{sfx}')
 
     # empty scene for the next rendering
     for mesh in seqs_of_human_motions:
@@ -159,10 +167,10 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     os.close(old)
 
     if text_for_vid is not None:
-        fname = put_text(text_for_vid, f'{filename}.mp4', f'{filename}_.mp4')
-        os.remove(f'{filename}.mp4')
+        fname = put_text(text_for_vid, f'{filename}.{sfx}', f'{filename}_.{sfx}')
+        os.remove(f'{filename}.{sfx}')
     else:
-        fname = f'{filename}.mp4'
+        fname = f'{filename}.{sfx}'
     return fname
 
 

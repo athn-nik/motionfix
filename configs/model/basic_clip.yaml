@@ -1,5 +1,6 @@
-modelname: basic
+modelname: basic_clip
 _target_: src.model.base_diffusion.MD
+
 latent_dim: 512
 
 ff_size: 1024
@@ -50,10 +51,12 @@ loss_func_feats: mse # l1 mse
 
 defaults:
   # diffusion stuff
+  - _self_
+  - /path@path
   - train_scheduler: ddpm
   - infer_scheduler: ddpm
   - denoiser: denoiser
-  - text_encoder: clip_enc #t5_enc  # distilbert_enc # t5_enc
+  - text_encoder: clipenc #t5_enc  # distilbert_enc # t5_enc
   - motion_condition_encoder: actor
   - losses: basic
   - optim: adamw

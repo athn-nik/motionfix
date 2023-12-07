@@ -267,7 +267,7 @@ def render_vids(newcfg: DictConfig) -> None:
                                                  num_workers=0,
                                                  batch_size=batch_size_test,
                                                  collate_fn=collate_fn)
-        ds_iterator = testloader 
+        ds_iterator = testloader
         testloader_hml3d = torch.utils.data.DataLoader(test_dataset_hml3d,
                                                  shuffle=False,
                                                  num_workers=0,
@@ -278,7 +278,7 @@ def render_vids(newcfg: DictConfig) -> None:
     from src.utils.art_utils import color_map
     
     init_diff_from = cfg.init_from
-    mode_cond = cfg.condition_mode
+    mode_cond = cfg.condition_modec
     if cfg.model.motion_condition is None:
         # hml3D trained only!
         mode_cond = 'text_cond'

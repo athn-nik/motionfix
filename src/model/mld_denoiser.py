@@ -200,7 +200,8 @@ class MldDenoiser(nn.Module):
                 denoised_motion[1:] = denoised_motion_only
                 denoised_motion[0] = denoised_first_pose
             else:
-                if self.pred_delta_motion:
+                
+                if self.pred_delta_motion and motion_embeds is not None:
                     tgt_len = denoised_motion_proj.shape[0]
                     src_len = motion_embeds_proj.shape[0]
                     if tgt_len > src_len:
