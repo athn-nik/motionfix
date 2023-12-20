@@ -38,7 +38,7 @@ statistics_path: ${path.deps}/stats/${statistics_file}
 # Composing nested config with default
 defaults:
   - data: bodilex
-  - model: basic
+  - model: basic_clip # basic_t5
   - machine: server
   - trainer: base
   - sampler: variable_conseq # cut it
