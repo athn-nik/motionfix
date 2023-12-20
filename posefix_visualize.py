@@ -265,6 +265,7 @@ def render_vids(newcfg: DictConfig) -> None:
 
                     lof_mots = output2renderable(mots_to_render)
                     # output_path = Path('/home/nathanasiou/Desktop/conditional_action_gen/modilex')
+                    
                     for elem_id in range(no_of_motions):
                         cur_group_of_vids = []
                         curid = keyids[elem_id]
