@@ -34,8 +34,12 @@ SMPL_BODY_CHAIN = [-1,  0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  9,  9,
                    12, 13, 14, 16, 17, 18, 19, 20, 22, 23, 20, 25, 26, 20, 28, 29, 20, 31, 32, 20, 34,
                    35, 21, 37, 38, 21, 40, 41, 21, 43, 44, 21, 46, 47, 21, 49, 50]
 
-def read_data_for_split(path, split):
-    data_dict = joblib.load(path / f'posefix_db_{split}.pth.tar')
+def read_data_for_split(path, split, amt_only=False):
+    if amt_only:
+        data_dict = joblib.load(path / f'posefix_amt_{split}.pth.tar')
+    else:
+        data_dict = joblib.load(path / f'posefix_db_{split}.pth.tar')
+
     data_list = []
     k2id = {'train': 0 , 'val': 1, 'test': 2}
 
@@ -371,6 +375,8 @@ class PosefixDataModule(BASEDataModule):
                  smplh_path: str = "",
                  dataname: str = "",
                  rot_repr: str = "6d",
+                 amt_only: bool = False,
+                 load_splits: List[str] = ["val", "test", "train"],
                  **kwargs):
         super().__init__(batch_size=batch_size,
                          num_workers=num_workers,
@@ -404,13 +410,14 @@ class PosefixDataModule(BASEDataModule):
             # takes ~4min to load
             ds_db_path = Path(self.datapath)
         # define splits
-        load_splits = ['train', 'val', 'test']
         posefix_data_dict = {}
         for spl in load_splits:
-            posefix_data_dict[spl] = read_data_for_split(ds_db_path, spl)
+            posefix_data_dict[spl] = read_data_for_split(ds_db_path, spl,
+                                                         amt_only=amt_only)
             posefix_data_dict[spl] = cast_dict_to_tensors(posefix_data_dict[spl])            
-        lst_for_stats = posefix_data_dict['train'] + posefix_data_dict['val']
-        self.stats = self.calculate_feature_stats(PosefixDataset(lst_for_stats,
+        if load_splits != ['test']:
+            lst_for_stats = posefix_data_dict['train'] + posefix_data_dict['val']
+            self.stats = self.calculate_feature_stats(PosefixDataset(lst_for_stats,
                                                 self.preproc.n_body_joints,
                                                 self.preproc.stats_file,
                                                 self.preproc.norm_type,

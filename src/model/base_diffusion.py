@@ -376,6 +376,9 @@ class MD(BaseModel):
                             gd_scale_motion * (
                                 mot_pred_both - mot_pred_text
                             )
+                            
+                            # --> mot_pred_both
+                            # > 1 --> mot_pred_both - l*uncondp
 
             # elif class_free_motion or class_free_text:
             #     latent_model_input = torch.cat([latents] * 2)

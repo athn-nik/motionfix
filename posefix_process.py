@@ -24,13 +24,13 @@ import numpy as np
 
 POSEFIX_LOCATION = 'data/posefix_release' # TODO
 # download data from: https://download.europe.naverlabs.com/ComputerVision/PoseFix/posefix_dataset_release.zip
-split = "val" # TODO
+split = "train" # TODO
 
 # choose what texts you want # TODO
 caption_files = [
      f"{POSEFIX_LOCATION}/posefix_human_6157.json", 
-     f"{POSEFIX_LOCATION}/posefix_paraphrases_4284.json",
-     f"{POSEFIX_LOCATION}/posefix_auto_135305.json"
+    #  f"{POSEFIX_LOCATION}/posefix_paraphrases_4284.json",
+    #  f"{POSEFIX_LOCATION}/posefix_auto_135305.json"
      ]
 
 AMASS_FILE_LOCATION = f"/ps/project/motion_text_synthesis/amass/smplhg" # TODO
@@ -207,5 +207,5 @@ for index in range(len(dataIDs)):
 
 # import ipdb; ipdb.set_trace()
 import joblib
-joblib.dump(triplets, 'data/posefix_release/posefix_db_val.pth.tar')
+joblib.dump(triplets, 'data/posefix_release/posefix_d.pth.tar')
 # TODO: save `triplets` in your favorite format
