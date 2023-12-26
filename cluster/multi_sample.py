@@ -38,6 +38,7 @@ def main_loop(command, exp_paths,
     #                 for in_lat in init_from:
     #                     for cond_mode in condition_modes:
     #                         for stp_no in steps_nos:
+    ckt_name = '499'
     for fd, sched, gd_t, gd_m, in_lat, cond_mode, stp_no in exp_grid:
         cur_cmd = list(cmd_train)
         idx_of_exp = cur_cmd.index("FOLDER")
@@ -45,6 +46,7 @@ def main_loop(command, exp_paths,
         
         list_of_args = ' '.join([f"condition_mode={cond_mode}",
                                  f"init_from={in_lat}",
+                                 f"ckpt_name={ckt_name}",
                                  f"guidance_scale_text={gd_t}",
                                  f"guidance_scale_motion={gd_m}",
                                  f"model/infer_scheduler={sched}", 
@@ -96,12 +98,12 @@ if __name__ == "__main__":
                 '--mode', mode,
                 '--bid', '20',
                 '--extras']
-    gd_text = [6.0, 3.0]
-    gd_motion = [6.0, 3.0]
+    gd_text = [2.5, 4.0]
+    gd_motion = [4.5, 4.0]
     schedulers = ['ddpm']
     init_from = ['noise', 'source']
     condition_modes = ['full_cond'] #, 'mot_cond', 'text_cond']
-    steps_size = [200, 300] #, 'mot_cond', 'text_cond']
+    steps_size = [200, 500, 700] #, 'mot_cond', 'text_cond']
 
     main_loop(cmd_train, exp_paths, gd_text,
               gd_motion, schedulers, init_from, 
