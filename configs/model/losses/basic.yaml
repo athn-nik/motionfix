@@ -14,7 +14,7 @@ lmd_kl: 1e-5
 lmd_prior: 0.0
 lmd_recons: 1.0
 lmd_gen: 1.0
-
+fuse: 'concat' # 'add' null
 # Ablations
 loss_on_both: true
 # loss on joint position features

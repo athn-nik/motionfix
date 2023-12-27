@@ -36,7 +36,6 @@ sampler: ${sampler}
 load_feats:
 - "body_orient"
 - "body_pose"
-- "body_orient_xy"
 # - "body_joints"
 
 progress_bar: true

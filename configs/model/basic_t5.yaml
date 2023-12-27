@@ -25,10 +25,11 @@ diff_params:
   guidance_scale_text: 2.5 #
   guidance_scale_motion: 2.0
 
-motion_condition: null
+motion_condition: source
 source_encoder: null # trans_enc 
 condition: text
 smpl_path: ${data.smplh_path}
+fuse: 'concat' # 'add' null
 
 nfeats: 135
 dim_per_feat: [135]

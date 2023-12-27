@@ -1,9 +1,10 @@
-from matplotlib import colors as mcolors
 
 def rgba(c: str):
+    from matplotlib import colors as mcolors
     return mcolors.to_rgba(c)
 
 def rgb(c: str):
+    from matplotlib import colors as mcolors
     return mcolors.to_rgb(c)
 
 color_map = {

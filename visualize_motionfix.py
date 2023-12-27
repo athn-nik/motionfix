@@ -193,7 +193,7 @@ def render_vids(newcfg: DictConfig) -> None:
         for elem in test_dataset.data:
             if elem['id'] in keyids_for_testing:
                 subset.append(elem)
-        batch_size_test = min(len(subset), 16)
+        batch_size_test = min(len(subset), 20)
         test_dataset.data = subset
 
         # elif cfg.subset == 'test_cherries':
@@ -206,28 +206,27 @@ def render_vids(newcfg: DictConfig) -> None:
         #     test_dataset.data = subset
     else:
         batch_size_test = 8
-    batch_size_test = 4 
     testloader = torch.utils.data.DataLoader(test_dataset,
                                              shuffle=False,
-                                             num_workers=0,
+                                             num_workers=4,
                                              batch_size=batch_size_test,
                                              collate_fn=collate_fn)
     ds_iterator = testloader
 
     from src.utils.art_utils import color_map
-    
-    
     mode_cond = 'full_cond'
-
     tot_pkls = []
     gd_text = [1.0, 2.5, 5.0]
     gd_motion = [1.0, 2.5, 5.0]
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
+    from aitviewer.models.smpl import SMPLLayer
+    smpl_layer = SMPLLayer(model_type='smplh', ext='npz', gender='neutral')
+
     with torch.no_grad():
         
         output_path = output_path / 'renders'
         output_path.mkdir(exist_ok=True, parents=True)
-        for guid_text, guid_motion in guidances_mix:    
+        for guid_text, guid_motion in guidances_mix:
             cur_guid_comb = f'ld_txt-{guid_text}_ld_mot-{guid_motion}'
             for batch in tqdm(ds_iterator):
         
@@ -267,7 +266,7 @@ def render_vids(newcfg: DictConfig) -> None:
                 src_mot_cond = src_mot_cond.to(model.device)
                 mots_to_render = [src_mot_cond, tgt_mot, 
                                     [src_mot_cond, tgt_mot],
-                                    gen_mo]
+                                    [tgt_mot, gen_mo]]
                 monames = ['source', 'target', 'overlaid', 
                             'generated']
 
@@ -285,8 +284,12 @@ def render_vids(newcfg: DictConfig) -> None:
                             for xx in one_motion:
                                 cur_mol.append({k: v[elem_id] 
                                                 for k, v in xx.items()})
-                            cur_colors = [color_map['source'],
-                                        color_map['target']]
+                                if monames[moid] == 'generated':
+                                    cur_colors = [color_map['target'],
+                                                color_map['generated']]
+                                else:
+                                    cur_colors = [color_map['source'],
+                                                color_map['target']]
                         else:
                             cur_mol.append({k: v[elem_id] 
                                                 for k, v in one_motion.items()})
@@ -296,7 +299,8 @@ def render_vids(newcfg: DictConfig) -> None:
                                             output_path / f"movie_{elem_id}_{moid}",
                                             pose_repr='aa',
                                             text_for_vid=monames[moid],
-                                            color=cur_colors)
+                                            color=cur_colors,
+                                            smpl_layer=smpl_layer)
                         cur_group_of_vids.append(fname)
                     stacked_vid = stack_vids(cur_group_of_vids,
                                             f'{output_path}/{elem_id}_stacked.mp4',

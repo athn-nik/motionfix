@@ -74,7 +74,7 @@ def render_skeleton(renderer: HeadlessRenderer, positions: torch.Tensor,
 def render_motion(renderer: HeadlessRenderer, datum: dict, 
                   filename: str, text_for_vid=None, pose_repr='6d',
                   color=(160 / 255, 160 / 255, 160 / 255, 1.0),
-                  return_verts=False) -> None:
+                  return_verts=False, smpl_layer=None) -> None:
     """
     Function to render a video of a motion sequence
     renderer: aitviewer renderer
@@ -84,7 +84,6 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
 
     """
     from aitviewer.headless import HeadlessRenderer
-    from aitviewer.models.smpl import SMPLLayer
     from aitviewer.renderables.smpl import SMPLSequence
     import trimesh
     from src.render.video import put_text
@@ -99,6 +98,12 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     only_skel = False
     import sys
     seqs_of_human_motions = []
+    if smpl_layer is None:
+        from aitviewer.models.smpl import SMPLLayer
+        smpl_layer = SMPLLayer(model_type='smplh', 
+                                ext='npz',
+                                gender=gender)
+    
     for iid, mesh_seq in enumerate(datum):
 
         if pose_repr != 'aa':
@@ -117,16 +122,12 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
         os.close(1)
         os.open(os.devnull, os.O_WRONLY)
         
-        smpl_layer = SMPLLayer(model_type='smplh', 
-                            ext='npz',
-                            gender=gender)
-        
         smpl_template = SMPLSequence(body_pose,
-                                    smpl_layer,
-                                    poses_root=global_orient,
-                                    trans=body_transl,
-                                    color=colors[iid],
-                                    z_up=True)
+                                     smpl_layer,
+                                     poses_root=global_orient,
+                                     trans=body_transl,
+                                     color=colors[iid],
+                                     z_up=True)
         if only_skel:
             smpl_template.remove(smpl_template.mesh_seq)
 

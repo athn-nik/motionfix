@@ -15,7 +15,7 @@ debug: false
 expdir: ${get_expdir:${debug}}
 experiment: cvpr24
 # must be the same when you are resuming experiment
-project: motion-editing
+project: motionfix-sigg
 seed: 42
 logger_level: INFO
 run_id: ${generate_id:}
