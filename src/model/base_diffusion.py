@@ -984,7 +984,7 @@ class MD(BaseModel):
             # total_loss = first_pose_loss
         
 
-        loss_joints = torch.tensor(0.0)                                 
+        loss_joints = torch.tensor(0.0)
         if self.loss_on_positions:
             J = 22
             joints_gt = rearrange(joints_gt, 'b s (j d) -> b s j d', j=J)
