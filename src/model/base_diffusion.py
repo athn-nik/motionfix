@@ -61,7 +61,8 @@ class MD(BaseModel):
                  **kwargs):
 
         super().__init__(statistics_path, nfeats, norm_type, input_feats,
-                         dim_per_feat, smpl_path, num_vids_to_render, loss_on_positions)
+                         dim_per_feat, smpl_path, num_vids_to_render,
+                         loss_on_positions, renderer=renderer)
 
         if set(self.input_feats) == set(["body_transl_delta_pelv_xy",
                                          "body_orient_delta",
@@ -115,7 +116,7 @@ class MD(BaseModel):
         self.denoiser = instantiate(denoiser)
 
         self.infer_scheduler = instantiate(infer_scheduler)
-        self.train_scheduler = instantiate(train_scheduler)        
+        self.train_scheduler = instantiate(train_scheduler)
         # distribution of timesteps
         shape = 2.0
         scale = 1.0
@@ -474,7 +475,8 @@ class MD(BaseModel):
                                   f'{curdir}/input_{keyid_ts_str}', 
                                   text_for_vid=text_vid, 
                                   pose_repr='aa',
-                                  color=color_map['input'])
+                                  color=color_map['input'],
+                                  )
 
 
             one_noisy_mot_from_deltas = noisy_mot_from_deltas[idx,
@@ -1013,7 +1015,77 @@ class MD(BaseModel):
     #                         'global_joints_loss': loss_joints,
     #                         }
 
+    def generate_pose(self, texts_cond, motions_cond,
+                        mask_source, mask_target, 
+                        init_vec_method='noise', init_vec=None,
+                        gd_text=None, gd_motion=None, 
+                        return_init_noise=False, 
+                        condition_mode='full_cond', num_diff_steps=None):
+        bsz, seqlen_tgt = mask_target.shape
+        feat_sz = sum(self.input_feats_dims)
+        if texts_cond is not None:
+            text_emb, text_mask = self.text_encoder(texts_cond)
 
+        cond_emb_motion = None
+        cond_motion_mask = None
+        
+        if self.motion_condition == 'source':
+            bsz, seqlen_src = mask_source.shape
+            if condition_mode == 'full_cond' or condition_mode == 'mot_cond' :
+                source_motion_condition = motions_cond
+                cond_emb_motion = source_motion_condition
+                cond_motion_mask = mask_source
+            else:
+                cond_emb_motion = torch.zeros(seqlen_src, bsz, feat_sz,
+                                                device=self.device)
+                cond_motion_mask = torch.ones((bsz, 1),
+                                            dtype=bool, device=self.device)
+
+        if init_vec_method == 'noise_prev':
+            init_diff_rev = init_vec
+        elif init_vec_method == 'source':
+            init_diff_rev = motions_cond
+            tgt_len = 1
+            src_len = 1
+            init_diff_rev = init_diff_rev.permute(1, 0, 2)
+        else:
+            init_diff_rev = None
+            # complete noise
+            
+        with torch.no_grad():
+            if return_init_noise:
+                init_noise, diff_out = self._diffusion_reverse(text_emb, 
+                                                text_mask,
+                                                cond_emb_motion,
+                                                cond_motion_mask,
+                                                mask_target, 
+                                                init_vec=init_diff_rev,
+                                                init_from=init_vec_method,
+                                                gd_text=gd_text, 
+                                                gd_motion=gd_motion,
+                                                return_init_noise=return_init_noise,
+                                                mode=condition_mode,
+                                                steps_num=num_diff_steps)
+                return init_noise, diff_out.permute(1, 0, 2)
+
+            else:
+                diff_out = self._diffusion_reverse(text_emb, 
+                                                text_mask,
+                                                cond_emb_motion,
+                                                cond_motion_mask,
+                                                mask_target, 
+                                                init_vec=init_diff_rev,
+                                                init_from=init_vec_method,
+                                                gd_text=gd_text, 
+                                                gd_motion=gd_motion,
+                                                return_init_noise=return_init_noise,
+                                                mode=condition_mode,
+                                                steps_num=num_diff_steps)
+
+            return diff_out.permute(1, 0, 2)
+
+        pass
+    
     def generate_motion(self, texts_cond, motions_cond,
                         mask_source, mask_target, 
                         init_vec_method='noise', init_vec=None,
@@ -1375,12 +1447,20 @@ class MD(BaseModel):
             else:
                 batch[f'{k}_motion'] = v
                 batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
+
+            batch[f'{k}_motion'] = torch.nn.functional.pad(v, (0, 0, 0, 0, 0,
+                                                               300 - v.size(0)),
+                                                           value=0)
         if self.motion_condition:
             mask_source, mask_target = self.prepare_mot_masks(batch['length_source'],
                                                             batch['length_target'])
         else:
+
             mask_target = lengths_to_mask(batch['length_target'],
                                           device=self.device)
+            mask_target = F.pad(mask_target, (0, 300 - mask_target.size(1)),
+                                value=0)
+
             actual_target_lens = batch['length_target']
             batch['length_source'] = None
             batch['source_motion'] = None
@@ -1450,6 +1530,10 @@ class MD(BaseModel):
                 src_cond_mets = None
                 mask_tgt_mets = lengths_to_mask(batch['length_target'],
                                                 self.device)
+                mask_tgt_mets = F.pad(mask_tgt_mets,
+                                      (0, 300 - mask_tgt_mets.size(1)),
+                                      value=0)
+
             batch_subset = { k: v.detach().cpu() for k,
                             v in self.test_subset.items() 
                             if torch.is_tensor(v) }
@@ -1459,7 +1543,7 @@ class MD(BaseModel):
                                                     sset_proc['length_target'])
             src_mot_cond = sset_proc['source_motion']
             nvds = self.num_vids_to_render
-            if self.motion_condition == 'source':
+            if self.motion_condition == 'source' and False:
                 gt_texts = self.test_subset['text']
                 gt_keyids = self.test_subset['id']
                 with torch.no_grad():
@@ -1537,31 +1621,31 @@ class MD(BaseModel):
                                      'text_descr': gt_texts,
                                      'keyids': gt_keyids}                    
                     self.set_buf['mot_cond'].append(render_motion)
-            else:
-                nvids = 2
-                gt_texts_sub = gt_texts[:nvids]
-                gt_keyids_sub = batch['id'][:nvids]
-                source_motion_gt, target_motion_gt = self.batch2motion(batch,
-                                                                    slice_til=nvids)
-                with torch.no_grad():
-                    motion_out_metrs = self.generate_motion(texts_cond=gt_texts[:nvids], 
-                                                        mask_source=None,
-                                                        mask_target=mask_tgt_mets[:nvids],
-                                                        motions_cond=None,
-                                                        init_vec_method='noise',
-                                                        condition_mode='text_cond')
-                motion_unnorm_metrs = self.unnorm_delta(motion_out_metrs)
-                # do something with the full motion
-                gen_metrics = pack_to_render(rots=motion_unnorm_metrs[...,
-                                                                    3:].detach().cpu(),
-                                            trans=motion_unnorm_metrs[...,
-                                                                    :3].detach().cpu())
+            # else:
+            #     nvids = 2
+            #     gt_texts_sub = gt_texts[:nvids]
+            #     gt_keyids_sub = batch['id'][:nvids]
+            #     source_motion_gt, target_motion_gt = self.batch2motion(batch,
+            #                                                         slice_til=nvids)
+            #     with torch.no_grad():
+            #         motion_out_metrs = self.generate_motion(texts_cond=gt_texts[:nvids], 
+            #                                             mask_source=None,
+            #                                             mask_target=mask_tgt_mets[:nvids],
+            #                                             motions_cond=None,
+            #                                             init_vec_method='noise',
+            #                                             condition_mode='text_cond')
+            #     motion_unnorm_metrs = self.unnorm_delta(motion_out_metrs)
+            #     # do something with the full motion
+            #     gen_metrics = pack_to_render(rots=motion_unnorm_metrs[...,
+            #                                                         3:].detach().cpu(),
+            #                                 trans=motion_unnorm_metrs[...,
+            #                                                         :3].detach().cpu())
 
-                render_text = {'generation': gen_metrics,
-                               'text_descr': gt_texts_sub,
-                               'keyids': gt_keyids_sub}
-                self.set_buf['text_cond'].append(render_text)
+            #     render_text = {'generation': gen_metrics,
+            #                    'text_descr': gt_texts_sub,
+            #                    'keyids': gt_keyids_sub}
+            #     self.set_buf['text_cond'].append(render_text)
                 
-                # TODO do the same for dropped ones!
+            #     # TODO do the same for dropped ones!
 
         return total_loss

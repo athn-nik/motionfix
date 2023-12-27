@@ -95,6 +95,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     logger.info(f"Data module '{cfg.data.dataname}' loaded")
 
     list_of_all_feats = data_module.nfeats
+    cfg.model.input_feats = cfg.data.load_feats
     idx_for_inputs = [cfg.data.load_feats.index(infeat) 
                       for infeat in cfg.model.input_feats]
     total_feats_dim = [list_of_all_feats[i] 
@@ -108,6 +109,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     if cfg.ftune is not None:
         logger.info(f"Loading model from {cfg.ftune_ckpt_path}")
         model = instantiate(cfg.model,
+                            
                             renderer=renderer,
                             _recursive_=False)
 

@@ -31,8 +31,9 @@ from src.utils.file_io import hack_path
 class BaseModel(LightningModule):
     def __init__(self, statistics_path: str, nfeats: int, norm_type: str,
                  input_feats: List[str], dim_per_feat: List[int],
-                 smpl_path: str, num_vids_to_render: str, loss_on_positions: bool,
-                 *args, **kwargs):
+                 smpl_path: str, num_vids_to_render: str,
+                 loss_on_positions: bool,
+                 renderer, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.save_hyperparameters(logger=False, 
                                   ignore=['eval_model','renderer']) # ignore TEMOS score
@@ -48,6 +49,15 @@ class BaseModel(LightningModule):
         self.loss_dict = {'train': None,
                           'val': None,}
         self.stats = self.load_norm_statistics(statistics_path, self.device)
+        # from src.model.utils.tools import pack_to_render
+        # mr = pack_to_render(aa.detach().cpu(), trans=None)
+        # mr = {k: v[0] for k, v in mr.items()}
+        # fname = render_motion(aitrenderer, mr,
+        #                  "/home/nathanasiou/Desktop/conditional_action_gen/modilex/pose_test",
+        #                 pose_repr='aa',
+        #                 text_for_vid=str(keyids[0]),
+        #                 color=color_map['generated'],
+        #                 smpl_layer=smpl_layer)
 
         self.nfeats = nfeats
         self.dim_per_feat = dim_per_feat
@@ -57,15 +67,22 @@ class BaseModel(LightningModule):
         self.input_feats_dims = list(dim_per_feat)
         self.input_feats = list(input_feats)
         self.num_vids_to_render = num_vids_to_render
+        smpl_path = hack_path(smpl_path, keyword='data')
+
         if loss_on_positions:
-            smpl_path = hack_path(smpl_path, keyword='data')
-            self.body_model = smplx.SMPLHLayer(f'{smpl_path}/smplh', model_type='smplh',
-                                            gender='neutral',
-                                            ext='npz').to(self.device).eval();
+            self.body_model = smplx.SMPLHLayer(f'{smpl_path}/smplh',
+                                               model_type='smplh',
+                                               gender='neutral',
+                                               ext='npz').to(self.device).eval();
             setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
             freeze(self.body_model)
+        from aitviewer.models.smpl import SMPLLayer
+        if renderer is not None:
+            self.smpl_ait = SMPLLayer(model_type='smplh',
+                                    ext='npz',
+                                    gender='neutral')
         log.info(f'Training using these features: {self.input_feats}')
-        data_path =Path(hack_path(smpl_path, keyword='data')).parent
+        data_path = Path(hack_path(smpl_path, keyword='data')).parent
         self.test_subset = joblib.load(data_path / 'test_kinedit.pth.tar')
         self.paths_of_rendered_subset = []
         self.paths_of_rendered_subset_tgt = []
@@ -183,16 +200,14 @@ class BaseModel(LightningModule):
             mo_types = ['target']
             self.motion_condition = None
         for mot in mo_types:
-            
             list_of_feat_tensors = [seq_first(batch[f'{feat_type}_{mot}']) 
-                                    for feat_type in features_types]
+                                    for feat_type in features_types if f'{feat_type}_{mot}' in batch.keys()]
             # normalise and cat to a unified feature vector
             list_of_feat_tensors_normed = self.norm_inputs(list_of_feat_tensors,
                                                            features_types)
             # list_of_feat_tensors_normed = [x[1:] if 'delta' in nx else x for nx,
                                                 # x in zip(features_types, 
                                                 # list_of_feat_tensors_normed)]
-            
             x_norm, _ = self.cat_inputs(list_of_feat_tensors_normed)
             input_batch[mot] = x_norm
         return input_batch
@@ -308,6 +323,7 @@ class BaseModel(LightningModule):
         """
         x_norm = []
         for x, name in zip(x_list, names):
+            
             x_norm.append(self.norm(x, self.stats[name]))
         return x_norm
 
@@ -351,7 +367,8 @@ class BaseModel(LightningModule):
                     fname = render_motion(self.renderer, mot_to_rend,
                                         folder/f'{cur_key}_{data_variant}_{epo}',
                                         pose_repr='aa', 
-                                        color=color_map['generation'])
+                                        color=color_map['generation'],
+                                        smpl_layer=self.smpl_ait)
                             
                     video_names_cur.append(fname)
             if variant_vals:
@@ -501,14 +518,21 @@ class BaseModel(LightningModule):
                 }
         # return optim_dict
     
-    def prepare_mot_masks(self, source_lens, target_lens):
+    def prepare_mot_masks(self, source_lens, target_lens, max_len=300):
         from src.data.tools.tensors import lengths_to_mask
-
+        import torch.nn.functional as F
         mask_target = lengths_to_mask(target_lens,
                                               self.device)
-        mask_source = lengths_to_mask(source_lens,
-                                              self.device)
-        return mask_source, mask_target
+        padded_mask_target = F.pad(mask_target,
+                                   (0, max_len - mask_target.size(1)),
+                                   value=0)
+
+        mask_source = lengths_to_mask(source_lens, self.device)
+        padded_mask_source = F.pad(mask_source,
+                                   (0, max_len - mask_source.size(1)),
+                                   value=0)
+
+        return padded_mask_source, padded_mask_target
     
     @torch.no_grad()
     def process_batch(self, batch):
@@ -550,7 +574,8 @@ class BaseModel(LightningModule):
                                         folder / f'{keyid}_source',
                                         # text_for_vid=gt_texts[idx],
                                         pose_repr='aa',
-                                        color=color_map['source'])
+                                        color=color_map['source'],
+                                        smpl_layer=self.smpl_ait)
                 self.paths_of_rendered_subset_src.append(fname)
 
                 tgt_mot = {k2: v2[idx] for k2,
@@ -560,7 +585,8 @@ class BaseModel(LightningModule):
                                         folder / f'{keyid}_target',
                                         # text_for_vid=gt_texts[idx],
                                         pose_repr='aa',
-                                        color=color_map['target'])
+                                        color=color_map['target'],
+                                        smpl_layer=self.smpl_ait)
                 self.paths_of_rendered_subset_tgt.append(fname)
         return self.paths_of_rendered_subset_src, self.paths_of_rendered_subset_tgt
 
@@ -643,7 +669,8 @@ class BaseModel(LightningModule):
                                               f'{flname}_{k}_{cur_key}',
                                               text_for_vid=cur_text,
                                               pose_repr='aa',
-                                              color=color_map[k])
+                                              color=color_map[k],
+                                              smpl_layer=self.smpl_ait)
                         
                         video_names.append(fname)
 

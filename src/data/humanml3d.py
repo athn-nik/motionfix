@@ -410,7 +410,7 @@ class HumanML3DDataModule(BASEDataModule):
                 for sub_ann in text_and_durs:
                     if sub_ann['end'] - sub_ann['start'] <= 2:
                         continue
-                    if sub_ann['end'] - sub_ann['start'] >= 10.1:
+                    if sub_ann['end'] - sub_ann['start'] > 10.0:
                         continue
                     text_annots.append(sub_ann['text'])
                 if not text_annots:

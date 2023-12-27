@@ -56,20 +56,20 @@ def output2renderable(lst_of_tensors: list[Tensor]):
 
 
 def split_txt_into_multi_lines(input_str: str, line_length: int):
-    words = input_str.split(" ")
+    words = input_str.split(' ')
     line_count = 0
-    split_input = ""
+    split_input = ''
     for word in words:
         line_count += 1
         line_count += len(word)
         if line_count > line_length:
-            split_input += "\n"
+            split_input += '\n'
             line_count = len(word) + 1
             split_input += word
-            split_input += " "
+            split_input += ' '
         else:
             split_input += word
-            split_input += " "
+            split_input += ' '
     
     return split_input
 
@@ -87,20 +87,12 @@ def get_folder_name(config):
         ckpt_n = ''
     else:
         ckpt_n = f'_ckpt-{config.ckpt_name}_'
-    if config.subset is None:
-        sset = ''
-    else:
-        sset = f'{config.subset}'
-    cond_type = '_' + config.condition_mode + '_'
     if config.render_vids:
         vds = 'gens_'
     else:
         vds = ''
 
-    if config.model.motion_condition is not None:
-        return f'{vds}{cond_type}{sset}{ckpt_n}{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
-    else:
-        return f'{vds}{cond_type}{sset}{ckpt_n}{init_from}{sched_name}_text{text_guid}_steps{infer_steps}'
+    return f'{ckpt_n}{init_from}{sched_name}_steps{infer_steps}'
 
 
 def render_vids(newcfg: DictConfig) -> None:
@@ -117,7 +109,8 @@ def render_vids(newcfg: DictConfig) -> None:
     cfg.model.diff_params.num_inference_timesteps = newcfg.steps
     cfg.model.diff_params.guidance_scale_motion = newcfg.guidance_scale_motion
     cfg.model.diff_params.guidance_scale_text = newcfg.guidance_scale_text
-
+    init_diff_from = cfg.init_from
+    
     fd_name = get_folder_name(cfg)
     log_name = '__'.join(str(exp_folder).split('/')[-2:])
     log_name = f'{log_name}_{init_diff_from}_{cfg.ckpt_name}'
@@ -127,7 +120,7 @@ def render_vids(newcfg: DictConfig) -> None:
 
     logger.info(f"Sample script. The outputs will be stored in:{output_path}")
     log_name = '__'.join(str(exp_folder).split('/')[-2:])
-
+    log_name += '__' + str(output_path.name)
     import pytorch_lightning as pl
     import numpy as np
     from hydra.utils import instantiate
@@ -143,9 +136,9 @@ def render_vids(newcfg: DictConfig) -> None:
         from aitviewer.headless import HeadlessRenderer
         from aitviewer.configuration import CONFIG as AITVIEWER_CONFIG
         AITVIEWER_CONFIG.update_conf({"playback_fps": 30,
-                                    "auto_set_floor": True,
-                                    "smplx_models": 'data/body_models',
-                                    'z_up': True})
+                                      "auto_set_floor": True,
+                                      "smplx_models": 'data/body_models',
+                                      'z_up': True})
         aitrenderer = HeadlessRenderer()
     else:
         aitrenderer = None
@@ -176,7 +169,7 @@ def render_vids(newcfg: DictConfig) -> None:
 
     import numpy as np
 
-    data_module = instantiate(cfg.data)
+    data_module = instantiate(cfg.data, amt_only=True, load_splits=['test'])
 
     transl_feats = [x for x in model.input_feats if 'transl' in x]
     if set(transl_feats).issubset(["body_transl_delta", "body_transl_delta_pelv",
@@ -191,12 +184,11 @@ def render_vids(newcfg: DictConfig) -> None:
     subset = []
     for elem in test_dataset.data[:100]:
         subset.append(elem)
-    batch_size_test = 16
+    batch_size_test = 32
     test_dataset.data = subset
-
     testloader = torch.utils.data.DataLoader(test_dataset,
                                              shuffle=False,
-                                             num_workers=0,
+                                             num_workers=4,
                                              batch_size=batch_size_test,
                                              collate_fn=collate_fn)
     ds_iterator = testloader 
@@ -214,15 +206,21 @@ def render_vids(newcfg: DictConfig) -> None:
     gd_text = [1.0, 2.5, 5.0]
     gd_motion = [1.0, 2.5, 5.0]
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
+    from aitviewer.models.smpl import SMPLLayer
+    smpl_layer = SMPLLayer(model_type='smplh', 
+                            ext='npz',
+                            gender='neutral')
 
     with torch.no_grad():
         output_path = output_path / 'renders'
         output_path.mkdir(exist_ok=True, parents=True)
         for guid_text, guid_motion in guidances_mix:    
             cur_guid_comb = f'ld_txt-{guid_text}_ld_mot-{guid_motion}'
+            cur_output_path = output_path / cur_guid_comb
+            cur_output_path.mkdir(exist_ok=True, parents=True)
 
             for batch in tqdm(ds_iterator):
-                for mode_cond in ['text_cond', 'mot_cond', 'full_cond']:
+                for mode_cond in ['full_cond']:
 
                     text_diff = batch['text']
                     target_lens = batch['length_target']
@@ -244,13 +242,13 @@ def render_vids(newcfg: DictConfig) -> None:
                         mask_source = None
 
                     source_init = batch['source_motion']
-                    diffout = model.generate_motion(text_diff,
-                                                    batch['source_motion'],
-                                                    mask_source,
-                                                    mask_target,
-                                                    init_vec=source_init,
-                                                    init_vec_method=init_diff_from,
-                                                    condition_mode=mode_cond)
+                    diffout = model.generate_pose(text_diff,
+                                                  batch['source_motion'],
+                                                  mask_source,
+                                                  mask_target,
+                                                  init_vec=source_init,
+                                                  init_vec_method=init_diff_from,
+                                                  condition_mode=mode_cond)
                     gen_mo = model.diffout2motion(diffout)
 
                     src_mot_cond, tgt_mot = model.batch2motion(batch,
@@ -259,9 +257,10 @@ def render_vids(newcfg: DictConfig) -> None:
 
                     src_mot_cond = src_mot_cond.to(model.device)
                     mots_to_render = [src_mot_cond, tgt_mot, 
-                                        [src_mot_cond, tgt_mot], gen_mo]
+                                      [src_mot_cond, tgt_mot],
+                                      [tgt_mot, gen_mo]]
                     monames = ['source', 'target', 'overlaid', 
-                                'generated']
+                                'generated',]
 
                     lof_mots = output2renderable(mots_to_render)
                     # output_path = Path('/home/nathanasiou/Desktop/conditional_action_gen/modilex')
@@ -277,31 +276,40 @@ def render_vids(newcfg: DictConfig) -> None:
                                 for xx in one_motion:
                                     cur_mol.append({k: v[elem_id] 
                                                     for k, v in xx.items()})
-                                cur_colors = [color_map['source'],
-                                            color_map['target']]
+                                if monames[moid] == 'generated':
+                                    cur_colors = [color_map['target'],
+                                                color_map['generated']]
+                                else:
+                                    cur_colors = [color_map['source'],
+                                                color_map['target']]
                             else:
                                 cur_mol.append({k: v[elem_id] 
                                                     for k, v in one_motion.items()})
                                 cur_colors.append(color_map[monames[moid]])
-
+                            # if monames[moid] != 'generated':
+                            #     continue
                             fname = render_motion(aitrenderer, cur_mol,
-                                                output_path / f"movie_{elem_id}_{moid}",
-                                                pose_repr='aa',
-                                                text_for_vid=monames[moid],
-                                                color=cur_colors)
+                                                  cur_output_path / f"movie_{curid}_{moid}",
+                                                  pose_repr='aa',
+                                                  text_for_vid=monames[moid],
+                                                  color=cur_colors,
+                                                  smpl_layer=smpl_layer)
                             cur_group_of_vids.append(fname)
 
                         stacked_vid = stack_vids(cur_group_of_vids,
-                                                f'{output_path}/{elem_id}_stacked.png',
+                                                f'{cur_output_path}/{curid}_stacked.png',
                                                 orient='h')
 
                         text_wrap = split_txt_into_multi_lines(text_diff[elem_id],
                                                                 40)
-                        fnal_fl = put_text(text=text_wrap,
-                                            fname=stacked_vid, 
-                                            outf=f'{output_path}/{curid}_text.png',
-                                            position='top_center')
-
+                        fnal_fl = put_text(text=text_wrap.replace("'", " "),
+                                           fname=stacked_vid, 
+                                           outf=f'{cur_output_path}/{curid}_final.png',
+                                           position='top_center')
+                        if curid == 409:
+                            logger.info(f'{cur_group_of_vids}\n{stacked_vid}')
+                            xy = 1
+                            xy *= 100
                         cleanup_files(cur_group_of_vids+[stacked_vid])
                         video_key = fnal_fl.split('/')[-1].replace('.png','')
                         wandb.log({f"{cur_guid_comb}/{video_key}": wandb.Image(fnal_fl)})
@@ -312,7 +320,7 @@ def render_vids(newcfg: DictConfig) -> None:
     
 if __name__ == '__main__':
 
-    os.system("Xvfb :11 -screen 1 640x480x24 &")
+    os.system("Xvfb :11 -screen 0 640x480x24 &")
     os.environ['DISPLAY'] = ":11"
     #os.system("Xvfb :11 -screen 1 640x480x24 &")
 

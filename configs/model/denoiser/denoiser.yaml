@@ -1,5 +1,5 @@
 _target_: src.model.mld_denoiser.MldDenoiser
-text_encoded_dim: 768
+text_encoded_dim: 768 
 ff_size: 1024
 num_layers: 9
 num_heads: 4
