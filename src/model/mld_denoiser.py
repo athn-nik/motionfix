@@ -222,7 +222,6 @@ class MldDenoiser(nn.Module):
                         denoised_motion_proj = torch.cat([denoised_motion_proj,
                                                           motion_embeds_proj],
                                                          dim=-1)
-
                     elif self.fuse == 'add':
                         denoised_motion_proj = denoised_motion_proj + self.feat_comb_coeff*motion_embeds_proj
                     else:
