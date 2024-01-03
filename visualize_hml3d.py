@@ -224,7 +224,7 @@ def render_vids(newcfg: DictConfig) -> None:
         if cnt_sit > 10 and cnt_walk > 10 and tot_cnt >= 30:
             break
 
-    batch_size_test = 3
+    batch_size_test = 4
     batches_to_infer = 1
     test_dataset_hml3d.data = subset_hml[:batches_to_infer * batch_size_test]
 
@@ -260,9 +260,9 @@ def render_vids(newcfg: DictConfig) -> None:
                 keyids = batch['id']
                 no_of_motions = len(keyids)
                 in_batch = prepare_test_batch(model, batch)
-                source_mot_pad = torch.nn.functional.pad(input_batch['source_motion'],
+                source_mot_pad = torch.nn.functional.pad(in_batch['source_motion'],
                                                         (0, 0, 0, 0, 0,
-                                            300 - input_batch['source_motion'].size(0)),
+                                            300 - in_batch['source_motion'].size(0)),
                                                         value=0)
 
                 if model.motion_condition == 'source' or init_diff_from == 'source':
