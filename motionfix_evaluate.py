@@ -31,8 +31,14 @@ def prepare_test_batch(model, batch):
                 for k, v in batch.items() }
 
     input_batch = model.norm_and_cat(batch, model.input_feats)
+    for k, v in input_batch.items():
+        if model.input_deltas:
+            batch[f'{k}_motion'] = v[1:]
+        else:
+            batch[f'{k}_motion'] = v
+            batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
 
-    return input_batch
+    return batch
 
 def cleanup_files(lo_fls):
     for fl in lo_fls:
@@ -147,8 +153,8 @@ def render_vids(newcfg: DictConfig) -> None:
         mode_cond = cfg.condition_mode
 
     tot_pkls = []
-    gd_text = [1.0, 2.5, 5.0]
-    gd_motion = [1.0, 2.5, 5.0]
+    gd_text = [1.0] #[1.0, 2.5, 5.0]
+    gd_motion = [1.0] #[1.0, 2.5, 5.0]
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
     mode_cond = 'full_cond'
     with torch.no_grad():
@@ -172,9 +178,9 @@ def render_vids(newcfg: DictConfig) -> None:
                 #                                                    (0, 0, 0, 0,
                 #                                                     0, 300 - v.size(0)),
                 #                                                    value=0)
-                source_mot_pad = torch.nn.functional.pad(batch['source_motion'],
+                source_mot_pad = torch.nn.functional.pad(input_batch['source_motion'],
                                                         (0, 0, 0, 0, 0,
-                                            300 - batch['source_motion'].size(0)),
+                                            300 - input_batch['source_motion'].size(0)),
                                                         value=0)
                 if model.motion_condition == 'source' or init_diff_from == 'source':
                     source_lens = batch['length_source']
@@ -201,10 +207,7 @@ def render_vids(newcfg: DictConfig) -> None:
                 gen_mo = model.diffout2motion(diffout)
                 from src.tools.transforms3d import transform_body_pose
                 for i in range(gen_mo.shape[0]):
-                    dict_to_save = {'pose_body': torch.cat([aa_gen[i], hands], dim=-2),
-                                    'pose_body_matrot': torch.cat([rotmat_gen[i],
-                                                               hands_rotmat],
-                                                                  dim=-2)}
+                    dict_to_save = {'pose': gen_mo[i].cpu().numpy() }
                     np.save(cur_outpath / f"{str(batch['id'][i]).zfill(6)}.npy",
                             dict_to_save)
                     # np.load(output_path / f"{str(batch['id'][i]).zfill(6)}.npy")

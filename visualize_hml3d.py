@@ -30,7 +30,6 @@ def chunker(seq, size):
 def prepare_test_batch(model, batch):
     batch = { k: v.to(model.device) if torch.is_tensor(v) else v
                 for k, v in batch.items() }
-
     input_batch = model.norm_and_cat(batch, model.input_feats)
     for k, v in input_batch.items():
         if model.input_deltas:
@@ -38,7 +37,6 @@ def prepare_test_batch(model, batch):
         else:
             batch[f'{k}_motion'] = v
             batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
-
     return batch
 
 def cleanup_files(lo_fls):
@@ -226,7 +224,7 @@ def render_vids(newcfg: DictConfig) -> None:
         if cnt_sit > 10 and cnt_walk > 10 and tot_cnt >= 30:
             break
 
-    batch_size_test = 16
+    batch_size_test = 3
     batches_to_infer = 1
     test_dataset_hml3d.data = subset_hml[:batches_to_infer * batch_size_test]
 
@@ -261,10 +259,14 @@ def render_vids(newcfg: DictConfig) -> None:
                 target_lens = batch['length_target']
                 keyids = batch['id']
                 no_of_motions = len(keyids)
-                batch = prepare_test_batch(model, batch)
+                in_batch = prepare_test_batch(model, batch)
+                source_mot_pad = torch.nn.functional.pad(input_batch['source_motion'],
+                                                        (0, 0, 0, 0, 0,
+                                            300 - input_batch['source_motion'].size(0)),
+                                                        value=0)
+
                 if model.motion_condition == 'source' or init_diff_from == 'source':
                     source_lens = batch['length_target']
-                    batch['source_motion'] = batch['target_motion'].clone()
                     mask_source, mask_target = model.prepare_mot_masks(source_lens,
                                                                     target_lens)
                 else:
@@ -278,7 +280,7 @@ def render_vids(newcfg: DictConfig) -> None:
                 else:
                     source_init = None
                 diffout = model.generate_motion(text_diff, # text
-                                                batch['source_motion'], # source
+                                                None, # source
                                                 mask_source,
                                                 mask_target,
                                                 gd_text=g_text,

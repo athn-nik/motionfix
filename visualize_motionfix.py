@@ -230,7 +230,6 @@ def render_vids(newcfg: DictConfig) -> None:
         for guid_text, guid_motion in guidances_mix:
             cur_guid_comb = f'ld_txt-{guid_text}_ld_mot-{guid_motion}'
             for batch in tqdm(ds_iterator):
-        
                 text_diff = batch['text']
                 target_lens = batch['length_target']
                 keyids = batch['id']
