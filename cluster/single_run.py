@@ -23,7 +23,8 @@ if __name__ == "__main__":
 
     parser.add_argument('--bid', required=False, default=10, type=int,
                         help='bid money for cluster')
-
+    parser.add_argument('--prog', required=False, default=None, type=str,
+                        help='prog for evaluation')
     parser.add_argument('--mem-gpu', required=False, default=32000, type=int,
                         help='bid money for cluster')
 
@@ -32,9 +33,9 @@ if __name__ == "__main__":
     bid_for_exp = arguments.bid
     gpus_no = arguments.gpus
     gpu_mem = arguments.mem_gpu
-    fd =  arguments.folder
-    name =  arguments.name
-
+    fd = arguments.folder
+    name = arguments.name
+    script = arguments.prog
     if arguments.extras is not None:
         args = arguments.extras
         _args = args.strip().split()
@@ -67,8 +68,12 @@ if __name__ == "__main__":
     elif cluster_mode == 'sweep':
         experiments = [{"config": fd, "sweep-name":name}]
     elif cluster_mode in ['sample', 'evaluate', 'eval']:
+        if script is None: 
+            sys.exit("Which evaluation script should I run?")
         experiments = [{"folder": fd,
-                        "args": args, "gpus": gpus_no}]
+                        "args": args,
+                        "script": script,
+                        "gpus": gpus_no}]
 
     launch_task_on_cluster(experiments, bid_amount=bid_for_exp, 
                            gpu_min_mem=gpu_mem,

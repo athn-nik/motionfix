@@ -18,7 +18,7 @@ import itertools
 from src.model.utils.tools import pack_to_render
 logger = logging.getLogger(__name__)
 
-@hydra.main(config_path="configs", config_name="posefix_eval")
+@hydra.main(config_path="configs", config_name="motionfix_eval")
 def _render_vids(cfg: DictConfig) -> None:
     return render_vids(cfg)
 
@@ -31,15 +31,8 @@ def prepare_test_batch(model, batch):
                 for k, v in batch.items() }
 
     input_batch = model.norm_and_cat(batch, model.input_feats)
-    for k, v in input_batch.items():
-        if model.input_deltas:
-            batch[f'{k}_motion'] = v[1:]
-        else:
-            batch[f'{k}_motion'] = v
-            batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
 
-    return batch
-
+    return input_batch
 
 def cleanup_files(lo_fls):
     for fl in lo_fls:
@@ -106,7 +99,7 @@ def render_vids(newcfg: DictConfig) -> None:
     logger.info("Loading model")
     model = instantiate(cfg.model,
                         renderer=None,
-                        _recursive_=False).eval()
+                        _recursive_=False)
 
     logger.info(f"Model '{cfg.model.modelname}' loaded")
     
@@ -160,7 +153,7 @@ def render_vids(newcfg: DictConfig) -> None:
     mode_cond = 'full_cond'
     with torch.no_grad():
         output_path = output_path / 'samples'
-        logger.info(f"Sample Posefix-H test set\n in:{output_path}")
+        logger.info(f"Sample MotionFix test set\n in:{output_path}")
         output_path.mkdir(exist_ok=True, parents=True)
         for guid_text, guid_motion in guidances_mix:
             cur_guid_comb = f'ld_txt-{guid_text}_ld_mot-{guid_motion}'
@@ -172,12 +165,17 @@ def render_vids(newcfg: DictConfig) -> None:
                 target_lens = batch['length_target']
                 keyids = batch['id']
                 no_of_motions = len(keyids)
-                in_batch = prepare_test_batch(model, batch)
-                source_mot_pad = torch.nn.functional.pad(in_batch['source_motion'],
-                                                        (0, 0, 0, 0, 0,
-                                            300 - in_batch['source_motion'].size(0)),
-                                                        value=0)
 
+                input_batch = prepare_test_batch(model, batch)
+                # for k, v in input_batch.items():
+                #     batch[f'{k}_motion'] = torch.nn.functional.pad(v,
+                #                                                    (0, 0, 0, 0,
+                #                                                     0, 300 - v.size(0)),
+                #                                                    value=0)
+                source_mot_pad = torch.nn.functional.pad(batch['source_motion'],
+                                                        (0, 0, 0, 0, 0,
+                                            300 - batch['source_motion'].size(0)),
+                                                        value=0)
                 if model.motion_condition == 'source' or init_diff_from == 'source':
                     source_lens = batch['length_source']
                     mask_source, mask_target = model.prepare_mot_masks(source_lens,
@@ -193,28 +191,15 @@ def render_vids(newcfg: DictConfig) -> None:
                     source_init = source_mot_pad
                 else:
                     source_init = None
-                diffout = model.generate_pose(text_diff,
-                                              source_mot_pad,
-                                              mask_source,
-                                              mask_target,
-                                              init_vec=source_init,
-                                              init_vec_method=init_diff_from,
-                                              condition_mode=mode_cond,
-                                              gd_motion=guid_motion,
-                                              gd_text=guid_text,
-                                              num_diff_steps=newcfg.steps)
-                diffout = diffout[:, :1]
+                diffout = model.generate_motion(text_diff,
+                                                source_mot_pad,
+                                                mask_source,
+                                                mask_target,
+                                                init_vec=source_init,
+                                                init_vec_method=init_diff_from,
+                                                condition_mode=mode_cond)
                 gen_mo = model.diffout2motion(diffout)
                 from src.tools.transforms3d import transform_body_pose
-                
-                hands = torch.zeros(gen_mo.shape[1], 30, 3)
-                hands_rotmat = torch.zeros(gen_mo.shape[1], 30, 9)
-
-                aa_gen = transform_body_pose(gen_mo,
-                                             '6d->aa').view(gen_mo.shape[0], -1,
-                                                            22, 3).detach().cpu()
-                rotmat_gen = transform_body_pose(gen_mo, '6d->rot').view(gen_mo.shape[0],
-                                                                             -1, 22, 9).detach().cpu()
                 for i in range(gen_mo.shape[0]):
                     dict_to_save = {'pose_body': torch.cat([aa_gen[i], hands], dim=-2),
                                     'pose_body_matrot': torch.cat([rotmat_gen[i],

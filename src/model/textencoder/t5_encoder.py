@@ -42,12 +42,12 @@ class T5TextEncoder(pl.LightningModule):
  
         # # Tokenize
         text_inputs = self.tokenizer(texts,
-                                         padding='max_length',
-                                         max_length=self.max_length,
-                                         truncation=True,
-                                         return_attention_mask=True,
-                                         add_special_tokens=True,
-                                         return_tensors="pt")
+                                     padding='max_length',
+                                     max_length=self.max_length,
+                                     truncation=True,
+                                     return_attention_mask=True,
+                                     add_special_tokens=True,
+                                     return_tensors="pt")
 
 
         # input_ids = self.tokenizer(texts, return_tensors="pt").input_ids  # Batch size 1

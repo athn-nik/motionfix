@@ -1,5 +1,5 @@
 _target_: diffusers.DDPMScheduler
-num_train_timesteps: 200
+num_train_timesteps: 1000
 beta_start: 0.00085
 beta_end: 0.012
 beta_schedule: 'squaredcos_cap_v2' # Optional: ['linear', 'scaled_linear', 'squaredcos_cap_v2']

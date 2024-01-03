@@ -320,8 +320,6 @@ class MD(BaseModel):
             # # expand the latents if we are doing classifier free guidance
             # latent_model_input = torch.cat(
             #     [latents] * 2) if class_free else latents
-
-
             # predict the noise residual
             if self.motion_condition == 'source' and motion_embeds is not None:
                 mot_pred_uncond = self.denoiser(
@@ -362,7 +360,7 @@ class MD(BaseModel):
                                                 text_embeds=text_embeds,
                                                 condition_mask=uncondition_mask,
                                                 motion_embeds=None)
-                
+
                 mot_pred_text = self.denoiser(noised_motion=latent_model_input,
                                               in_motion_mask=inp_motion_mask,
                                               timestep=t,
@@ -399,8 +397,9 @@ class MD(BaseModel):
             # text_embeddings_for_guidance = encoder_hidden_states.chunk(
             #     2)[1] if self.do_classifier_free_guidance else encoder_hidden_states
             latents_next = self.infer_scheduler.step(motion_pred, 
-                                                t, 
-                                                latent_model_input).prev_sample
+                                                     t, 
+                                                     latent_model_input
+                                                     ).prev_sample
             latent_model_input = latents_next
 
         # [batch_size, 1, latent_dim] -> [1, batch_size, latent_dim]
@@ -1091,7 +1090,8 @@ class MD(BaseModel):
                         init_vec_method='noise', init_vec=None,
                         gd_text=None, gd_motion=None, 
                         return_init_noise=False, 
-                        condition_mode='full_cond', num_diff_steps=None):
+                        condition_mode='full_cond',
+                        num_diff_steps=None):
         # uncond_tokens = [""] * len(texts_cond)
         # if self.condition == 'text':
         #     uncond_tokens.extend(texts_cond)

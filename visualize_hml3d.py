@@ -72,23 +72,18 @@ def get_folder_name(config):
     text_guid = config.model.diff_params.guidance_scale_text
     infer_steps = config.model.diff_params.num_inference_timesteps
     if config.init_from == 'source':
-        init_from = '_src_init_'
+        init_from = 'src'
     else:
-        init_from = ''
+        init_from = 'noise'
     if config.ckpt_name == 'last':
-        ckpt_n = ''
+        ckpt_n = '_ckpt_last_'
     else:
         ckpt_n = f'_ckpt-{config.ckpt_name}_'
-    if config.subset is None:
-        sset = ''
-    else:
-        sset = f'{config.subset}'
 
     if config.model.motion_condition is not None:
-        return f'{sset}{ckpt_n}{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
+        return f'{init_from}{ckpt_n}{sched_name}_steps{infer_steps}'
     else:
-        return f'{sset}{ckpt_n}{init_from}{sched_name}_text{text_guid}_steps{infer_steps}'
-
+        return f'{init_from}{ckpt_n}{sched_name}_steps{infer_steps}'
 
 def render_vids(newcfg: DictConfig) -> None:
     from pathlib import Path
@@ -144,13 +139,14 @@ def render_vids(newcfg: DictConfig) -> None:
     cfg.model.diff_params.num_inference_timesteps = newcfg.steps
     cfg.model.diff_params.guidance_scale_motion = newcfg.guidance_scale_motion
     cfg.model.diff_params.guidance_scale_text = newcfg.guidance_scale_text
+    init_diff_from = cfg.init_from
 
     fd_name = get_folder_name(cfg)
 
     log_name = '__'.join(str(exp_folder).split('/')[-2:])
     log_name = f'{log_name}_{init_diff_from}_{cfg.ckpt_name}'
 
-    output_path = exp_folder / fd_name
+    output_path = exp_folder / 'renders' / fd_name
     output_path.mkdir(exist_ok=True, parents=True)
 
     logger.info(f"Sample script. The outputs will be stored in:{output_path}")
@@ -164,7 +160,6 @@ def render_vids(newcfg: DictConfig) -> None:
 
     seed_logger = logging.getLogger("pytorch_lightning.utilities.seed")
     seed_logger.setLevel(logging.WARNING)
-    import ipdb; ipdb.set_trace()
     pl.seed_everything(cfg.seed)
     from aitviewer.headless import HeadlessRenderer
     from aitviewer.configuration import CONFIG as AITVIEWER_CONFIG
@@ -180,7 +175,7 @@ def render_vids(newcfg: DictConfig) -> None:
     logger.info("Loading model")
     model = instantiate(cfg.model,
                         renderer=aitrenderer,
-                        _recursive_=False)
+                        _recursive_=False).eval()
 
     logger.info(f"Model '{cfg.model.modelname}' loaded")
     
@@ -230,30 +225,36 @@ def render_vids(newcfg: DictConfig) -> None:
 
         if cnt_sit > 10 and cnt_walk > 10 and tot_cnt >= 30:
             break
-    import ipdb; ipdb.set_trace()
+
     batch_size_test = 16
-    test_dataset_hml3d.data = subset_hml[:50]
+    batches_to_infer = 1
+    test_dataset_hml3d.data = subset_hml[:batches_to_infer * batch_size_test]
 
     testloader_hml3d = torch.utils.data.DataLoader(test_dataset_hml3d,
                                                    shuffle=False,
                                                    num_workers=0,
                                                    batch_size=batch_size_test,
                                                    collate_fn=collate_fn)
+
     ds_iterator_hml3d = testloader_hml3d 
 
     init_diff_from = cfg.init_from
     mode_cond = 'text_cond'
 
     tot_pkls = []
-    gd_text = [1.0, 2.5, 5.0]
-    gd_motion = [1.0, 2.5, 5.0]
-    guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
+    gd_text = [1.0, 2.5, 5.0, 7.5]
+
+    from aitviewer.models.smpl import SMPLLayer
+    smpl_layer = SMPLLayer(model_type='smplh', 
+                            ext='npz',
+                            gender='neutral')
 
     with torch.no_grad():
-        output_path = output_path / 'renders'
         output_path.mkdir(exist_ok=True, parents=True)
-        for guid_text, guid_motion in guidances_mix:    
-            cur_guid_comb = f'ld_txt-{guid_text}_ld_mot-{guid_motion}'
+        for g_text in gd_text:
+            cur_guid_comb = f'ld_txt-{g_text}'
+            cur_output_path = output_path / cur_guid_comb
+            cur_output_path.mkdir(exist_ok=True, parents=True)
 
             for batch in tqdm(ds_iterator_hml3d):
                 text_diff = batch['text']
@@ -272,26 +273,31 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 model.device)
                     batch['source_motion'] = None
                     mask_source = None
-                source_init = batch['source_motion']
-                diffout = model.generate_motion(text_diff,
-                                                batch['source_motion'],
+                if init_diff_from == 'source':
+                    source_init = source_mot_pad
+                else:
+                    source_init = None
+                diffout = model.generate_motion(text_diff, # text
+                                                batch['source_motion'], # source
                                                 mask_source,
                                                 mask_target,
+                                                gd_text=g_text,
                                                 init_vec=source_init,
                                                 init_vec_method=init_diff_from,
-                                                condition_mode=mode_cond)
+                                                condition_mode=mode_cond,
+                                                num_diff_steps=newcfg.steps,
+                                                )
                 gen_mo = model.diffout2motion(diffout)
 
                 src_mot_cond, tgt_mot = model.batch2motion(batch,
                                                 pack_to_dict=False)
                 tgt_mot = tgt_mot.to(model.device)
-
-                src_mot_cond = src_mot_cond.to(model.device)
-                mots_to_render = [src_mot_cond, tgt_mot, 
-                                    [src_mot_cond, tgt_mot],
-                                    gen_mo]
-                monames = ['source', 'target', 'overlaid', 
-                            'generated']
+                if init_diff_from == 'source':
+                    src_mot_cond = src_mot_cond.to(model.device)
+                else:
+                    src_mot_cond = None
+                mots_to_render = [tgt_mot, gen_mo]
+                monames = ['target',  'generated']
 
                 lof_mots = output2renderable(model,
                                             mots_to_render)
@@ -315,23 +321,24 @@ def render_vids(newcfg: DictConfig) -> None:
                             cur_colors.append(color_map[monames[moid]])
 
                         fname = render_motion(aitrenderer, cur_mol,
-                                            output_path / f"movie_{elem_id}_{moid}",
+                                            cur_output_path / f"movie_{elem_id}_{moid}",
                                             pose_repr='aa',
                                             text_for_vid=monames[moid],
-                                            color=cur_colors)
+                                            color=cur_colors,
+                                            smpl_layer=smpl_layer)
                         cur_group_of_vids.append(fname)
                     stacked_vid = stack_vids(cur_group_of_vids,
-                                            f'{output_path}/{elem_id}_stacked.mp4',
+                                            f'{cur_output_path}/{elem_id}_stacked.mp4',
                                             orient='h')
                     fnal_fl = put_text(text=text_diff[elem_id],
                                        fname=stacked_vid, 
-                                       outf=f'{output_path}/{curid}_text.mp4',
+                                       outf=f'{cur_output_path}/{curid}_text.mp4',
                                        position='top_center'
                                        )
 
                     cleanup_files(cur_group_of_vids+[stacked_vid])
                     video_key = fnal_fl.split('/')[-1].replace('.mp4','')
-                    wandb.log({f"{cur_guid_comb}/{video_key}": wandb.Image(fnal_fl,
+                    wandb.log({f"{cur_guid_comb}/{video_key}": wandb.Video(fnal_fl,
                                                                 fps=30,
                                                                 format="mp4")})
 
