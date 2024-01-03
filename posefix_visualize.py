@@ -218,7 +218,6 @@ def render_vids(newcfg: DictConfig) -> None:
             cur_guid_comb = f'ld_txt-{guid_text}_ld_mot-{guid_motion}'
             cur_output_path = output_path / cur_guid_comb
             cur_output_path.mkdir(exist_ok=True, parents=True)
-
             for batch in tqdm(ds_iterator):
                 for mode_cond in ['full_cond']:
 

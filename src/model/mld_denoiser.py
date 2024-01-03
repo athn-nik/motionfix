@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torch import  nn
-from src.model.utils.timestep_embed import TimestepEmbedding, Timesteps
+from src.model.utils.timestep_embed import TimestepEmbedding, Timesteps, TimestepEmbedderMDM
 from src.model.utils.positional_encoding import PositionalEncoding
 from src.model.utils.transf_utils import SkipTransformerEncoder, TransformerEncoderLayer
 from src.model.utils.all_positional_encodings import build_position_encoding
@@ -61,7 +61,8 @@ class MldDenoiser(nn.Module):
                                        freq_shift)
             self.time_embedding = TimestepEmbedding(text_encoded_dim,
                                                     self.latent_dim)
-            
+            self.embed_timestep = TimestepEmbedderMDM(self.latent_dim)
+
             # FIXME me TODO this            
             # self.time_embedding = TimestepEmbedderMDM(self.latent_dim)
             
@@ -132,11 +133,9 @@ class MldDenoiser(nn.Module):
 
         # 1. time_embeddingno
         # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
-        timesteps = timestep.expand(bs).clone()
-        time_emb = self.time_proj(timesteps)
-        time_emb = time_emb.to(dtype=noised_motion.dtype)
+        time_emb = self.embed_timestep(timestep).to(dtype=noised_motion.dtype)
         # make it S first
-        time_emb = self.time_embedding(time_emb).unsqueeze(0)
+        # time_emb = self.time_embedding(time_emb).unsqueeze(0)
 
         if self.condition in ["text", "text_uncond"]:
             # make it seq first
@@ -155,24 +154,21 @@ class MldDenoiser(nn.Module):
                                             device=noised_motion.device)
                 condition_mask = torch.cat((condition_mask, aux_fake_mask), 
                                            1).bool().to(noised_motion.device)
-                emb_latent = torch.cat((time_emb, 
-                                        text_emb_latent,
+                emb_latent = torch.cat((text_emb_latent + time_emb,
                                         source_motion_zeros), 0)
 
             elif motion_embeds.shape[0] > 5: 
                 # ugly way to tell concat the motion or so
                 # first embed to low dim space then concat
                 motion_embeds_proj = self.pose_proj_in(motion_embeds)
-                emb_latent = torch.cat(( time_emb, 
-                                        text_emb_latent,
+                emb_latent = torch.cat((text_emb_latent + time_emb,
                                         motion_embeds_proj), 0)
             else:
                 if motion_embeds.shape[-1] != self.latent_dim:
                     motion_embeds_proj = self.pose_proj_in(motion_embeds)
                 else:
                     motion_embeds_proj = motion_embeds
-                emb_latent = torch.cat(( time_emb, 
-                                        text_emb_latent,
+                emb_latent = torch.cat((text_emb_latent + time_emb,
                                         motion_embeds_proj), 0)
 
         else:
@@ -194,11 +190,10 @@ class MldDenoiser(nn.Module):
             #     # todo change to query_pos_decoder
             xseq = self.query_pos(xseq)
 
-            time_token_mask = torch.ones((bs, time_emb.shape[0]),
-                                          dtype=bool, device=xseq.device)
+            # time_token_mask = torch.ones((bs, time_emb.shape[0]),
+            #                               dtype=bool, device=xseq.device)
             # condition_mask
-            aug_mask = torch.cat((time_token_mask,
-                                  condition_mask[:, text_emb_latent.shape[0]:],
+            aug_mask = torch.cat((condition_mask[:, text_emb_latent.shape[0]:],
                                   condition_mask[:,:text_emb_latent.shape[0]],
                                   motion_in_mask), 1)
 
