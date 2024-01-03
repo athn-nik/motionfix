@@ -149,7 +149,7 @@ def render_vids(newcfg: DictConfig) -> None:
     logger.info("Loading model")
     model = instantiate(cfg.model,
                         renderer=aitrenderer,
-                        _recursive_=False)
+                        _recursive_=False).eval()
 
     logger.info(f"Model '{cfg.model.modelname}' loaded")
     

@@ -199,6 +199,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
             extra_args = experiment["args"]
             no_gpus = experiment["gpus"]
             folder = experiment["folder"]
+            script = experiment["script"]
             run_id = folder.split('/')[-2:]
             run_id = '__'.join(run_id)
             sub_file = SUBMISSION_TEMPLATE
@@ -207,7 +208,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
             bash = 'export HYDRA_FULL_ERROR=1 export PYTHONFAULTHANDLER=1\nexport PYTHONUNBUFFERED=1\nexport PATH=$PATH\n' \
                    'export PATH=/home/nathanasiou/apps/imagemagick/bin:$PATH\n' \
                    'export LD_LIBRARY_PATH=/home/nathanasiou/apps/imagemagick/lib:$LD_LIBRARY_PATH\n' \
-                   f'exec {sys.executable} evaluate.py ' \
+                   f'exec {sys.executable} {script} ' \
                    f'folder={folder} {extra_args}'
             shell_dir.mkdir(parents=True, exist_ok=True)
             run_cmd_path = shell_dir / (run_id + '_' + mode + ID_EXP +".sh")

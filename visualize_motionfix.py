@@ -17,6 +17,8 @@ from tqdm import tqdm
 import torch
 import itertools
 from src.model.utils.tools import pack_to_render
+from src.utils.eval_utils import split_txt_into_multi_lines
+
 logger = logging.getLogger(__name__)
 
 
@@ -26,7 +28,6 @@ def _render_vids(cfg: DictConfig) -> None:
 
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
-
 
 def prepare_test_batch(model, batch):
     batch = { k: v.to(model.device) if torch.is_tensor(v) else v
@@ -143,7 +144,7 @@ def render_vids(newcfg: DictConfig) -> None:
     logger.info("Loading model")
     model = instantiate(cfg.model,
                         renderer=aitrenderer,
-                        _recursive_=False)
+                        _recursive_=False).eval()
 
     logger.info(f"Model '{cfg.model.modelname}' loaded")
     
@@ -234,7 +235,12 @@ def render_vids(newcfg: DictConfig) -> None:
                 target_lens = batch['length_target']
                 keyids = batch['id']
                 no_of_motions = len(keyids)
-                batch = prepare_test_batch(model, batch)
+                input_batch = prepare_test_batch(model, batch)
+                source_mot_pad = torch.nn.functional.pad(input_batch['source_motion'],
+                                                        (0, 0, 0, 0, 0,
+                                            300 - input_batch['source_motion'].size(0)),
+                                                        value=0)
+
                 if model.motion_condition == 'source' or init_diff_from == 'source':
                     source_lens = batch['length_source']
                     mask_source, mask_target = model.prepare_mot_masks(source_lens,
@@ -245,21 +251,23 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 model.device)
                     batch['source_motion'] = None
                     mask_source = None
-            
-
-                source_init = batch['source_motion']
+                if init_diff_from == 'source':
+                    source_init = source_mot_pad
+                else:
+                    source_init = None
                 diffout = model.generate_motion(text_diff,
-                                                batch['source_motion'],
+                                                source_mot_pad,
                                                 mask_source,
                                                 mask_target,
                                                 init_vec=source_init,
                                                 init_vec_method=init_diff_from,
                                                 condition_mode=mode_cond,
                                                 gd_motion=guid_motion,
-                                                gd_text=guid_text)
+                                                gd_text=guid_text,
+                                                num_diff_steps=newcfg.steps)
                 gen_mo = model.diffout2motion(diffout)
                 
-                src_mot_cond, tgt_mot = model.batch2motion(batch,
+                src_mot_cond, tgt_mot = model.batch2motion(input_batch,
                                                 pack_to_dict=False)
                 tgt_mot = tgt_mot.to(model.device)
 
@@ -305,7 +313,9 @@ def render_vids(newcfg: DictConfig) -> None:
                     stacked_vid = stack_vids(cur_group_of_vids,
                                             f'{output_path}/{elem_id}_stacked.mp4',
                                             orient='h')
-                    fnal_fl = put_text(text=text_diff[elem_id],
+                    text_wrap = split_txt_into_multi_lines(text_diff[elem_id],
+                                                            40)
+                    fnal_fl = put_text(text=text_wrap.replace("'", " "),
                                        fname=stacked_vid, 
                                        outf=f'{output_path}/{curid}_text.mp4',
                                        position='top_center')
