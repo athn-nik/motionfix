@@ -290,7 +290,7 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 )
                 gen_mo = model.diffout2motion(diffout)
 
-                src_mot_cond, tgt_mot = model.batch2motion(batch,
+                src_mot_cond, tgt_mot = model.batch2motion(in_batch,
                                                 pack_to_dict=False)
                 tgt_mot = tgt_mot.to(model.device)
                 if init_diff_from == 'source':
