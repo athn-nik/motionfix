@@ -127,13 +127,14 @@ class MldDenoiser(nn.Module):
         # if lengths not in [None, []]:
         motion_in_mask = in_motion_mask
 
-
+        
         # time_embedding | text_embedding | frames_source | frames_target
         # 1 * lat_d | max_text * lat_d | max_frames * lat_d | max_frames * lat_d
 
         # 1. time_embeddingno
         # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
-        time_emb = self.embed_timestep(timestep).to(dtype=noised_motion.dtype)
+        timesteps = timestep.expand(noised_motion.shape[1]).clone()
+        time_emb = self.embed_timestep(timesteps).to(dtype=noised_motion.dtype)
         # make it S first
         # time_emb = self.time_embedding(time_emb).unsqueeze(0)
         if self.condition in ["text", "text_uncond"]:
