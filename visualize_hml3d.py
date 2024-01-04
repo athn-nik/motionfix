@@ -272,7 +272,7 @@ def render_vids(newcfg: DictConfig) -> None:
                     from src.data.tools.tensors import lengths_to_mask
                     mask_target = lengths_to_mask(target_lens,
                                                 model.device)
-                    batch['source_motion'] = None
+                    in_batch['source_motion'] = None
                     mask_source = None
                 if init_diff_from == 'source':
                     source_init = source_mot_pad
