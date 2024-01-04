@@ -36,7 +36,7 @@ SUBMISSION_TEMPLATE = f'Description=DESCRIPTION\n' \
                        'request_cpus=CPUS\n' \
                        'request_gpus=NO_GPUS\n' \
                        '+BypassLXCfs="true"\n' \
-                       'requirements=GPUS_REQS\n' \
+                       'requirements=GPUS_REQS && UtsnameNodename =!= "g196"\n' \
                        'queue 1'
 
 
@@ -194,7 +194,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
             logger.info('Executing ' + ' '.join(cmd))
             subprocess.run(cmd)
 
-    elif mode in ["evaluate"]:
+    elif mode in ["evaluate", 'eval']:
         for experiment in configs: 
             extra_args = experiment["args"]
             no_gpus = experiment["gpus"]
@@ -208,7 +208,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
             bash = 'export HYDRA_FULL_ERROR=1 export PYTHONFAULTHANDLER=1\nexport PYTHONUNBUFFERED=1\nexport PATH=$PATH\n' \
                    'export PATH=/home/nathanasiou/apps/imagemagick/bin:$PATH\n' \
                    'export LD_LIBRARY_PATH=/home/nathanasiou/apps/imagemagick/lib:$LD_LIBRARY_PATH\n' \
-                   f'exec {sys.executable} {script} ' \
+                   f'exec {sys.executable} {script}.py ' \
                    f'folder={folder} {extra_args}'
             shell_dir.mkdir(parents=True, exist_ok=True)
             run_cmd_path = shell_dir / (run_id + '_' + mode + ID_EXP +".sh")

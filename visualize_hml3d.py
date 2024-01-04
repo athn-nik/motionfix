@@ -260,12 +260,11 @@ def render_vids(newcfg: DictConfig) -> None:
                 keyids = batch['id']
                 no_of_motions = len(keyids)
                 in_batch = prepare_test_batch(model, batch)
-                source_mot_pad = torch.nn.functional.pad(in_batch['source_motion'],
+                if model.motion_condition == 'source' or init_diff_from == 'source':
+                    source_mot_pad = torch.nn.functional.pad(in_batch['source_motion'],
                                                         (0, 0, 0, 0, 0,
                                             300 - in_batch['source_motion'].size(0)),
                                                         value=0)
-
-                if model.motion_condition == 'source' or init_diff_from == 'source':
                     source_lens = batch['length_target']
                     mask_source, mask_target = model.prepare_mot_masks(source_lens,
                                                                     target_lens)

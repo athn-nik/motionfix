@@ -21,7 +21,7 @@ if __name__ == "__main__":
     parser.add_argument('--gpus', required=False, default=1, type=int,
                         help='No of GPUS to use')
 
-    parser.add_argument('--bid', required=False, default=10, type=int,
+    parser.add_argument('--bid', required=False, default=25, type=int,
                         help='bid money for cluster')
     parser.add_argument('--prog', required=False, default=None, type=str,
                         help='prog for evaluation')

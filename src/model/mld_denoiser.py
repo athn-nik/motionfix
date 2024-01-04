@@ -136,7 +136,6 @@ class MldDenoiser(nn.Module):
         time_emb = self.embed_timestep(timestep).to(dtype=noised_motion.dtype)
         # make it S first
         # time_emb = self.time_embedding(time_emb).unsqueeze(0)
-
         if self.condition in ["text", "text_uncond"]:
             # make it seq first
             text_embeds = text_embeds.permute(1, 0, 2)
