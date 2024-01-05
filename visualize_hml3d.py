@@ -8,7 +8,7 @@ from sympy import O
 from src import data
 from src.render.mesh_viz import render_motion
 from torch import Tensor
-
+import torch.nn.functional as F
 # from src.render.mesh_viz import visualize_meshes
 from src.render.video import save_video_samples
 import src.launch.prepare  # noqa
@@ -261,7 +261,7 @@ def render_vids(newcfg: DictConfig) -> None:
                 no_of_motions = len(keyids)
                 in_batch = prepare_test_batch(model, batch)
                 if model.motion_condition == 'source' or init_diff_from == 'source':
-                    source_mot_pad = torch.nn.functional.pad(in_batch['source_motion'],
+                    source_mot_pad = F.pad(in_batch['source_motion'],
                                                         (0, 0, 0, 0, 0,
                                             300 - in_batch['source_motion'].size(0)),
                                                         value=0)
@@ -272,6 +272,9 @@ def render_vids(newcfg: DictConfig) -> None:
                     from src.data.tools.tensors import lengths_to_mask
                     mask_target = lengths_to_mask(target_lens,
                                                 model.device)
+                    mask_target = F.pad(mask_target, 
+                                        (0, 300 - mask_target.size(1)),
+                                        value=0)
                     in_batch['source_motion'] = None
                     mask_source = None
                 if init_diff_from == 'source':
