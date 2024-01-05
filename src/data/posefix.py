@@ -294,25 +294,6 @@ class PosefixDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
-    def _canonica_facefront(self, rotations, translation):
-        rots_motion = rotations
-        trans_motion = translation
-        datum_len = rotations.shape[0]
-        rots_motion_rotmat = transform_body_pose(rots_motion.reshape(datum_len,
-                                                           -1, 3),
-                                                           'aa->rot')
-        orient_R_can, trans_can = canonicalize_rotations(rots_motion_rotmat[:,
-                                                                             0],
-                                                         trans_motion)            
-        rots_motion_rotmat_can = rots_motion_rotmat
-        rots_motion_rotmat_can[:, 0] = orient_R_can
-        translation_can = trans_can - trans_can[0]
-        rots_motion_aa_can = transform_body_pose(rots_motion_rotmat_can,
-                                                 'rot->aa')
-        rots_motion_aa_can = rearrange(rots_motion_aa_can, 'F J d -> F (J d)',
-                                       d=3)
-        return rots_motion_aa_can, translation_can
-
 
     def __getitem__(self, idx):
         datum = self.data[idx]
@@ -332,22 +313,6 @@ class PosefixDataset(Dataset):
         data_dict['split'] = datum['split']
         data_dict['id'] = datum['id']
         # data_dict['dims'] = self._feat_dims
-        return DotDict(data_dict)
-
-    def npz2feats(self, idx, npz):
-        """turn npz data to a proper features dict"""
-        data_dict = {feat: self._feat_get_methods[feat](npz)
-                     for feat in self.load_feats}
-        if self.stats is not None:
-            norm_feats = {f"{feat}_norm": self.normalize_feats(data, feat)
-                        for feat, data in data_dict.items()
-                        if feat in self.stats.keys()}
-            data_dict = {**data_dict, **norm_feats}
-        meta_data_dict = {feat: method(npz)
-                          for feat, method in self._meta_data_get_methods.items()}
-        data_dict = {**data_dict, **meta_data_dict}
-        data_dict['filename'] = self.file_list[idx]['filename']
-        # data_dict['split'] = self.file_list[idx]['split']
         return DotDict(data_dict)
 
     def get_all_features(self, idx):
@@ -448,26 +413,6 @@ class PosefixDataModule(BASEDataModule):
     # def setup(self, stage):
     #     pass
 
-    def _canonica_facefront(self, rotations, translation):
-        rots_motion = rotations
-        trans_motion = translation
-        datum_len = rotations.shape[0]
-        rots_motion_rotmat = transform_body_pose(rots_motion.reshape(datum_len,
-                                                           -1, 3),
-                                                           'aa->rot')
-        orient_R_can, trans_can = canonicalize_rotations(rots_motion_rotmat[:,
-                                                                             0],
-                                                         trans_motion)            
-        rots_motion_rotmat_can = rots_motion_rotmat
-        rots_motion_rotmat_can[:, 0] = orient_R_can
-        translation_can = trans_can - trans_can[0]
-        rots_motion_aa_can = transform_body_pose(rots_motion_rotmat_can,
-                                                 'rot->aa')
-        rots_motion_aa_can = rearrange(rots_motion_aa_can, 'F J d -> F (J d)',
-                                       d=3)
-        return rots_motion_aa_can, translation_can
-
-
     def calculate_feature_stats(self, dataset: PosefixDataset):
         stat_path = self.preproc.stats_file
         if self.debug:
@@ -506,7 +451,6 @@ class PosefixDataModule(BASEDataModule):
         log.info(f"Will be loading feature stats from {stat_path}")
         stats = np.load(stat_path, allow_pickle=True)[()]
         return stats
-
 
 def _pad_n(n):
     """get padding function for padding x at the first dimension n times"""
