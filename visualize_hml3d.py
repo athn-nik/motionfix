@@ -224,13 +224,13 @@ def render_vids(newcfg: DictConfig) -> None:
         if cnt_sit > 10 and cnt_walk > 10 and tot_cnt >= 30:
             break
 
-    batch_size_test = 4
+    batch_size_test = 16
     batches_to_infer = 1
     test_dataset_hml3d.data = subset_hml[:batches_to_infer * batch_size_test]
 
     testloader_hml3d = torch.utils.data.DataLoader(test_dataset_hml3d,
                                                    shuffle=False,
-                                                   num_workers=0,
+                                                   num_workers=4,
                                                    batch_size=batch_size_test,
                                                    collate_fn=collate_fn)
 
@@ -240,7 +240,7 @@ def render_vids(newcfg: DictConfig) -> None:
     mode_cond = 'text_cond'
 
     tot_pkls = []
-    gd_text = [1.0, 2.5] # 5.0, 7.5]
+    gd_text = [1.0, 2.5, 5.0] #, 7.5]
 
     from aitviewer.models.smpl import SMPLLayer
     smpl_layer = SMPLLayer(model_type='smplh', 
