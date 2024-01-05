@@ -127,7 +127,6 @@ class MldDenoiser(nn.Module):
         # if lengths not in [None, []]:
         motion_in_mask = in_motion_mask
 
-        
         # time_embedding | text_embedding | frames_source | frames_target
         # 1 * lat_d | max_text * lat_d | max_frames * lat_d | max_frames * lat_d
 

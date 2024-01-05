@@ -228,6 +228,9 @@ def render_vids(newcfg: DictConfig) -> None:
     batches_to_infer = 1
     test_dataset_hml3d.data = subset_hml[:batches_to_infer * batch_size_test]
 
+    idss = [0,1,2,3,8]
+    filtered_list = [subset_hml[index] for index in idss]
+    test_dataset_hml3d.data = filtered_list
     testloader_hml3d = torch.utils.data.DataLoader(test_dataset_hml3d,
                                                    shuffle=False,
                                                    num_workers=4,
@@ -262,9 +265,9 @@ def render_vids(newcfg: DictConfig) -> None:
                 in_batch = prepare_test_batch(model, batch)
                 if model.motion_condition == 'source' or init_diff_from == 'source':
                     source_mot_pad = F.pad(in_batch['source_motion'],
-                                                        (0, 0, 0, 0, 0,
-                                            300 - in_batch['source_motion'].size(0)),
-                                                        value=0)
+                                           (0, 0, 0, 0, 0, 300 - 
+                                            in_batch['source_motion'].size(0)),
+                                            value=0)
                     source_lens = batch['length_target']
                     mask_source, mask_target = model.prepare_mot_masks(source_lens,
                                                                     target_lens)
