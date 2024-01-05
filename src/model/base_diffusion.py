@@ -265,7 +265,7 @@ class MD(BaseModel):
                                         perc_text_n_motion=0.0,
                                         perc_uncond=0.0, 
                                         randomize=False)
-            condition_mask_text[:, :max_text_len] *= text_masks
+            # condition_mask_text[:, :max_text_len] *= text_masks
 
             condition_mask_motion = self.filter_conditions(
                                         max_text_len=max_text_len,
@@ -288,7 +288,7 @@ class MD(BaseModel):
                             perc_uncond=0.0,
                             randomize=False)
             # might need to adjust for motion if it is more than 1 token
-            condition_mask_both[:, :max_text_len] *= text_masks
+            # condition_mask_both[:, :max_text_len] *= text_masks
             condition_mask_both[:, max_text_len:] *= cond_motion_masks
 
         elif self.condition in ['text', 'text_uncondp']:
@@ -311,7 +311,7 @@ class MD(BaseModel):
                                         perc_uncond=0.0,
                                         randomize=False)
 
-            condition_mask_text *= text_masks
+            # condition_mask_text *= text_masks
 
         latent_model_input = initial_latents
         # reverse
@@ -695,7 +695,7 @@ class MD(BaseModel):
                                               randomize=False)
             # final_mask = final_mask[torch.randperm(final_mask.size(0))]
             no_of_uncond = int(round(batch_size * perc_uncondp))
-            aug_mask[:, :max_text_len] *= text_mask[no_of_uncond:]
+            # aug_mask[:, :max_text_len] *= text_mask[no_of_uncond:]
             aug_mask = aug_mask[torch.randperm(batch_size)]
 
         # diffusion process return with noise and noise_pred
@@ -759,7 +759,7 @@ class MD(BaseModel):
                                               randomize=False)
             assert cond_emb_motion.shape[0] + cond_emb_text.shape[1] == aug_mask.shape[1] 
 
-            aug_mask[:, :max_text_len] *= text_mask
+            # aug_mask[:, :max_text_len] *= text_mask
             aug_mask[:, max_text_len:] *= mask_source_motion
         else:
             aug_mask = self.filter_conditions(max_text_len=cond_emb_text.shape[1],
@@ -770,7 +770,7 @@ class MD(BaseModel):
                                               perc_text_n_motion=0.0,
                                               perc_uncond=perc_uncondp,
                                               randomize=False)
-            aug_mask *= text_mask
+            # aug_mask *= text_mask
         
         rand_perm = torch.randperm(batch_size)
         # random permutation along the batch dimension same for all

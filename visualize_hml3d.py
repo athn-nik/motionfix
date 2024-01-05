@@ -230,7 +230,7 @@ def render_vids(newcfg: DictConfig) -> None:
 
     idss = [0,1,2,3,8]
     filtered_list = [subset_hml[index] for index in idss]
-    test_dataset_hml3d.data = filtered_list
+    test_dataset_hml3d.data = filtered_list[-1:]
     testloader_hml3d = torch.utils.data.DataLoader(test_dataset_hml3d,
                                                    shuffle=False,
                                                    num_workers=0,

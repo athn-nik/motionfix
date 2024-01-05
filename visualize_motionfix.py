@@ -131,10 +131,11 @@ def render_vids(newcfg: DictConfig) -> None:
                                   "smplx_models": 'data/body_models',
                                   'z_up': True})
     aitrenderer = HeadlessRenderer()
-    import wandb
+    # import wandb
     
-    wandb.init(project="motion-edit-eval", job_type="evaluate",
-               name=log_name, dir=output_path)
+    # wandb.init(project="motion-edit-eval", job_type="evaluate",
+    #            name=log_name, dir=output_path)
+
     # notes: ''
     # id: ${run_hash}
     # mode: "online"
@@ -207,6 +208,7 @@ def render_vids(newcfg: DictConfig) -> None:
         #     test_dataset.data = subset
     else:
         batch_size_test = 8
+
     testloader = torch.utils.data.DataLoader(test_dataset,
                                              shuffle=False,
                                              num_workers=4,
@@ -321,9 +323,9 @@ def render_vids(newcfg: DictConfig) -> None:
 
                     cleanup_files(cur_group_of_vids+[stacked_vid])
                     video_key = fnal_fl.split('/')[-1].replace('.mp4','')
-                    wandb.log({f"{cur_guid_comb}/{video_key}":
-                                    wandb.Video(fnal_fl, fps=30, format="mp4")
-                                })
+                    # wandb.log({f"{cur_guid_comb}/{video_key}":
+                    #                 wandb.Video(fnal_fl, fps=30, format="mp4")
+                    #             })
 
 
     from src.utils.file_io import write_json   
