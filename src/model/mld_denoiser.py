@@ -28,6 +28,7 @@ class MldDenoiser(nn.Module):
                  use_deltas: bool = False,
                  pred_delta_motion: bool = False,
                  fuse: str = None,
+                 time_in: str = 'concat',
                  **kwargs) -> None:
 
         super().__init__()
@@ -39,6 +40,7 @@ class MldDenoiser(nn.Module):
         self.abl_plus = False
         self.ablation_skip_connection = False
         self.diffusion_only = True
+        self.time_fusion = time_in
         self.arch = arch
         self.pe_type = position_embedding
         self.fuse = fuse
@@ -118,6 +120,7 @@ class MldDenoiser(nn.Module):
                 condition_mask, 
                 motion_embeds=None,
                 lengths=None,
+                
                 **kwargs):
         # 0.  dimension matching
         # noised_motion [latent_dim[0], batch_size, latent_dim] <= [batch_size, latent_dim[0], latent_dim[1]]
@@ -153,8 +156,12 @@ class MldDenoiser(nn.Module):
                                             device=noised_motion.device)
                 condition_mask = torch.cat((condition_mask, aux_fake_mask), 
                                            1).bool().to(noised_motion.device)
-                emb_latent = torch.cat((text_emb_latent + time_emb,
-                                        source_motion_zeros), 0)
+                if self.time_fusion == 'concat':
+                    emb_latent = torch.cat((time_emb, text_emb_latent,
+                                            source_motion_zeros), 0)
+                else:
+                    emb_latent = torch.cat((text_emb_latent + time_emb,
+                                            source_motion_zeros), 0)
 
             elif motion_embeds.shape[0] > 5: 
                 # ugly way to tell concat the motion or so
@@ -167,8 +174,12 @@ class MldDenoiser(nn.Module):
                     motion_embeds_proj = self.pose_proj_in(motion_embeds)
                 else:
                     motion_embeds_proj = motion_embeds
-                emb_latent = torch.cat((text_emb_latent + time_emb,
-                                        motion_embeds_proj), 0)
+                if self.time_fusion == 'concat':
+                    emb_latent = torch.cat((time_emb, text_emb_latent,
+                                            motion_embeds_proj), 0)
+                else:
+                    emb_latent = torch.cat((text_emb_latent + time_emb,
+                                            motion_embeds_proj), 0)
 
         else:
             raise TypeError(f"condition type {self.condition} not supported")
@@ -188,13 +199,18 @@ class MldDenoiser(nn.Module):
             #     # [seqlen+1, bs, d]
             #     # todo change to query_pos_decoder
             xseq = self.query_pos(xseq)
-
-            # time_token_mask = torch.ones((bs, time_emb.shape[0]),
-            #                               dtype=bool, device=xseq.device)
-            # condition_mask
-            aug_mask = torch.cat((condition_mask[:, text_emb_latent.shape[0]:],
-                                  condition_mask[:,:text_emb_latent.shape[0]],
-                                  motion_in_mask), 1)
+            if self.time_fusion == 'concat':
+                time_token_mask = torch.ones((bs, time_emb.shape[0]),
+                                            dtype=bool, device=xseq.device)
+                aug_mask = torch.cat((time_token_mask,
+                                      condition_mask[:, text_emb_latent.shape[0]:],
+                                      condition_mask[:,:text_emb_latent.shape[0]],
+                                      motion_in_mask), 1)
+            else:
+                # condition_mask
+                aug_mask = torch.cat((condition_mask[:, text_emb_latent.shape[0]:],
+                                      condition_mask[:,:text_emb_latent.shape[0]],
+                                      motion_in_mask), 1)
 
             tokens = self.encoder(xseq,
                                   src_key_padding_mask=~aug_mask)

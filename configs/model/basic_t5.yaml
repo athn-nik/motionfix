@@ -29,7 +29,6 @@ motion_condition: source
 source_encoder: null # trans_enc 
 condition: text
 smpl_path: ${data.smplh_path}
-fuse: 'concat' # 'add' null
 
 nfeats: 135
 dim_per_feat: [135]
