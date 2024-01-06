@@ -131,10 +131,10 @@ def render_vids(newcfg: DictConfig) -> None:
                                   "smplx_models": 'data/body_models',
                                   'z_up': True})
     aitrenderer = HeadlessRenderer()
-    # import wandb
+    import wandb
     
-    # wandb.init(project="motion-edit-eval", job_type="evaluate",
-    #            name=log_name, dir=output_path)
+    wandb.init(project="motion-edit-eval", job_type="evaluate",
+               name=log_name, dir=output_path)
 
     # notes: ''
     # id: ${run_hash}
@@ -220,7 +220,7 @@ def render_vids(newcfg: DictConfig) -> None:
     mode_cond = 'full_cond'
     tot_pkls = []
     gd_text = [1.0, 2.5, 5.0]
-    gd_motion = [1.0]
+    gd_motion = [1.0, 2.5]
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
     from aitviewer.models.smpl import SMPLLayer
     smpl_layer = SMPLLayer(model_type='smplh', ext='npz', gender='neutral')
@@ -323,9 +323,9 @@ def render_vids(newcfg: DictConfig) -> None:
 
                     cleanup_files(cur_group_of_vids+[stacked_vid])
                     video_key = fnal_fl.split('/')[-1].replace('.mp4','')
-                    # wandb.log({f"{cur_guid_comb}/{video_key}":
-                    #                 wandb.Video(fnal_fl, fps=30, format="mp4")
-                    #             })
+                    wandb.log({f"{cur_guid_comb}/{video_key}":
+                                    wandb.Video(fnal_fl, fps=30, format="mp4")
+                                })
 
 
     from src.utils.file_io import write_json   
