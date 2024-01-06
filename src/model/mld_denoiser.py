@@ -148,20 +148,18 @@ class MldDenoiser(nn.Module):
             else:
                 text_emb_latent = text_embeds
             if motion_embeds is None:
-                source_motion_zeros = torch.zeros(*noised_motion.shape[:2], 
-                                            self.latent_dim, 
-                                            device=noised_motion.device)
-                aux_fake_mask = torch.zeros(condition_mask.shape[0], 
-                                            noised_motion.shape[0], 
-                                            device=noised_motion.device)
-                condition_mask = torch.cat((condition_mask, aux_fake_mask), 
-                                           1).bool().to(noised_motion.device)
+                # source_motion_zeros = torch.zeros(*noised_motion.shape[:2], 
+                #                             self.latent_dim, 
+                #                             device=noised_motion.device)
+                # aux_fake_mask = torch.zeros(condition_mask.shape[0], 
+                #                             noised_motion.shape[0], 
+                #                             device=noised_motion.device)
+                # condition_mask = torch.cat((condition_mask, aux_fake_mask), 
+                #                            1).bool().to(noised_motion.device)
                 if self.time_fusion == 'concat':
-                    emb_latent = torch.cat((time_emb, text_emb_latent,
-                                            source_motion_zeros), 0)
+                    emb_latent = torch.cat((time_emb, text_emb_latent), 0)
                 else:
-                    emb_latent = torch.cat((text_emb_latent + time_emb,
-                                            source_motion_zeros), 0)
+                    emb_latent = torch.cat((text_emb_latent + time_emb), 0)
 
             elif motion_embeds.shape[0] > 5: 
                 # ugly way to tell concat the motion or so

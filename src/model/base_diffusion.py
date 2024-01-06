@@ -757,8 +757,7 @@ class MD(BaseModel):
                                               perc_text_n_motion=perc_keep_both,
                                               perc_uncond=perc_uncondp, 
                                               randomize=False)
-            assert cond_emb_motion.shape[0] + cond_emb_text.shape[1] == aug_mask.shape[1] 
-
+            assert cond_emb_motion.shape[0] + cond_emb_text.shape[1] == aug_mask.shape[1]
             # aug_mask[:, :max_text_len] *= text_mask
             aug_mask[:, max_text_len:] *= mask_source_motion
         else:
