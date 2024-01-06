@@ -169,6 +169,13 @@ class MldDenoiser(nn.Module):
                 motion_embeds_proj = self.pose_proj_in(motion_embeds)
                 emb_latent = torch.cat((text_emb_latent + time_emb,
                                         motion_embeds_proj), 0)
+                if self.time_fusion == 'concat':
+                    emb_latent = torch.cat((time_emb, text_emb_latent,
+                                            motion_embeds_proj), 0)
+                else:
+                    emb_latent = torch.cat((text_emb_latent + time_emb,
+                                            motion_embeds_proj), 0)
+
             else:
                 if motion_embeds.shape[-1] != self.latent_dim:
                     motion_embeds_proj = self.pose_proj_in(motion_embeds)
