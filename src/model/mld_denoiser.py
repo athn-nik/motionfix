@@ -159,7 +159,7 @@ class MldDenoiser(nn.Module):
                 if self.time_fusion == 'concat':
                     emb_latent = torch.cat((time_emb, text_emb_latent), 0)
                 else:
-                    emb_latent = torch.cat((text_emb_latent + time_emb), 0)
+                    emb_latent = text_emb_latent + time_emb
 
             elif motion_embeds.shape[0] > 5: 
                 # ugly way to tell concat the motion or so
