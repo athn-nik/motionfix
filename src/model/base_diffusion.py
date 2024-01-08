@@ -714,14 +714,15 @@ class MD(BaseModel):
         cond_emb_motion = None
         batch_size = len(batch["text"])
 
-        if self.motion_condition == 'source':    
+        if self.motion_condition == 'source':
             source_motion_condition = batch['source_motion']
             if self.motion_cond_encoder is not None:
                 cond_emb_motion = self.motion_cond_encoder(source_motion_condition,
                                                            mask_source_motion)
                 cond_emb_motion = cond_emb_motion.unsqueeze(0)
                 mask_source_motion = torch.ones((batch_size, 1),
-                                              dtype=bool, device=self.device)
+                                                 dtype=bool,
+                                                 device=self.device)
             else:
                 cond_emb_motion = source_motion_condition
 
@@ -943,8 +944,8 @@ class MD(BaseModel):
         else:
 
             data_loss = self.loss_func_feats(out_dict['pred_motion_feats'],
-                                       out_dict['input_motion_feats'],
-                                       reduction='none')
+                                             out_dict['input_motion_feats'],
+                                             reduction='none')
             if self.input_deltas:
                 first_pose_loss = data_loss[:, 0].mean(-1)
                 first_pose_loss = first_pose_loss.mean()
@@ -989,19 +990,19 @@ class MD(BaseModel):
             loss_joints, _ = self.compute_joints_loss(out_dict, joints_gt, 
                                                       pad_mask_jts_pos)
         
-        # from src.tools.transforms3d import transform_body_pose
-
-        # pred_smpl_params = transform_body_pose(torch.cat(
-        #                                             [pred_smpl['body_orient'],
-        #                                              pred_smpl['body_pose']],
-    #                                              dim=-1), "aa->6d")
-
-        # gt_pose_loss_non_deltas = loss_func_data(pred_smpl_params, 
-        #                                          tgt_smpl_params)
-        # gt_pose_loss_non_deltas = gt_pose_loss_non_deltas.mean(-1)
-        # gt_pose_loss_non_deltas = gt_pose_loss_non_deltas.sum() / pad_mask.sum()
-        all_losses_dict['total_loss'] += loss_joints
-        all_losses_dict['loss_joints'] = loss_joints
+            # from src.tools.transforms3d import transform_body_pose
+    
+            # pred_smpl_params = transform_body_pose(torch.cat(
+            #                                             [pred_smpl['body_orient'],
+            #                                              pred_smpl['body_pose']],
+    #                                                  dim=-1), "aa->6d")
+    
+            # gt_pose_loss_non_deltas = loss_func_data(pred_smpl_params, 
+            #                                          tgt_smpl_params)
+            # gt_pose_loss_non_deltas = gt_pose_loss_non_deltas.mean(-1)
+            # gt_pose_loss_non_deltas = gt_pose_loss_non_deltas.sum() / pad_mask.sum()
+            all_losses_dict['total_loss'] += loss_joints
+            all_losses_dict['loss_joints'] = loss_joints
         return tot_loss + loss_joints, all_losses_dict 
     
     
@@ -1445,14 +1446,14 @@ class MD(BaseModel):
                 batch[f'{k}_motion'] = v[1:]
             else:
                 batch[f'{k}_motion'] = v
-                batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
+                # batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
 
             batch[f'{k}_motion'] = torch.nn.functional.pad(v, (0, 0, 0, 0, 0,
                                                                300 - v.size(0)),
                                                            value=0)
         if self.motion_condition:
             mask_source, mask_target = self.prepare_mot_masks(batch['length_source'],
-                                                            batch['length_target'])
+                                                              batch['length_target'])
         else:
 
             mask_target = lengths_to_mask(batch['length_target'],
@@ -1460,17 +1461,11 @@ class MD(BaseModel):
             mask_target = F.pad(mask_target, (0, 300 - mask_target.size(1)),
                                 value=0)
 
-            actual_target_lens = batch['length_target']
             batch['length_source'] = None
             batch['source_motion'] = None
             mask_source = None
 
-        if self.input_deltas:
-            batch = self.append_first_frame(batch, which_motion='target')
-            batch['length_target'] = [leng - 1 for leng in batch['length_target']]
-            actual_target_lens = [leng + 1 for leng in batch['length_target']]
-        else:
-            actual_target_lens = batch['length_target']
+        actual_target_lens = batch['length_target']
 
         # batch['text'] = ['']*len(batch['text'])
 

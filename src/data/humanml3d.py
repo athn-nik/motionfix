@@ -419,6 +419,9 @@ class HumanML3DDataModule(BASEDataModule):
                 hml3d_data_dict[hml3d_key] = {}
                 begin = int(text_and_durs[max_dur_id]['start'] * 30)
                 end = int(text_and_durs[max_dur_id]['end'] * 30)
+                if begin - end > 300:
+                    begin += 1
+                assert begin - end <= 300
                 rots_hml3d = cur_amass_data['rots'][begin:end]
                 trans_hml3d = cur_amass_data['trans'][begin:end]
 
@@ -472,11 +475,17 @@ class HumanML3DDataModule(BASEDataModule):
             for k, v in hml3d_data_dict.items():
                 v['id'] = k
                 v['split'] = id_split_dict[k]
-
-        hml3d_data_dict = {}
-        for split in load_splits:
-            list_for_split = joblib.load(f'{self.datapath}/{split}.pth.tar')
-            hml3d_data_dict[split] = list_for_split
+        else:
+            hml3d_data_dict = {}
+            for split in load_splits:
+                list_for_split = joblib.load(f'{self.datapath}/{split}.pth.tar')
+                for elem in list_for_split:
+                    assert elem['joint_positions'] == elem['rots'] == elem['trans'] 
+                    if elem['rots'].shape > 300:
+                        elem['rots'] = elem['rots'][:300]
+                        elem['trans'] = elem['trans'][:300]
+                        elem['joint_positions'] = elem['joint_positions'][:300]
+                hml3d_data_dict[split] = list_for_split
 
         if 'train' in load_splits and 'val' in load_splits:
             lst_for_stats = hml3d_data_dict['train'] + hml3d_data_dict['val'] 
