@@ -1510,7 +1510,7 @@ class MD(BaseModel):
                       batch_size=self.batch_size)
         import random
  
-        if split == 'val' and batch_idx == 0 and self.global_rank == 0:
+        if split == 'val' and batch_idx == 0 and self.global_rank == 0 and False:
             if dif_dict['pred_motion_feats'].shape[1] == 1:
                 return total_loss
             if batch['source_motion'] is not None:

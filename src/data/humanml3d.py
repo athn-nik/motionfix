@@ -480,8 +480,8 @@ class HumanML3DDataModule(BASEDataModule):
             for split in load_splits:
                 list_for_split = joblib.load(f'{self.datapath}/{split}.pth.tar')
                 for elem in list_for_split:
-                    assert elem['joint_positions'] == elem['rots'] == elem['trans'] 
-                    if elem['rots'].shape > 300:
+                    assert elem['joint_positions'].shape[0] == elem['rots'].shape[0] == elem['trans'].shape[0]
+                    if elem['rots'].shape[0] > 300:
                         elem['rots'] = elem['rots'][:300]
                         elem['trans'] = elem['trans'][:300]
                         elem['joint_positions'] = elem['joint_positions'][:300]
