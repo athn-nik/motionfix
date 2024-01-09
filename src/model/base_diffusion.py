@@ -1447,8 +1447,8 @@ class MD(BaseModel):
             else:
                 batch[f'{k}_motion'] = v
                 # batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
-
-            batch[f'{k}_motion'] = torch.nn.functional.pad(v, (0, 0, 0, 0, 0,
+            if v.shape[0] > 1:
+                batch[f'{k}_motion'] = torch.nn.functional.pad(v, (0, 0, 0, 0, 0,
                                                                300 - v.size(0)),
                                                            value=0)
         if self.motion_condition:
@@ -1458,7 +1458,8 @@ class MD(BaseModel):
 
             mask_target = lengths_to_mask(batch['length_target'],
                                           device=self.device)
-            mask_target = F.pad(mask_target, (0, 300 - mask_target.size(1)),
+            if v.shape[0] > 1:
+                mask_target = F.pad(mask_target, (0, 300 - mask_target.size(1)),
                                 value=0)
 
             batch['length_source'] = None
