@@ -523,17 +523,20 @@ class BaseModel(LightningModule):
         import torch.nn.functional as F
         mask_target = lengths_to_mask(target_lens,
                                               self.device)
-        padded_mask_target = F.pad(mask_target,
-                                   (0, max_len - mask_target.size(1)),
-                                   value=0)
-
         mask_source = lengths_to_mask(source_lens, self.device)
-        padded_mask_source = F.pad(mask_source,
-                                   (0, max_len - mask_source.size(1)),
-                                   value=0)
 
-        return padded_mask_source, padded_mask_target
-    
+        if not source_lens[0] == 1:
+            padded_mask_target = F.pad(mask_target,
+                                    (0, max_len - mask_target.size(1)),
+                                    value=0)
+            padded_mask_source = F.pad(mask_source,
+                                    (0, max_len - mask_source.size(1)),
+                                    value=0)
+            
+            return padded_mask_source, padded_mask_target
+        else:
+            return mask_source, mask_target
+
     @torch.no_grad()
     def process_batch(self, batch):
         batch_to_gpu = { k: v.to(self.device) for k,
