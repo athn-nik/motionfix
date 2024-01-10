@@ -53,6 +53,7 @@ class MD(BaseModel):
                  condition: Optional[str] = "text",
                  motion_condition: Optional[str] = "source",
                  loss_on_positions: Optional[bool] = False,
+                 loss_on_verts: Optional[bool] = False,
                  scale_loss_on_positions: Optional[int] = None,
                  loss_func_pos: str = 'mse', # l1 mse
                  loss_func_feats: str = 'mse', # l1 mse
@@ -62,7 +63,7 @@ class MD(BaseModel):
 
         super().__init__(statistics_path, nfeats, norm_type, input_feats,
                          dim_per_feat, smpl_path, num_vids_to_render,
-                         loss_on_positions, renderer=renderer)
+                         loss_on_positions or loss_on_verts, renderer=renderer)
 
         if set(self.input_feats) == set(["body_transl_delta_pelv_xy",
                                          "body_orient_delta",
@@ -95,6 +96,7 @@ class MD(BaseModel):
                 
         self.text_encoder = instantiate(text_encoder)
         self.loss_on_positions = loss_on_positions
+        self.loss_on_verts = loss_on_verts
         # from torch import nn
         # self.condition_encoder = nn.Linear()
         self.ep_start_scale = scale_loss_on_positions
@@ -822,6 +824,55 @@ class MD(BaseModel):
             return min(((self.trainer.current_epoch - warm_up_epochs + 1)
                         / max_loss_lambda) * max_loss_lambda, max_loss_lambda)
 
+    def compute_verts_loss(self, out_motion, padding_mask):
+        from src.model.utils.tools import remove_padding, pack_to_render
+        #from src.render.video import get_offscreen_renderer
+
+        if self.using_deltas_transl:
+            import torch.nn.functional as F
+
+            motion_unnorm = self.diffout2motion(out_motion['pred_motion_feats'])
+            gt_mot_unnorm = self.diffout2motion(out_motion['input_motion_feats'])
+            motion_unnorm = F.pad(motion_unnorm, (0, 3))
+            gt_mot_unnorm = F.pad(gt_mot_unnorm, (0, 3))
+            # motion_unnorm = motion_unnorm.permute(1, 0, 2)
+        else:
+            # motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
+            motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
+            motion_norm = out_motion['pred_motion_feats']
+        B, S = motion_unnorm.shape[:2]
+
+        pred_smpl_params = pack_to_render(rots=motion_unnorm[..., 3:],
+                                          trans=motion_unnorm[...,:3])
+        gt_smpl_params = pack_to_render(rots=gt_mot_unnorm[..., 3:],
+                                          trans=gt_mot_unnorm[...,:3])
+
+        pred_verts = self.run_smpl_fwd(pred_smpl_params['body_transl'],
+                                        pred_smpl_params['body_orient'],
+                                        pred_smpl_params['body_pose'].reshape(B,
+                                                                              S, 
+                                                                              63),
+                                        fast=False).vertices
+        gt_verts = self.run_smpl_fwd(gt_smpl_params['body_transl'],
+                                        gt_smpl_params['body_orient'],
+                                        gt_smpl_params['body_pose'].reshape(B,
+                                                                              S, 
+                                                                              63),
+                                        fast=False).vertices
+
+        pred_verts = rearrange(pred_verts, '(b s) ... -> b s ...',
+                                s=S, b=B)
+        gt_verts = rearrange(gt_verts, '(b s) ... -> b s ...',
+                                s=S, b=B)
+
+        #  Could do this --> * self.jts_scale [does not work for now] 
+        loss_verts = self.loss_func_pos(pred_verts, gt_verts,
+                                         reduction='none')
+        loss_verts = reduce(loss_verts, 's b j d -> s b', 'mean')
+        loss_verts = (loss_verts * padding_mask).sum() / padding_mask.sum()
+
+        return loss_verts
+
     def compute_joints_loss(self, out_motion, joints_gt, padding_mask):
 
         from src.render.mesh_viz import render_skeleton, render_motion
@@ -942,7 +993,6 @@ class MD(BaseModel):
                                          reduction='none')
         # predict x
         else:
-
             data_loss = self.loss_func_feats(out_dict['pred_motion_feats'],
                                              out_dict['input_motion_feats'],
                                              reduction='none')
@@ -989,21 +1039,16 @@ class MD(BaseModel):
             joints_gt = rearrange(joints_gt, 'b s (j d) -> b s j d', j=J)
             loss_joints, _ = self.compute_joints_loss(out_dict, joints_gt, 
                                                       pad_mask_jts_pos)
-        
-            # from src.tools.transforms3d import transform_body_pose
-    
-            # pred_smpl_params = transform_body_pose(torch.cat(
-            #                                             [pred_smpl['body_orient'],
-            #                                              pred_smpl['body_pose']],
-    #                                                  dim=-1), "aa->6d")
-    
-            # gt_pose_loss_non_deltas = loss_func_data(pred_smpl_params, 
-            #                                          tgt_smpl_params)
-            # gt_pose_loss_non_deltas = gt_pose_loss_non_deltas.mean(-1)
-            # gt_pose_loss_non_deltas = gt_pose_loss_non_deltas.sum() / pad_mask.sum()
             all_losses_dict['total_loss'] += loss_joints
             all_losses_dict['loss_joints'] = loss_joints
-        return tot_loss + loss_joints, all_losses_dict 
+        loss_verts = torch.tensor(0.0)
+        if self.loss_on_verts:
+            loss_verts = self.compute_verts_loss(out_dict, 
+                                                    pad_mask_jts_pos)
+            all_losses_dict['total_loss'] += loss_verts
+            all_losses_dict['loss_verts'] = loss_verts
+
+        return tot_loss + loss_joints + loss_verts, all_losses_dict 
     
     
     # {'total_loss': total_loss,

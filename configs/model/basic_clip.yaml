@@ -43,11 +43,12 @@ input_feats:
 # [body_transl, body_orient, body_pose]
 
 loss_on_positions: false
+loss_on_verts: false
+
 scale_loss_on_positions: 500
 
 loss_func_pos: mse # l1 mse
 loss_func_feats: mse # l1 mse
-
 
 defaults:
   # diffusion stuff
