@@ -46,7 +46,7 @@ def read_data_for_split(path, split, amt_only=False):
     for k, v in data_dict.items():
         v.update({'id': k})
         v.update({'split': k2id[split]})
-en        v['pose_source'] = v.pop('pose_A_data')
+        v['pose_source'] = v.pop('pose_A_data')
         v['pose_source'] = {'rots': v['pose_source'].flatten()[None]}
 
         v['pose_target'] = v.pop('pose_B_data')
