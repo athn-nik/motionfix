@@ -109,7 +109,6 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     if cfg.ftune is not None:
         logger.info(f"Loading model from {cfg.ftune_ckpt_path}")
         model = instantiate(cfg.model,
-                            
                             renderer=renderer,
                             _recursive_=False)
 
@@ -122,7 +121,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
         
     else:
         # diffusion related
-        model = instantiate(cfg.model,                            
+        model = instantiate(cfg.model,
                             renderer=renderer,
                             _recursive_=False)
 

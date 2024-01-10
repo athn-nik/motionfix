@@ -37,7 +37,7 @@ load_feats:
 # - "body_transl_delta"
 - "body_transl_delta_pelv"
 # - "body_transl_delta_pelv_xy"
-# - "body_transl_z"
+# - "body_transl"
 - "body_orient"
 - "body_pose"
 # - "body_joints"
