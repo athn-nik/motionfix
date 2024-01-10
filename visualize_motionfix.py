@@ -208,7 +208,7 @@ def render_vids(newcfg: DictConfig) -> None:
         #     test_dataset.data = subset
     else:
         batch_size_test = 8
-        test_dataset = data_module.dataset['test'][:batch_size_test*4]
+        test_dataset = data_module.dataset['test'].data[:batch_size_test*4]
 
     testloader = torch.utils.data.DataLoader(test_dataset,
                                              shuffle=False,
