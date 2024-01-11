@@ -525,7 +525,7 @@ class BaseModel(LightningModule):
                                               self.device)
         mask_source = lengths_to_mask(source_lens, self.device)
 
-        if not source_lens[0] == 1:
+        if not source_lens[0] == 1 and max_len is not None:
             padded_mask_target = F.pad(mask_target,
                                     (0, max_len - mask_target.size(1)),
                                     value=0)
