@@ -854,10 +854,8 @@ class MD(BaseModel):
                                                                               63),
                                         fast=False).vertices
         gt_verts = self.run_smpl_fwd(gt_smpl_params['body_transl'],
-                                        gt_smpl_params['body_orient'],
-                                        gt_smpl_params['body_pose'].reshape(B,
-                                                                              S, 
-                                                                              63),
+                                     gt_smpl_params['body_orient'],
+                                     gt_smpl_params['body_pose'].reshape(B,S,63),
                                         fast=False).vertices
 
         pred_verts = rearrange(pred_verts, '(b s) ... -> b s ...',
