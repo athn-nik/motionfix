@@ -247,7 +247,10 @@ def render_vids(newcfg: DictConfig) -> None:
                                                   mask_target,
                                                   init_vec=source_init,
                                                   init_vec_method=init_diff_from,
-                                                  condition_mode=mode_cond)
+                                                  condition_mode=mode_cond,
+                                                  gd_motion=guid_motion,
+                                                  gd_text=guid_text,
+                                                  num_diff_steps=newcfg.steps)
                     gen_mo = model.diffout2motion(diffout)
 
                     src_mot_cond, tgt_mot = model.batch2motion(batch,
