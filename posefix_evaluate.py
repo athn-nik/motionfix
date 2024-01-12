@@ -173,10 +173,8 @@ def render_vids(newcfg: DictConfig) -> None:
                 keyids = batch['id']
                 no_of_motions = len(keyids)
                 in_batch = prepare_test_batch(model, batch)
-                source_mot_pad = torch.nn.functional.pad(in_batch['source_motion'],
-                                                        (0, 0, 0, 0, 0,
-                                            300 - in_batch['source_motion'].size(0)),
-                                                        value=0)
+                for k, v in in_batch.items():
+                    batch[f'{k}_motion'] = v
 
                 if model.motion_condition == 'source' or init_diff_from == 'source':
                     source_lens = batch['length_source']
@@ -189,10 +187,7 @@ def render_vids(newcfg: DictConfig) -> None:
                     batch['source_motion'] = None
                     mask_source = None
 
-                if init_diff_from == 'source':
-                    source_init = source_mot_pad
-                else:
-                    source_init = None
+                source_init = batch['source_motion']
                 diffout = model.generate_pose(text_diff,
                                               source_mot_pad,
                                               mask_source,
@@ -203,7 +198,7 @@ def render_vids(newcfg: DictConfig) -> None:
                                               gd_motion=guid_motion,
                                               gd_text=guid_text,
                                               num_diff_steps=newcfg.steps)
-                diffout = diffout[:, :1]
+                
                 gen_mo = model.diffout2motion(diffout)
                 from src.tools.transforms3d import transform_body_pose
                 
