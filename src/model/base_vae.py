@@ -93,7 +93,8 @@ class MVAE(BaseModel):
                 self.motion_cond_encoder = None
 
         from src.model.tmr_utils.utils import load_model_from_cfg, read_config
-        cfg = read_config(tmr_path)
+        from src.utils.file_io import hack_path
+        cfg = read_config(hack_path(tmr_path, keyword='data'))
         ### Fix keys --> move to a function
         import omegaconf
         for k, v in cfg.model.items():
@@ -184,7 +185,6 @@ class MVAE(BaseModel):
 
     def train_vae_forward(self, batch, mask_source_motion,
                                 mask_target_motion):
-        input_batch = self.norm_and_cat(batch, self.input_feats)
         src, tgt = self.fix_input_for_tmr(batch)
         tgt_dict = {'length': batch['length_target'],
                     'mask': mask_target_motion,
@@ -302,6 +302,9 @@ class MVAE(BaseModel):
                         gd_text=None, gd_motion=None, 
                         return_init_noise=False, 
                         condition_mode='full_cond', num_diff_steps=None):
+
+
+
         bsz, seqlen_tgt = mask_target.shape
         feat_sz = sum(self.input_feats_dims)
         if texts_cond is not None:
@@ -368,33 +371,28 @@ class MVAE(BaseModel):
         pass
     
     def generate_motion(self, texts_cond, motions_cond,
-                        mask_source, mask_target, 
-                        init_vec_method='noise', init_vec=None,
-                        gd_text=None, gd_motion=None, 
-                        return_init_noise=False, 
-                        condition_mode='full_cond',
-                        num_diff_steps=None):
-        # uncond_tokens = [""] * len(texts_cond)
-        # if self.condition == 'text':
-        #     uncond_tokens.extend(texts_cond)
-        # elif self.condition == 'text_uncond':
-        #     uncond_tokens.extend(uncond_tokens)
-        bsz, seqlen_tgt = mask_target.shape
-        feat_sz = sum(self.input_feats_dims)
-        text_emb, text_mask = self.text_encoder(texts_cond)
-        src_embed = self.tmr_model.encode(motion_source)
+                        lens_src, lens_tgt,
+                        mask_source, mask_target):
+
+        src_dict = {'length': lens_src,
+                    'mask': mask_source,
+                    'x': motions_cond.permute(1, 0, 2)}
+        src_lat, src_distr = self.tmr_model.encode(src_dict,
+                                                   modality='motion',
+                                                   return_distribution=True)
+        text_lat, _ = self.text_encoder(texts_cond)
         fused_src_txt = self.correction_module(src_lat, text_lat.squeeze())
         fused_distr = self.text_src_distr_enc(fused_src_txt)
         one_sample = fused_distr.rsample()
-        dec_mot = self.tmr_model.decode(tgt_lat, mask=mask_target_motion)
-        cond_emb_motion = None
-        cond_motion_mask = None
-        if self.motion_condition == 'source':
-            bsz, seqlen_src = mask_source.shape
-
-        with torch.no_grad():
-            diff_out = None
-            return diff_out
+        # during training
+        dec_mot = self.tmr_model.decode(one_sample, mask=mask_target)
+        # sample
+        ret = {'fused_src_txt_distr': fused_distr,
+               'tgt_distr': torch.distributions.normal.Normal(tgt_distr[0],
+                                                              F.softplus(tgt_distr[1])) ,
+               'pred_motion_feats': dec_mot,
+               'input_motion_feats': tgt}
+        return ret
 
     def integrate_feats2motion(self, first_pose_norm, delta_motion_norm):
         """"
@@ -429,7 +427,6 @@ class MVAE(BaseModel):
         new_state = torch.cat((new_state_pos, new_state_rot), dim=-1)
         new_state_norm = self.norm_state(new_state)
         return new_state_norm
-
 
     def integrate_translation(self, pelv_orient_norm, first_trans,
                               delta_transl_norm):
@@ -470,7 +467,6 @@ class MVAE(BaseModel):
         full_trans_unnorm = torch.cat([first_trans,
                                        full_trans_unnorm], dim=1)
         return full_trans_unnorm
-
 
     def diffout2motion(self, diffout, full_deltas=False):
         if diffout.shape[1] == 1:

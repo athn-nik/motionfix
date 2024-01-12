@@ -830,11 +830,13 @@ class MD(BaseModel):
 
         if self.using_deltas_transl:
             import torch.nn.functional as F
-
+            compute_scale = 1
             motion_unnorm = self.diffout2motion(out_motion['pred_motion_feats'])
             gt_mot_unnorm = self.diffout2motion(out_motion['input_motion_feats'])
-            motion_unnorm = F.pad(motion_unnorm, (0, 3))
-            gt_mot_unnorm = F.pad(gt_mot_unnorm, (0, 3))
+            if out_motion['pred_motion_feats'] < 135:
+                motion_unnorm = F.pad(motion_unnorm, (0, 3))
+                gt_mot_unnorm = F.pad(gt_mot_unnorm, (0, 3))
+                compute_scale = 100
             # motion_unnorm = motion_unnorm.permute(1, 0, 2)
         else:
             # motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
@@ -869,7 +871,7 @@ class MD(BaseModel):
         loss_verts = reduce(loss_verts, 's b j d -> s b', 'mean')
         loss_verts = (loss_verts * padding_mask).sum() / padding_mask.sum()
 
-        return loss_verts
+        return loss_verts * compute_scale
 
     def compute_joints_loss(self, out_motion, joints_gt, padding_mask):
 
