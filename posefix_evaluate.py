@@ -25,21 +25,13 @@ def _render_vids(cfg: DictConfig) -> None:
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
-
 def prepare_test_batch(model, batch):
     batch = { k: v.to(model.device) if torch.is_tensor(v) else v
                 for k, v in batch.items() }
 
     input_batch = model.norm_and_cat(batch, model.input_feats)
-    for k, v in input_batch.items():
-        if model.input_deltas:
-            batch[f'{k}_motion'] = v[1:]
-        else:
-            batch[f'{k}_motion'] = v
-            batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
 
-    return batch
-
+    return input_batch
 
 def cleanup_files(lo_fls):
     for fl in lo_fls:
@@ -186,10 +178,10 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 model.device)
                     batch['source_motion'] = None
                     mask_source = None
-
+                
                 source_init = batch['source_motion']
                 diffout = model.generate_pose(text_diff,
-                                              source_mot_pad,
+                                              batch['source_motion'],
                                               mask_source,
                                               mask_target,
                                               init_vec=source_init,
