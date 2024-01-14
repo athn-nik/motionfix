@@ -120,7 +120,6 @@ class MldDenoiser(nn.Module):
                 condition_mask, 
                 motion_embeds=None,
                 lengths=None,
-                
                 **kwargs):
         # 0.  dimension matching
         # noised_motion [latent_dim[0], batch_size, latent_dim] <= [batch_size, latent_dim[0], latent_dim[1]]

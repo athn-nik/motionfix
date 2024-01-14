@@ -22,7 +22,7 @@ from src.render.mesh_viz import render_motion
 from src.tools.transforms3d import change_for, transform_body_pose, get_z_rot
 from src.tools.transforms3d import apply_rot_delta
 from einops import rearrange, reduce
-from torch.nn.functional import l1_loss, mse_loss
+from torch.nn.functional import l1_loss, mse_loss, smooth_l1_loss
 from src.utils.genutils import dict_to_device
 from src.utils.art_utils import color_map
 import torch
@@ -141,11 +141,15 @@ class MD(BaseModel):
             self.loss_func_pos = l1_loss
         elif loss_func_pos in ['mse', 'l2']:
             self.loss_func_pos = mse_loss
+        elif loss_func_pos in ['sl1']:
+            self.loss_func_pos = smooth_l1_loss
 
         if loss_func_feats == 'l1':
             self.loss_func_feats = l1_loss
         elif loss_func_feats in ['mse', 'l2']:
             self.loss_func_feats = mse_loss
+        elif loss_func_feats in ['sl1']:
+            self.loss_func_feats = smooth_l1_loss
 
         self.__post_init__()
 
@@ -551,10 +555,9 @@ class MD(BaseModel):
                                          in_motion_mask=mask_in_mot,
                                          timestep=timesteps,
                                          text_embeds=text_encoded,
-                                         motion_embeds=motion_encoded,
                                          condition_mask=mask_for_condition,
-                                         return_dict=False)
-
+                                         motion_embeds=motion_encoded,
+                                         )
 
         # Chunk the noise and noise_pred into two parts and compute the loss on each part separately.
         # if self.losses.lmd_prior != 0.0:

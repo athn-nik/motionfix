@@ -30,7 +30,7 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x, hist_frames=0):
         if not self.negative:
-            center = 0            
+            center = 0
             assert hist_frames == 0
             first = 0
         else:
