@@ -843,7 +843,6 @@ class MD(BaseModel):
             motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
             motion_norm = out_motion['pred_motion_feats']
         B, S = motion_unnorm.shape[:2]
-
         pred_smpl_params = pack_to_render(rots=motion_unnorm[..., 3:],
                                           trans=motion_unnorm[...,:3])
         gt_smpl_params = pack_to_render(rots=gt_mot_unnorm[..., 3:],
