@@ -833,7 +833,7 @@ class MD(BaseModel):
             compute_scale = 1
             motion_unnorm = self.diffout2motion(out_motion['pred_motion_feats'])
             gt_mot_unnorm = self.diffout2motion(out_motion['input_motion_feats'])
-            if out_motion['pred_motion_feats'] < 135:
+            if out_motion['pred_motion_feats'].shape[-1] < 135:
                 motion_unnorm = F.pad(motion_unnorm, (0, 3))
                 gt_mot_unnorm = F.pad(gt_mot_unnorm, (0, 3))
                 compute_scale = 100
@@ -843,7 +843,6 @@ class MD(BaseModel):
             motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
             motion_norm = out_motion['pred_motion_feats']
         B, S = motion_unnorm.shape[:2]
-
         pred_smpl_params = pack_to_render(rots=motion_unnorm[..., 3:],
                                           trans=motion_unnorm[...,:3])
         gt_smpl_params = pack_to_render(rots=gt_mot_unnorm[..., 3:],
