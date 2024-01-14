@@ -858,13 +858,13 @@ class MD(BaseModel):
                                                                               63),
                                         fast=False)
         pred_verts = pred_smpl_out.vertices
-        pred_jts = pred_smpl_out.joints 
+        pred_jts = pred_smpl_out.joints[:, :22] 
         gt_smpl_out= self.run_smpl_fwd(gt_smpl_params['body_transl'],
                                      gt_smpl_params['body_orient'],
                                      gt_smpl_params['body_pose'].reshape(B,S,63),
                                         fast=False)
         gt_verts = gt_smpl_out.vertices
-        gt_jts = gt_smpl_out.joints
+        gt_jts = gt_smpl_out.joints[:, :22]
         pred_verts = rearrange(pred_verts, '(b s) ... -> b s ...',
                                 s=S, b=B)
         gt_verts = rearrange(gt_verts, '(b s) ... -> b s ...',
@@ -1007,8 +1007,8 @@ class MD(BaseModel):
         tot_loss = torch.tensor(0.0, device=self.device)
         if self.loss_params['predict_epsilon']:
             noise_loss = self.loss_func_feats(out_dict['noise_pred'],
-                                         out_dict['noise'],
-                                         reduction='none')
+                                              out_dict['noise'],
+                                              reduction='none')
         # predict x
         else:
             data_loss = self.loss_func_feats(out_dict['pred_motion_feats'],
