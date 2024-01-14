@@ -147,7 +147,6 @@ class MldDenoiser(nn.Module):
                 text_emb_latent = self.emb_proj(text_embeds)
             else:
                 text_emb_latent = text_embeds
-            if motion_embeds is None:
                 # source_motion_zeros = torch.zeros(*noised_motion.shape[:2], 
                 #                             self.latent_dim, 
                 #                             device=noised_motion.device)
@@ -156,101 +155,94 @@ class MldDenoiser(nn.Module):
                 #                             device=noised_motion.device)
                 # condition_mask = torch.cat((condition_mask, aux_fake_mask), 
                 #                            1).bool().to(noised_motion.device)
-                if self.time_fusion == 'concat':
-                    emb_latent = torch.cat((time_emb, text_emb_latent), 0)
-                else:
-                    emb_latent = text_emb_latent + time_emb
-
-            elif motion_embeds.shape[0] > 5: 
-                # ugly way to tell concat the motion or so
-                # first embed to low dim space then concat
-                motion_embeds_proj = self.pose_proj_in(motion_embeds)
-                emb_latent = torch.cat((text_emb_latent + time_emb,
-                                        motion_embeds_proj), 0)
-                if self.time_fusion == 'concat':
-                    emb_latent = torch.cat((time_emb, text_emb_latent,
-                                            motion_embeds_proj), 0)
-                else:
-                    emb_latent = torch.cat((text_emb_latent + time_emb,
-                                            motion_embeds_proj), 0)
-
+            if self.time_fusion == 'concat':
+                emb_latent = torch.cat((time_emb, text_emb_latent), 0)
             else:
+                emb_latent = text_emb_latent + time_emb
+
+            if motion_embeds is not None:
                 if motion_embeds.shape[-1] != self.latent_dim:
                     motion_embeds_proj = self.pose_proj_in(motion_embeds)
                 else:
                     motion_embeds_proj = motion_embeds
-                if self.time_fusion == 'concat':
-                    emb_latent = torch.cat((time_emb, text_emb_latent,
-                                            motion_embeds_proj), 0)
-                else:
-                    emb_latent = torch.cat((text_emb_latent + time_emb,
-                                            motion_embeds_proj), 0)
-
+                if self.time_fusion == 'add':
+                    motion_embeds_proj = motion_embeds_proj + time_emb
         else:
             raise TypeError(f"condition type {self.condition} not supported")
         # 4. transformer
-        if self.arch == "trans_enc":
-            # if self.diffusion_only:
-            proj_noised_motion = self.pose_proj_in(noised_motion)
+        # if self.diffusion_only:
+        proj_noised_motion = self.pose_proj_in(noised_motion)
+        if motion_embeds is None:
             xseq = torch.cat((emb_latent, proj_noised_motion), axis=0)
-            # else:
-            # xseq = torch.cat((sample, emb_latent), axis=0)
+        else:
+            xseq = torch.cat((emb_latent, proj_noised_motion,
+                              motion_embeds_proj), axis=0)
 
-            # if self.ablation_skip_connection:
-            #     xseq = self.query_pos(xseq)
-            #     tokens = self.encoder(xseq)
-            # else:
-            #     # adding the timestep embed
-            #     # [seqlen+1, bs, d]
-            #     # todo change to query_pos_decoder
-            xseq = self.query_pos(xseq)
+        # if self.ablation_skip_connection:
+        #     xseq = self.query_pos(xseq)
+        #     tokens = self.encoder(xseq)
+        # else:
+        #     # adding the timestep embed
+        #     # [seqlen+1, bs, d]
+        #     # todo change to query_pos_decoder
+        xseq = self.query_pos(xseq)
+        # BUILD the mask now
+        if motion_embeds is None:
             if self.time_fusion == 'concat':
                 time_token_mask = torch.ones((bs, time_emb.shape[0]),
                                             dtype=bool, device=xseq.device)
                 aug_mask = torch.cat((time_token_mask,
-                                      condition_mask[:, text_emb_latent.shape[0]:],
-                                      condition_mask[:,:text_emb_latent.shape[0]],
+                                      condition_mask[:,
+                                                     :text_emb_latent.shape[0]],
                                       motion_in_mask), 1)
+            else:
+                aug_mask = torch.cat((condition_mask[:,
+                                                     :text_emb_latent.shape[0]],
+                                      motion_in_mask), 1)
+        else:
+            if self.time_fusion == 'concat':
+                time_token_mask = torch.ones((bs, time_emb.shape[0]),
+                                            dtype=bool,
+                                            device=xseq.device)
+                aug_mask = torch.cat((time_token_mask,
+                                      condition_mask[:, :text_emb_latent.shape[0]],
+                                      motion_in_mask,
+                                      condition_mask[:,text_emb_latent.shape[0]:]
+                                      ), 1)
             else:
                 # condition_mask
-                aug_mask = torch.cat((condition_mask[:, text_emb_latent.shape[0]:],
-                                      condition_mask[:,:text_emb_latent.shape[0]],
-                                      motion_in_mask), 1)
+                aug_mask = torch.cat((condition_mask[:, 
+                                                     :text_emb_latent.shape[0]],
+                                      motion_in_mask,
+                                      condition_mask[:, 
+                                                     text_emb_latent.shape[0]:]
+                                    ), 1)
 
-            tokens = self.encoder(xseq,
-                                  src_key_padding_mask=~aug_mask)
-                
-            # if self.diffusion_only:
+        tokens = self.encoder(xseq,src_key_padding_mask=~aug_mask)
+
+        # if self.diffusion_only:
+        if motion_embeds is not None:
+            denoised_motion_proj = tokens[emb_latent.shape[0]:-motion_embeds_proj.shape[0]]
+        else:
             denoised_motion_proj = tokens[emb_latent.shape[0]:]
-            if self.use_deltas:
-                # DROPPED
-                denoised_first_pose = self.first_pose_proj(denoised_motion_proj[:1])            
-                denoised_motion_only = self.pose_proj_out(denoised_motion_proj[1:])
-                denoised_motion_only[~motion_in_mask.T[1:]] = 0
-                denoised_motion = torch.zeros_like(noised_motion)
-                denoised_motion[1:] = denoised_motion_only
-                denoised_motion[0] = denoised_first_pose
-            else:
-                
-                if self.pred_delta_motion and motion_embeds is not None:
-                    if self.fuse == 'concat':
-                        denoised_motion_proj = torch.cat([denoised_motion_proj,
-                                                          motion_embeds_proj],
-                                                         dim=-1)
-                    elif self.fuse == 'add':
-                        denoised_motion_proj = denoised_motion_proj + self.feat_comb_coeff*motion_embeds_proj
-                    else:
-                        denoised_motion_proj = denoised_motion_proj
-                denoised_motion = self.pose_proj_out(denoised_motion_proj)
-                denoised_motion[~motion_in_mask.T] = 0
+
+        # if self.pred_delta_motion and motion_embeds is not None:
+        #     if self.fuse == 'concat':
+        #         denoised_motion_proj = torch.cat([denoised_motion_proj,
+        #                                             motion_embeds_proj],
+        #                                             dim=-1)
+        #     elif self.fuse == 'add':
+        #         denoised_motion_proj = denoised_motion_proj + self.feat_comb_coeff*motion_embeds_proj
+        #     else:
+        #         denoised_motion_proj = denoised_motion_proj
+        denoised_motion = self.pose_proj_out(denoised_motion_proj)
+        denoised_motion[~motion_in_mask.T] = 0
 
 
             # zero for padded area
             # else:
             #     sample = tokens[:sample.shape[0]]
 
-        else:
-            raise TypeError("{self.arch} is not supoorted")
 
         # 5. [batch_size, latent_dim[0], latent_dim[1]] <= [latent_dim[0], batch_size, latent_dim[1]]
         denoised_motion = denoised_motion.permute(1, 0, 2)

@@ -2,7 +2,7 @@ dataname: bodilex
 _target_: src.data.bodilex.BodilexDataModule
 debug: ${debug}
 
-datapath: ${path.data}/amass_bodilex_v5.pth.tar # amass_bodilex.pth.tar
+datapath: ${path.data}/amass_bodilex_v6.pth.tar # amass_bodilex.pth.tar
 debug_datapath: ${path.minidata}/amass_small.pth.tar
 
 # Amass
@@ -17,7 +17,7 @@ load_splits:
 - "test"
 
 # Machine
-batch_size: ${machine.batch_size}
+batch_size: 32 # it's tiny
 num_workers: ${machine.num_workers}
 rot_repr: '6d'
 preproc:
@@ -37,7 +37,6 @@ load_feats:
 # - "body_transl_delta"
 - "body_transl_delta_pelv"
 # - "body_transl_delta_pelv_xy"
-# - "body_transl_z"
 - "body_orient"
 - "body_pose"
 # - "body_joints"

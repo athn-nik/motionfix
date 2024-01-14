@@ -2,7 +2,7 @@ dataname: sinc_synth
 _target_: src.data.sinc_synth.SincSynthDataModule
 debug: ${debug}
 
-datapath: ${path.data}/sinc_synth_edits.pth.tar # amass_bodilex.pth.tar
+datapath: ${path.data}/sinc_synth_edits_cleaned.pth.tar # amass_bodilex.pth.tar
 debug_datapath: ${path.minidata}/amass_small.pth.tar
 
 # Amass

@@ -476,7 +476,7 @@ class BodilexDataModule(BASEDataModule):
             num_val = int(len(data_ids) * 0.1)
         else:
             # 70-10-20% train-val-test for each sequence
-            num_train = int(len(data_ids) * 0.8)
+            num_train = int(len(data_ids) * 0.9)
             num_val = int(len(data_ids) * 0.05)
         # give ids to data sets--> 0:train, 1:val, 2:test
 
@@ -499,7 +499,6 @@ class BodilexDataModule(BASEDataModule):
                                                       self.rot_repr,
                                                       self.load_feats,
                                                       do_augmentations=False))
-        # import ipdb; ipdb.set_trace()
 
         # setup collate function meta parameters
         # self.collate_fn = lambda b: collate_batch(b, self.cfg.load_feats)
