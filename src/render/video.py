@@ -144,12 +144,11 @@ def stack_vids(vids_to_stack: List[str], fname: str, orient='v', v=False):
 
     vids_arg = list(itertools.chain(*[('-i', j) for j in vids_to_stack]))
     cmd_m.extend(vids_arg)
-
     if orient in ['h', 'horizontal', 'v', 'vertical']:
         cmd_m.extend(['-y', '-loglevel', 'quiet', '-filter_complex',
                         f'{orient}stack=inputs={len(vids_to_stack)}',
                         f'{fname}'])
-    elif orient == ['2x2', 'grid']:
+    elif orient in ['2x2', 'grid']:
         cmd_m.extend(['-y', '-loglevel', 'quiet', '-filter_complex',
                     '[0:v][1:v]hstack[top];[2:v][3:v]hstack[bottom];[top][bottom]vstack',
                     f'{fname}'])

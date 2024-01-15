@@ -314,7 +314,7 @@ def render_vids(newcfg: DictConfig) -> None:
                         cur_group_of_vids.append(fname)
                     stacked_vid = stack_vids(cur_group_of_vids,
                                             f'{output_path}/{elem_id}_stacked.mp4',
-                                            orient='h')
+                                            orient='2x2')
                     text_wrap = split_txt_into_multi_lines(text_diff[elem_id],
                                                             40)
                     fnal_fl = put_text(text=text_wrap.replace("'", " "),
