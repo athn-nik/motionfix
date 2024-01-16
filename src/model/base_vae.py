@@ -185,13 +185,21 @@ class MVAE(BaseModel):
 
     def train_vae_forward(self, batch, mask_source_motion,
                                 mask_target_motion):
+        if batch['target_motion'].shape[-1] < 135:
+            batch['target_motion'] = F.pad(batch['target_motion'],
+                                           (0, 3))
+            batch['source_motion'] = F.pad(batch['source_motion'],
+                                           (0, 3))
+
         src, tgt = self.fix_input_for_tmr(batch)
+
         tgt_dict = {'length': batch['length_target'],
                     'mask': mask_target_motion,
                     'x': tgt.permute(1, 0, 2)}
         src_dict = {'length': batch['length_source'],
                     'mask': mask_source_motion,
                     'x': src.permute(1, 0, 2)}
+        
         src_lat, src_distr = self.tmr_model.encode(src_dict,
                                                    modality='motion',
                                                    return_distribution=True)
@@ -240,8 +248,12 @@ class MVAE(BaseModel):
         else:
             pad_mask_jts_pos = motion_mask_target
             pad_mask = motion_mask_target
-        self.input_feats = ['body_transl_delta_pelv', 'body_pose',  'body_orient']
-        self.input_feats_dims =  [3, 21*6, 6]
+        # if out_dict['pred_motion_feats'].shape[-1] < 135:
+        #     self.input_feats = ['body_pose',  'body_orient']
+        #     self.input_feats_dims =  [21*6, 6]
+        # else:
+        #     self.input_feats = ['body_transl_delta_pelv', 'body_pose',  'body_orient']
+        #     self.input_feats_dims =  [3, 21*6, 6]
         f_rg = np.cumsum([0] + self.input_feats_dims)
         all_losses_dict = {}
         tot_loss = torch.tensor(0.0, device=self.device)
