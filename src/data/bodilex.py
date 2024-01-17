@@ -4,7 +4,7 @@ from glob import glob
 from os import listdir
 from os.path import exists, join
 from pathlib import Path
-from typing import List
+from typing import List, Callable
 import joblib
 import numpy as np
 from omegaconf import DictConfig
@@ -37,7 +37,7 @@ SMPL_BODY_CHAIN = [-1,  0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  9,  9,
 class BodilexDataset(Dataset):
     def __init__(self, data: list, n_body_joints: int,
                  stats_file: str, norm_type: str,
-                 smplh_path: str, rot_repr: str = "6d",
+                 smplh_path: str = None, rot_repr: str = "6d",
                  load_feats: List[str] = None,
                  do_augmentations=False):
         self.data = data
@@ -45,6 +45,7 @@ class BodilexDataset(Dataset):
         self.rot_repr = rot_repr
         self.load_feats = load_feats
         self.do_augmentations = do_augmentations
+        self.name = "bodilex"
         
         # self.seq_parser = SequenceParserAmass(self.cfg)
         # bm = smplx.create(model_path=smplh_path, model_type='smplh', ext='npz')
@@ -88,8 +89,96 @@ class BodilexDataset(Dataset):
         }
         self._meta_data_get_methods = {
             "framerate": self._get_framerate,
+            "dataset_name": lambda _: self.name, 
         }
         self.nfeats = self.get_features_dimentionality()
+
+    @classmethod
+    def load_and_instantiate(cls, datapath: str, debug, smplh_path, **kwargs):
+        """
+        Instantiate the dataset from a given datapath
+            datapath: the joblib file containing the dataset
+            debug: maybe redundant
+            smplh_path: path to the smplh model
+            kwargs: whatever you would give to the __init__ function aside from
+            the list of data
+        returns:
+            a dictionary with the train, val and test sets
+        """
+        body_model = smplx.SMPLHLayer(f'{smplh_path}/smplh',
+                                           model_type='smplh',
+                                           gender='neutral',
+                                           ext='npz').eval();
+        setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
+        freeze(body_model)
+
+        ds_db_path = Path(datapath)
+        dataset_dict_raw = joblib.load(ds_db_path)
+        dataset_dict_raw = cast_dict_to_tensors(dataset_dict_raw)
+        for k, v in dataset_dict_raw.items():
+            
+            if len(v['motion_source']['rots'].shape) > 2:
+                rots_flat_src = v['motion_source']['rots'].flatten(-2).float()
+                dataset_dict_raw[k]['motion_source']['rots'] = rots_flat_src
+            if len(v['motion_target']['rots'].shape) > 2:
+                rots_flat_tgt = v['motion_target']['rots'].flatten(-2).float()
+                dataset_dict_raw[k]['motion_target']['rots'] = rots_flat_tgt
+
+            for mtype in ['motion_source', 'motion_target']:
+            
+                rots_can, trans_can = cls._canonica_facefront(v[mtype]['rots'],
+                                                               v[mtype]['trans']
+                                                               )
+                dataset_dict_raw[k][mtype]['rots'] = rots_can
+                dataset_dict_raw[k][mtype]['trans'] = trans_can
+                seqlen, jts_no = rots_can.shape[:2]
+                
+                rots_can_rotm = transform_body_pose(rots_can,
+                                                  'aa->rot')
+                # self.body_model.batch_size = seqlen * jts_no
+
+                jts_can_ds = body_model.smpl_forward_fast(transl=trans_can,
+                                                 body_pose=rots_can_rotm[:, 1:],
+                                             global_orient=rots_can_rotm[:, :1])
+
+                jts_can = jts_can_ds.joints[:, :22]
+                dataset_dict_raw[k][mtype]['joint_positions'] = jts_can
+
+        data_dict = cast_dict_to_tensors(dataset_dict_raw)
+
+        # add id fiels in order to turn the dict into a list without loosing it
+        # random.seed(self.preproc.split_seed)
+ 
+        data_ids = list(data_dict.keys())
+        data_ids.sort()
+        # random.shuffle(data_ids)
+        if debug:
+            # 70-10-20% train-val-test for each sequence
+            num_train = int(len(data_ids) * 0.8)
+            num_val = int(len(data_ids) * 0.1)
+        else:
+            # 70-10-20% train-val-test for each sequence
+            num_train = int(len(data_ids) * 0.8)
+            num_val = int(len(data_ids) * 0.05)
+        # give ids to data sets--> 0:train, 1:val, 2:test
+
+        split = np.zeros(len(data_ids))
+        split[num_train:num_train + num_val] = 1
+        split[num_train + num_val:] = 2
+        id_split_dict = {id: split[i] for i, id in enumerate(data_ids)}
+        # random.random()  # restore randomness in life (maybe randomness is life)
+        # calculate feature statistics
+        for k, v in data_dict.items():
+            v['id'] = k
+            v['split'] = id_split_dict[k]
+        return {
+            'train': cls([v for k, v in data_dict.items()
+                          if id_split_dict[k] == 0], **kwargs),
+            'val': cls([v for k, v in data_dict.items() 
+                        if id_split_dict[k] == 1], **kwargs),
+            'test': cls([v for k, v in data_dict.items() 
+                         if id_split_dict[k] == 2], **kwargs),
+        }
 
     def get_features_dimentionality(self):
         """
@@ -271,7 +360,8 @@ class BodilexDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
-    def _canonica_facefront(self, rotations, translation):
+    @staticmethod
+    def _canonica_facefront(rotations, translation):
         rots_motion = rotations
         trans_motion = translation
         datum_len = rotations.shape[0]
