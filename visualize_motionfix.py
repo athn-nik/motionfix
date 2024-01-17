@@ -107,7 +107,12 @@ def render_vids(newcfg: DictConfig) -> None:
 
     fd_name = get_folder_name(cfg)
     log_name = '__'.join(str(exp_folder).split('/')[-2:])
-    log_name = f'{log_name}_{init_diff_from}_{cfg.ckpt_name}'
+    
+    sched_name = cfg.model.infer_scheduler._target_.split('.')[-1]
+    sched_name = sched_name.replace('Scheduler', '').lower()
+    infer_steps = cfg.model.diff_params.num_inference_timesteps
+    log_name = f'{log_name}_{sched_name}{infer_steps}_{init_diff_from}_{cfg.ckpt_name}'
+
     output_path = exp_folder / fd_name
     output_path.mkdir(exist_ok=True, parents=True)
 
@@ -133,7 +138,7 @@ def render_vids(newcfg: DictConfig) -> None:
     aitrenderer = HeadlessRenderer()
     import wandb
     
-    wandb.init(project="motion-edit-eval", job_type="evaluate",
+    wandb.init(project="motionfix-visuals", job_type="evaluate",
                name=log_name, dir=output_path)
 
     # notes: ''
@@ -314,7 +319,7 @@ def render_vids(newcfg: DictConfig) -> None:
                         cur_group_of_vids.append(fname)
                     stacked_vid = stack_vids(cur_group_of_vids,
                                             f'{output_path}/{elem_id}_stacked.mp4',
-                                            orient='h')
+                                            orient='2x2')
                     text_wrap = split_txt_into_multi_lines(text_diff[elem_id],
                                                             40)
                     fnal_fl = put_text(text=text_wrap.replace("'", " "),

@@ -21,7 +21,7 @@ class BASEDataModule(pl.LightningDataModule):
             'batch_size': batch_size,
             'num_workers': num_workers,
             'collate_fn': collate_fn,
-            'drop_last': True,
+            'drop_last': False,
             'worker_init_fn': set_worker_sharing_strategy
             # 'pin_memory': True,
             }

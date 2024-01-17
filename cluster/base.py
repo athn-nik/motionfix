@@ -36,7 +36,7 @@ SUBMISSION_TEMPLATE = f'Description=DESCRIPTION\n' \
                        'request_cpus=CPUS\n' \
                        'request_gpus=NO_GPUS\n' \
                        '+BypassLXCfs="true"\n' \
-                       'requirements=GPUS_REQS && UtsnameNodename =!= "g196"\n' \
+                       'requirements=GPUS_REQS && UtsnameNodename =!= "g191"\n' \
                        'queue 1'
 
 

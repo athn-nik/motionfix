@@ -588,7 +588,6 @@ class SincSynthDataModule(BASEDataModule):
                                                       self.rot_repr,
                                                       self.load_feats,
                                                       do_augmentations=False))
-        # import ipdb; ipdb.set_trace()
 
         # setup collate function meta parameters
         # self.collate_fn = lambda b: collate_batch(b, self.cfg.load_feats)

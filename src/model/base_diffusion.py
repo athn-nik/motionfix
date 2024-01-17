@@ -22,7 +22,7 @@ from src.render.mesh_viz import render_motion
 from src.tools.transforms3d import change_for, transform_body_pose, get_z_rot
 from src.tools.transforms3d import apply_rot_delta
 from einops import rearrange, reduce
-from torch.nn.functional import l1_loss, mse_loss
+from torch.nn.functional import l1_loss, mse_loss, smooth_l1_loss
 from src.utils.genutils import dict_to_device
 from src.utils.art_utils import color_map
 import torch
@@ -141,11 +141,15 @@ class MD(BaseModel):
             self.loss_func_pos = l1_loss
         elif loss_func_pos in ['mse', 'l2']:
             self.loss_func_pos = mse_loss
+        elif loss_func_pos in ['sl1']:
+            self.loss_func_pos = smooth_l1_loss
 
         if loss_func_feats == 'l1':
             self.loss_func_feats = l1_loss
         elif loss_func_feats in ['mse', 'l2']:
             self.loss_func_feats = mse_loss
+        elif loss_func_feats in ['sl1']:
+            self.loss_func_feats = smooth_l1_loss
 
         self.__post_init__()
 
@@ -551,10 +555,9 @@ class MD(BaseModel):
                                          in_motion_mask=mask_in_mot,
                                          timestep=timesteps,
                                          text_embeds=text_encoded,
-                                         motion_embeds=motion_encoded,
                                          condition_mask=mask_for_condition,
-                                         return_dict=False)
-
+                                         motion_embeds=motion_encoded,
+                                         )
 
         # Chunk the noise and noise_pred into two parts and compute the loss on each part separately.
         # if self.losses.lmd_prior != 0.0:
@@ -830,46 +833,63 @@ class MD(BaseModel):
 
         if self.using_deltas_transl:
             import torch.nn.functional as F
-
+            compute_scale = 1
             motion_unnorm = self.diffout2motion(out_motion['pred_motion_feats'])
             gt_mot_unnorm = self.diffout2motion(out_motion['input_motion_feats'])
-            motion_unnorm = F.pad(motion_unnorm, (0, 3))
-            gt_mot_unnorm = F.pad(gt_mot_unnorm, (0, 3))
+            if out_motion['pred_motion_feats'].shape[-1] < 135:
+                motion_unnorm = F.pad(motion_unnorm, (0, 3))
+                gt_mot_unnorm = F.pad(gt_mot_unnorm, (0, 3))
+                compute_scale = 100
             # motion_unnorm = motion_unnorm.permute(1, 0, 2)
         else:
             # motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
             motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
             motion_norm = out_motion['pred_motion_feats']
         B, S = motion_unnorm.shape[:2]
-
         pred_smpl_params = pack_to_render(rots=motion_unnorm[..., 3:],
                                           trans=motion_unnorm[...,:3])
         gt_smpl_params = pack_to_render(rots=gt_mot_unnorm[..., 3:],
                                           trans=gt_mot_unnorm[...,:3])
 
-        pred_verts = self.run_smpl_fwd(pred_smpl_params['body_transl'],
+        pred_smpl_out = self.run_smpl_fwd(pred_smpl_params['body_transl'],
                                         pred_smpl_params['body_orient'],
                                         pred_smpl_params['body_pose'].reshape(B,
                                                                               S, 
                                                                               63),
-                                        fast=False).vertices
-        gt_verts = self.run_smpl_fwd(gt_smpl_params['body_transl'],
+                                        fast=False)
+        pred_verts = pred_smpl_out.vertices
+        pred_jts = pred_smpl_out.joints[:, :22] 
+        gt_smpl_out= self.run_smpl_fwd(gt_smpl_params['body_transl'],
                                      gt_smpl_params['body_orient'],
                                      gt_smpl_params['body_pose'].reshape(B,S,63),
-                                        fast=False).vertices
-
+                                        fast=False)
+        gt_verts = gt_smpl_out.vertices
+        gt_jts = gt_smpl_out.joints[:, :22]
         pred_verts = rearrange(pred_verts, '(b s) ... -> b s ...',
                                 s=S, b=B)
         gt_verts = rearrange(gt_verts, '(b s) ... -> b s ...',
                                 s=S, b=B)
+        pred_jts = rearrange(pred_jts, '(b s) ... -> b s ...',
+                                s=S, b=B)
+        gt_jts = rearrange(gt_jts, '(b s) ... -> b s ...',
+                                s=S, b=B)
+        loss_joints = torch.tensor(0.0)
+        loss_verts = torch.tensor(0.0)
 
+        if self.loss_on_verts:
         #  Could do this --> * self.jts_scale [does not work for now] 
-        loss_verts = self.loss_func_pos(pred_verts, gt_verts,
-                                         reduction='none')
-        loss_verts = reduce(loss_verts, 's b j d -> s b', 'mean')
-        loss_verts = (loss_verts * padding_mask).sum() / padding_mask.sum()
-
-        return loss_verts
+            loss_verts = self.loss_func_pos(pred_verts, gt_verts,
+                                            reduction='none')
+            loss_verts = reduce(loss_verts, 's b j d -> s b', 'mean')
+            loss_verts = (loss_verts * padding_mask).sum() / padding_mask.sum()
+        if self.loss_on_positions:
+        #  Could do this --> * self.jts_scale [does not work for now] 
+            loss_jts = self.loss_func_pos(pred_jts, gt_jts,
+                                          reduction='none')
+            loss_jts = reduce(loss_jts, 's b j d -> s b', 'mean')
+            loss_jts = (loss_jts * padding_mask).sum() / padding_mask.sum()
+        
+        return loss_verts * compute_scale, loss_joints
 
     def compute_joints_loss(self, out_motion, joints_gt, padding_mask):
 
@@ -971,7 +991,7 @@ class MD(BaseModel):
 
         return loss_joints, pred_smpl_params
 
-    def compute_losses(self, out_dict, joints_gt, motion_mask_source, 
+    def compute_losses(self, out_dict, motion_mask_source, 
                        motion_mask_target):
         from torch import nn
         from src.data.tools.tensors import lengths_to_mask
@@ -987,8 +1007,8 @@ class MD(BaseModel):
         tot_loss = torch.tensor(0.0, device=self.device)
         if self.loss_params['predict_epsilon']:
             noise_loss = self.loss_func_feats(out_dict['noise_pred'],
-                                         out_dict['noise'],
-                                         reduction='none')
+                                              out_dict['noise'],
+                                              reduction='none')
         # predict x
         else:
             data_loss = self.loss_func_feats(out_dict['pred_motion_feats'],
@@ -1027,26 +1047,21 @@ class MD(BaseModel):
             # pose_loss = pose_loss.sum() / pad_mask.sum()            
 
             # total_loss = pose_loss + trans_loss + orient_loss + first_pose_loss
-        
-            # total_loss = first_pose_loss
-        
 
-        loss_joints = torch.tensor(0.0)
-        if self.loss_on_positions:
-            J = 22
-            joints_gt = rearrange(joints_gt, 'b s (j d) -> b s j d', j=J)
-            loss_joints, _ = self.compute_joints_loss(out_dict, joints_gt, 
-                                                      pad_mask_jts_pos)
-            all_losses_dict['total_loss'] += loss_joints
-            all_losses_dict['loss_joints'] = loss_joints
-        loss_verts = torch.tensor(0.0)
-        if self.loss_on_verts:
-            loss_verts = self.compute_verts_loss(out_dict, 
+            # total_loss = first_pose_loss
+        if self.loss_on_verts or self.loss_on_positions:
+            loss_verts, loss_jts = self.compute_verts_loss(out_dict, 
                                                     pad_mask_jts_pos)
             all_losses_dict['total_loss'] += loss_verts
-            all_losses_dict['loss_verts'] = loss_verts
+            all_losses_dict['total_loss'] += loss_jts
 
-        return tot_loss + loss_joints + loss_verts, all_losses_dict 
+            if loss_verts != 0.0:
+                all_losses_dict['loss_verts'] = loss_verts
+            if loss_jts != 0.0:
+                all_losses_dict['loss_jts'] = loss_jts
+
+            tot_loss = tot_loss + loss_verts + loss_jts
+        return tot_loss, all_losses_dict 
     
     
     # {'total_loss': total_loss,
@@ -1526,17 +1541,10 @@ class MD(BaseModel):
 
 
         # rs_set Bx(S+1)xN --> first pose included
-        if self.loss_on_positions:
-            total_loss, loss_dict = self.compute_losses(dif_dict,
-                                                        batch['body_joints_target'],
-                                                        mask_source, 
-                                                        mask_target)
-
-        else:
-            total_loss, loss_dict = self.compute_losses(dif_dict,
-                                                        None,
-                                                        mask_source, 
-                                                        mask_target)
+        
+        total_loss, loss_dict = self.compute_losses(dif_dict,
+                                                    mask_source, 
+                                                    mask_target)
 
         # if self.trainer.current_epoch % 100 == 0 and self.trainer.current_epoch != 0:
         #     if self.global_rank == 0 and split=='train' and batch_idx == 0:

@@ -13,7 +13,7 @@ debug: false
 
 # Global configurations shared between different modules
 expdir: ${get_expdir:${debug}}
-experiment: cvpr24
+experiment: ${data.dataname}
 # must be the same when you are resuming experiment
 project: motionfix-sigg
 seed: 42
