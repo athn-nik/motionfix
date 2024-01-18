@@ -152,6 +152,12 @@ def stack_vids(vids_to_stack: List[str], fname: str, orient='v', v=False):
         cmd_m.extend(['-y', '-loglevel', 'quiet', '-filter_complex',
                     '[0:v][1:v]hstack[top];[2:v][3:v]hstack[bottom];[top][bottom]vstack',
                     f'{fname}'])
+    elif orient in ['3x3']:
+        if len(vids_to_stack) != 6:
+            vids_to_stack.insert(3, vids_to_stack[2])
+        cmd_m.extend(['-y', '-loglevel', 'quiet', '-filter_complex',
+                '[0:v][1:v]hstack[top];[2:v][3:v]hstack[middle];[4:v][5:v]hstack[bottom];[top][middle][bottom]vstack=inputs=3',
+                f'{fname}'])
     if v:
         print('Executing', ' '.join(cmd_m))
     x = subprocess.call(cmd_m)
