@@ -1,0 +1,51 @@
+# dataloader
+_target_: src.data.mixer.MixerDataModule
+# here you select which datasets to use
+dataset_names:
+- "bodilex"
+- "sinc_synth"
+dataname: ${concat_string_list:${.dataset_names}}
+datapaths:
+  "bodilex": ${path.data}/amass_bodilex_v5_small.pth.tar # amass_bodilex.pth.tar
+  "sinc_synth": ${path.data}/amass_bodilex_v5_small.pth.tar # amass_bodilex.pth.tar
+batch_size: ${machine.batch_size}
+num_workers: ${machine.num_workers}
+debug: ${debug}
+debug_datapath: ${path.minidata}/amass_small.pth.tar
+load_splits:
+- "train"
+- "val"
+- "test"
+
+# Amass
+smplh_path: ${path.data}/body_models
+smplh_path_dbg: ${path.minidata}/body_models
+
+load_with_rot: true
+
+
+rot_repr: '6d'
+preproc:
+  stats_file: ${path.deps}/stats/statistics_${data.dataname}.npy  # full path for statistics
+  split_seed: 0
+  calculate_minmax: True
+  generate_joint_files: True
+  use_cuda: True
+  n_body_joints: 22
+  norm_type: std # norm or std
+
+# Motion
+framerate: 30
+sampler: ${sampler}
+
+load_feats:
+# - "body_transl_delta"
+- "body_transl_delta_pelv"
+# - "body_transl_delta_pelv_xy"
+# - "body_transl_z"
+- "body_orient"
+- "body_pose"
+# - "body_joints"
+
+# Other
+progress_bar: true

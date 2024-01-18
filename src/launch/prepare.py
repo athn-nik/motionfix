@@ -25,6 +25,12 @@ ID = generate_id()
 def generate_id():
     return ID
 
+def concat_string_list(l):
+    """
+    Concatenate the strings of a list in a sorted order
+    """
+    return '_'.join(sorted(l))
+    
 
 def get_last_checkpoint(path, ckpt_name="last"):
     if path is None:
@@ -63,6 +69,7 @@ OmegaConf.register_new_resolver("get_expdir", get_expdir)
 OmegaConf.register_new_resolver("code_path", code_path)
 OmegaConf.register_new_resolver("working_path", working_path)
 OmegaConf.register_new_resolver("generate_id", generate_id)
+OmegaConf.register_new_resolver("concat_string_list", concat_string_list)
 OmegaConf.register_new_resolver("absolute_path", hydra.utils.to_absolute_path)
 OmegaConf.register_new_resolver("get_last_checkpoint", get_last_checkpoint)
 OmegaConf.register_new_resolver("get_samples_folder", get_samples_folder)
