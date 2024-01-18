@@ -45,9 +45,10 @@ def prepare_test_batch(model, batch):
 
 def cleanup_files(lo_fls):
     for fl in lo_fls:
-        os.remove(fl)
+        if os.path.exists(fl):
+            os.remove(fl)
 
-def output2renderable(model, lst_of_tensors: list[Tensor]):
+def output2renderable(lst_of_tensors: list[Tensor]):
     l_of_renders = []
     for el in lst_of_tensors:
         if isinstance(el, list):
@@ -280,14 +281,18 @@ def render_vids(newcfg: DictConfig) -> None:
 
                 src_mot_cond = src_mot_cond.to(model.device)
                 mots_to_render = [src_mot_cond, tgt_mot, 
-                                    [src_mot_cond, tgt_mot],
-                                    [tgt_mot, gen_mo]]
-                monames = ['source', 'target', 'overlaid', 
-                            'generated']
-
-                lof_mots = output2renderable(model,
-                                            mots_to_render)
-
+                                  [src_mot_cond, tgt_mot],
+                                  [tgt_mot, gen_mo],
+                                  [src_mot_cond, gen_mo]]
+                monames = ['source', 'target', 'overlaid_GT', 
+                           'generated_vs_target', 'generated_vs_source']
+                lens_of_mots = [source_lens, target_lens, 
+                                    [source_lens, target_lens],
+                                    [target_lens, target_lens],
+                                    [source_lens, target_lens]]
+                lof_mots = output2renderable(mots_to_render)
+                lens_to_mask = [None, None, 
+                                target_lens, target_lens, target_lens]
                 for elem_id in range(no_of_motions):
                     cur_group_of_vids = []
                     curid = keyids[elem_id]
@@ -295,14 +300,20 @@ def render_vids(newcfg: DictConfig) -> None:
                         one_motion = lof_mots[moid]
                         cur_mol = []
                         cur_colors = []
+                        if lens_to_mask[moid] is not None:
+                            crop_len = lens_to_mask[moid]
+
                         if isinstance(one_motion, list):
                             for xx in one_motion:
-                                cur_mol.append({k: v[elem_id] 
+                                cur_mol.append({k: v[elem_id][:crop_len[elem_id]]
                                                 for k, v in xx.items()})
-                                if monames[moid] == 'generated':
+                                if monames[moid] == 'generated_vs_source':
+                                    cur_colors = [color_map['source'],
+                                                color_map['generated']]
+                                elif monames[moid] == 'generated_vs_target':
                                     cur_colors = [color_map['target'],
                                                 color_map['generated']]
-                                else:
+                                elif monames[moid] == 'overlaid_GT':
                                     cur_colors = [color_map['source'],
                                                 color_map['target']]
                         else:
@@ -319,7 +330,7 @@ def render_vids(newcfg: DictConfig) -> None:
                         cur_group_of_vids.append(fname)
                     stacked_vid = stack_vids(cur_group_of_vids,
                                             f'{output_path}/{elem_id}_stacked.mp4',
-                                            orient='2x2')
+                                            orient='3x3')
                     text_wrap = split_txt_into_multi_lines(text_diff[elem_id],
                                                             40)
                     fnal_fl = put_text(text=text_wrap.replace("'", " "),

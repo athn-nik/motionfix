@@ -155,7 +155,7 @@ def render_vids(newcfg: DictConfig) -> None:
 
     tot_pkls = []
     gd_text = [1.0] #[1.0, 2.5, 5.0]
-    gd_motion = [1.0] #[1.0, 2.5, 5.0]
+    gd_motion = [1.0, 2.5] #[1.0, 2.5, 5.0]
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
     mode_cond = 'full_cond'
     logger.info(f'Evaluation Set length:{len(test_dataset)}')
