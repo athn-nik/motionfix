@@ -43,7 +43,7 @@ SMPL_BODY_CHAIN = [-1,  0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  9,  9,
 class HumanML3DDataset(Dataset):
     def __init__(self, data: list, n_body_joints: int,
                  stats_file: str, norm_type: str,
-                 smplh_path: str, rot_repr: str = "6d",
+                 smplh_path: str = None, rot_repr: str = "6d",
                  load_feats: List[str] = None,
                  do_augmentations=False):
         self.data = data
@@ -51,7 +51,7 @@ class HumanML3DDataset(Dataset):
         self.rot_repr = rot_repr
         self.load_feats = load_feats
         self.do_augmentations = do_augmentations
-        
+        self.name = "hml3d"
         # self.body_model = smplx.SMPLHLayer(f'{smplh_path}/smplh',
         #                                    model_type='smplh',
         #                                    gender='neutral',
@@ -89,8 +89,41 @@ class HumanML3DDataset(Dataset):
         }
         self._meta_data_get_methods = {
             "framerate": self._get_framerate,
+            "dataset_name": lambda _: self.name, 
         }
         self.nfeats = self.get_features_dimentionality()
+
+    @classmethod
+    def load_and_instantiate(cls, datapath: str, debug, smplh_path, **kwargs):
+        """
+        Instantiate the dataset from a given datapath
+            datapath: the joblib file containing the dataset
+            debug: maybe redundant
+            smplh_path: path to the smplh model
+            kwargs: whatever you would give to the __init__ function aside from
+            the list of data
+        returns:
+            a dictionary with the train, val and test sets
+        """
+        hml3d_data_dict = {}
+        load_splits = ['val', 'test', 'train']
+        for split in load_splits:
+            # TODO: remove the _small
+            list_for_split = joblib.load(f'{datapath}/{split}_small.pth.tar')
+            for elem in list_for_split:
+                assert elem['joint_positions'].shape[0] == elem['rots'].shape[0] == elem['trans'].shape[0]
+                if elem['rots'].shape[0] > 300:
+                    elem['rots'] = elem['rots'][:300]
+                    elem['trans'] = elem['trans'][:300]
+                    elem['joint_positions'] = elem['joint_positions'][:300]
+            hml3d_data_dict[split] = list_for_split
+
+        # create datasets
+        return {
+            'train': cls(hml3d_data_dict['train'], **kwargs),
+            'val': cls(hml3d_data_dict['val'], **kwargs),
+            'test': cls(hml3d_data_dict['test'], **kwargs),
+        }
 
     def get_features_dimentionality(self):
         """
@@ -272,7 +305,8 @@ class HumanML3DDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
-    def _canonica_facefront(self, rotations, translation):
+    @staticmethod
+    def _canonica_facefront(rotations, translation):
         rots_motion = rotations
         trans_motion = translation
         datum_len = rotations.shape[0]
@@ -318,6 +352,7 @@ class HumanML3DDataset(Dataset):
         meta_data_dict = {feat: method(datum)
                           for feat, method in self._meta_data_get_methods.items()}
         data_dict = {**data_dict_target, **data_dict_target, **meta_data_dict}
+        data_dict = {**data_dict_target, **data_dict_target}
         return DotDict(data_dict)
 
 

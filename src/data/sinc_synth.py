@@ -436,7 +436,8 @@ class SincSynthDataset(Dataset):
                             for feat in self.load_feats}
         meta_data_dict = {feat: method(datum)
                           for feat, method in self._meta_data_get_methods.items()}
-        data_dict = {**data_dict_source, **data_dict_target, **meta_data_dict}
+        # data_dict = {**data_dict_source, **data_dict_target, **meta_data_dict}
+        data_dict = {**data_dict_source, **data_dict_target}
         return DotDict(data_dict)
 
 
