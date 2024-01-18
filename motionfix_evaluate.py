@@ -82,7 +82,7 @@ def render_vids(newcfg: DictConfig) -> None:
     log_name = '__'.join(str(exp_folder).split('/')[-2:])
     log_name = f'{log_name}_{init_diff_from}_{cfg.ckpt_name}'
 
-    output_path = exp_folder / fd_name
+    output_path = exp_folder / f'{fd_name}_{cfg.data.dataname}'
     output_path.mkdir(exist_ok=True, parents=True)
 
     log_name = '__'.join(str(exp_folder).split('/')[-2:])
@@ -131,8 +131,9 @@ def render_vids(newcfg: DictConfig) -> None:
                                    "body_transl_delta_pelv_xy"]):
         model.using_deltas_transl = True
     # load the test set and collate it properly
-    test_dataset = data_module.dataset['test']
-    features_to_load = test_dataset.load_feats
+    features_to_load = data_module.dataset['test'].load_feats
+    test_dataset = data_module.dataset['test'] + data_module.dataset['val']
+    
     from src.data.tools.collate import collate_batch_last_padding
     collate_fn = lambda b: collate_batch_last_padding(b, features_to_load)
 
@@ -157,6 +158,7 @@ def render_vids(newcfg: DictConfig) -> None:
     gd_motion = [1.0] #[1.0, 2.5, 5.0]
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
     mode_cond = 'full_cond'
+    logger.info(f'Evaluation Set length:{len(test_dataset)}')
     with torch.no_grad():
         output_path = output_path / 'samples'
         logger.info(f"Sample MotionFix test set\n in:{output_path}")

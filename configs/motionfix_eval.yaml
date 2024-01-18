@@ -35,3 +35,4 @@ defaults:
 
 split_to_load: 
 - "test"
+- "val"
