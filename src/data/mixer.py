@@ -31,6 +31,7 @@ from src.model.utils.smpl_fast import smpl_forward_fast
 from src.utils.genutils import freeze
 from src.data.bodilex import BodilexDataset
 from src.data.sinc_synth import SincSynthDataset
+from src.data.humanml3d import HumanML3DDataset
 
 # A logger for this file
 log = logging.getLogger(__name__)
@@ -79,6 +80,7 @@ class MixerDataModule(BASEDataModule):
         DATA_CLASS_MAP = {
             'bodilex': BodilexDataset,
             'sinc_synth': SincSynthDataset,
+            'hml3d': HumanML3DDataset,
         }
         dataset_list = []
         for name in dataset_names:
@@ -128,12 +130,13 @@ class MixerDataModule(BASEDataModule):
         if not exists(stat_path):
             log.info(f"No dataset stats found. Calculating and saving to {stat_path}")
             
-            feature_names = dataset.dataset[0].get_all_features(0).keys()
+            feature_names = dataset.datasets[0].get_all_features(0).keys()
             feature_dict = {name.replace('_source', ''): [] for name in feature_names
                             if '_target' not in name}
             for i in tqdm(range(len(dataset))):
                 set_idx, sample_idx = self.get_set_item_idx(dataset, i)
-                x = dataset.dataset[set_idx].get_all_features(sample_idx)
+                x = dataset.datasets[set_idx].get_all_features(sample_idx)
+                feature_names = dataset.datasets[set_idx].get_all_features(0).keys()
                 for name in feature_names:
                     x_new = x[name]
                     name = name.replace('_source', '')

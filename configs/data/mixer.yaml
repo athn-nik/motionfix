@@ -4,10 +4,12 @@ _target_: src.data.mixer.MixerDataModule
 dataset_names:
 - "bodilex"
 - "sinc_synth"
+- "hml3d"
 dataname: ${concat_string_list:${.dataset_names}}
 datapaths:
-  "bodilex": ${path.data}/amass_bodilex_v5_small.pth.tar # amass_bodilex.pth.tar
-  "sinc_synth": ${path.data}/amass_bodilex_v5_small.pth.tar # amass_bodilex.pth.tar
+  "bodilex": ${path.data}/amass_bodilex_v6.pth.tar
+  "sinc_synth": ${path.data}/sinc_synth_edits_cleaned.pth.tar
+  "hml3d": ${path.data}/humanml3d_processed
 batch_size: ${machine.batch_size}
 num_workers: ${machine.num_workers}
 debug: ${debug}
