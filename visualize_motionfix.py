@@ -226,8 +226,8 @@ def render_vids(newcfg: DictConfig) -> None:
     from src.utils.art_utils import color_map
     mode_cond = 'full_cond'
     tot_pkls = []
-    gd_text = [1.0, 2.5, 5.0]
-    gd_motion = [1.0, 2.5]
+    gd_text = [1.0, 2.5]
+    gd_motion = [1.0, 2.5, 5.0]
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
     from aitviewer.models.smpl import SMPLLayer
     smpl_layer = SMPLLayer(model_type='smplh', ext='npz', gender='neutral')
