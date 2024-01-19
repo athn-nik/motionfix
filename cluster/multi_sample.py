@@ -19,7 +19,7 @@ def run(cmd):
 def main_loop(command, exp_paths,
               text_guidance_vals,
               motion_guidance_vals, schedulers,
-              init_from, condition_modes, steps_nos):
+              init_from, condition_modes, data, steps_nos):
     
     cmd_no=0
     cmd_sample = command
@@ -30,6 +30,7 @@ def main_loop(command, exp_paths,
                            motion_guidance_vals,
                            init_from,
                            condition_modes,
+                           data,
                            steps_nos))
     # for fd in exp_paths:
     #     for sched in schedulers:
@@ -38,8 +39,11 @@ def main_loop(command, exp_paths,
     #                 for in_lat in init_from:
     #                     for cond_mode in condition_modes:
     #                         for stp_no in steps_nos:
+    print("Number of different experiments is:", len(exp_grid))
+    print('---------------------------------------------------')
+    exit()
     ckt_name = '499'
-    for fd, sched, gd_t, gd_m, in_lat, cond_mode, stp_no in exp_grid:
+    for fd, sched, gd_t, gd_m, in_lat, cond_mode, data_type, stp_no in exp_grid:
         cur_cmd = list(cmd_train)
         idx_of_exp = cur_cmd.index("FOLDER")
         cur_cmd[idx_of_exp] = str(fd)
@@ -49,7 +53,8 @@ def main_loop(command, exp_paths,
                                  f"ckpt_name={ckt_name}",
                                  f"guidance_scale_text={gd_t}",
                                  f"guidance_scale_motion={gd_m}",
-                                 f"model/infer_scheduler={sched}", 
+                                 f"model/infer_scheduler={sched}",
+                                 f"data={data_type}",
                                  f"steps={stp_no}"])
         cur_cmd.extend([list_of_args])
         run(cur_cmd)
@@ -64,10 +69,10 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--mode', required=True, type=str,
-                        help='what to do')
+    # parser.add_argument('--mode', required=True, type=str,
+    #                    help='what to do')
 
-    parser.add_argument('--bid', required=False, default=10, type=int,
+    parser.add_argument('--bid', required=False, default=30, type=int,
                         help='bid money for cluster')
     parser.add_argument(
             "--runs",
@@ -75,36 +80,32 @@ if __name__ == "__main__":
             type=str,
             default=[],  # default list if no arg value
         )
-    parser.add_argument(
-        "--exp",
-        type=str,
-        required=True,
-    )
     args= parser.parse_args()
     bid_for_exp = args.bid
-    main_fd = args.exp
     subdirs = args.runs
-    mode = args.mode
+    # mode = args.mode
 
     # put base directory
-    base_dir = Path(f'experiments/motion-editing/{main_fd}')
-    print('The base directory is:', str(base_dir))
-    exp_paths = [base_dir/subd for subd in subdirs]
-    print('The current runs are:', subdirs)
-
+    # base_dir = Path(f'experiments/motionfix-sigg/')
+    # print('The base directory is:', str(base_dir))
+    
+    exp_paths = subdirs
+    print('The current folders are---->\n', '\n'.join(subdirs))
+    print('---------------------------------------------------')
     parser = argparse.ArgumentParser()
     cmd_train = ['python', 'cluster/single_run.py',
                 '--folder', 'FOLDER',
-                '--mode', mode,
+                '--mode', 'eval',
+                '--prog', 'motionfix_evaluate',
                 '--bid', '20',
                 '--extras']
-    gd_text = [2.5, 4.0]
-    gd_motion = [4.5, 4.0]
+    gd_text = [1.0, 2.5]
+    gd_motion = [2.5, 1.0]
     schedulers = ['ddpm']
     init_from = ['noise', 'source']
     condition_modes = ['full_cond'] #, 'mot_cond', 'text_cond']
-    steps_size = [200, 500, 700] #, 'mot_cond', 'text_cond']
-
+    steps_size = [1000] #, 'mot_cond', 'text_cond']
+    data = ['sinc_synth', 'bodilex']
     main_loop(cmd_train, exp_paths, gd_text,
               gd_motion, schedulers, init_from, 
-              condition_modes, steps_size)
+              condition_modes, data, steps_size)
