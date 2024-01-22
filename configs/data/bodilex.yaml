@@ -2,7 +2,7 @@ dataname: bodilex
 _target_: src.data.bodilex.BodilexDataModule
 debug: ${debug}
 
-datapath: ${path.data}/amass_bodilex_v6.pth.tar # amass_bodilex.pth.tar
+datapath: ${path.data}/amass_bodilex_v7.pth.tar # amass_bodilex.pth.tar
 debug_datapath: ${path.minidata}/amass_small.pth.tar
 
 # Amass
@@ -39,6 +39,7 @@ load_feats:
 # - "body_transl_delta_pelv_xy"
 - "body_orient"
 - "body_pose"
+# - "body_transl"
 # - "body_joints"
 
 # Other

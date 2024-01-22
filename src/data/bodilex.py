@@ -567,8 +567,8 @@ class BodilexDataModule(BASEDataModule):
             num_val = int(len(data_ids) * 0.1)
         else:
             # 70-10-20% train-val-test for each sequence
-            num_train = int(len(data_ids) * 0.9)
-            num_val = int(len(data_ids) * 0.05)
+            num_train = int(len(data_ids) * 0.75)
+            num_val = int(len(data_ids) * 0.10)
         # give ids to data sets--> 0:train, 1:val, 2:test
 
         split = np.zeros(len(data_ids))
