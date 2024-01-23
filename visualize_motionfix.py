@@ -142,12 +142,6 @@ def render_vids(newcfg: DictConfig) -> None:
     wandb.init(project="motionfix-visuals", job_type="evaluate",
                name=log_name, dir=output_path)
 
-    # notes: ''
-    # id: ${run_hash}
-    # mode: "online"
-    # # project: 'CVPR24-Humans'
-    # dir: '.'
-
     logger.info("Loading model")
     model = instantiate(cfg.model,
                         renderer=aitrenderer,
