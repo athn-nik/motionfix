@@ -57,7 +57,7 @@ def get_folder_name(config):
     if config.ckpt_name == 'last':
         ckpt_n = ''
     else:
-        ckpt_n = f'_ckpt-{config.ckpt_name}_'
+        ckpt_n = f'ckpt-{config.ckpt_name}_'
 
     return f'{ckpt_n}{init_from}{sched_name}_steps{infer_steps}'
 
@@ -154,10 +154,13 @@ def render_vids(newcfg: DictConfig) -> None:
         mode_cond = cfg.condition_mode
 
     tot_pkls = []
-    gd_text = [1.0] #[1.0, 2.5, 5.0]
-    gd_motion = [1.0, 2.5] #[1.0, 2.5, 5.0]
+    gd_text = [cfg.guidance_scale_text] #[1.0, 2.5, 5.0]
+    gd_motion = [cfg.guidance_scale_motion] #[1.0, 2.5, 5.0]
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
-    mode_cond = 'full_cond'
+    if cfg.model.motion_condition is None:
+        mode_cond = 'text_cond'
+    else:
+        mode_cond = 'full_cond'
     logger.info(f'Evaluation Set length:{len(test_dataset)}')
     with torch.no_grad():
         output_path = output_path / 'samples'
