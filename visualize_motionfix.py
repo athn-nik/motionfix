@@ -282,16 +282,18 @@ def render_vids(newcfg: DictConfig) -> None:
                 src_mot_cond = src_mot_cond.to(model.device)
                 mots_to_render = [src_mot_cond, tgt_mot, 
                                   [src_mot_cond, tgt_mot],
-                                  [tgt_mot, gen_mo],
+                                  gen_mo,
+                                  [tgt_mot, gen_mo], 
                                   [src_mot_cond, gen_mo]]
-                monames = ['source', 'target', 'overlaid_GT', 
+                monames = ['source', 'target', 'overlaid_GT', 'generated',
                            'generated_vs_target', 'generated_vs_source']
                 lens_of_mots = [source_lens, target_lens, 
                                     [source_lens, target_lens],
+                                    target_lens,
                                     [target_lens, target_lens],
                                     [source_lens, target_lens]]
                 lof_mots = output2renderable(mots_to_render)
-                lens_to_mask = [None, None, 
+                lens_to_mask = [None, None, target_lens,
                                 target_lens, target_lens, target_lens]
                 for elem_id in range(no_of_motions):
                     cur_group_of_vids = []
