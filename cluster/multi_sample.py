@@ -99,7 +99,7 @@ if __name__ == "__main__":
                 '--prog', 'motionfix_evaluate',
                 '--bid', '20',
                 '--extras']
-    gd_text = [1.0, 0.0]
+    gd_text = [1.0]
     gd_motion = [2.5, 1.0]
     schedulers = ['ddpm']
     init_from = ['noise', 'source']
