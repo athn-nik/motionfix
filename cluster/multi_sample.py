@@ -41,8 +41,8 @@ def main_loop(command, exp_paths,
     #                         for stp_no in steps_nos:
     print("Number of different experiments is:", len(exp_grid))
     print('---------------------------------------------------')
-    exit()
-    ckt_name = '499'
+    # exit()
+    ckt_name = 'last'
     for fd, sched, gd_t, gd_m, in_lat, cond_mode, data_type, stp_no in exp_grid:
         cur_cmd = list(cmd_train)
         idx_of_exp = cur_cmd.index("FOLDER")
@@ -99,7 +99,7 @@ if __name__ == "__main__":
                 '--prog', 'motionfix_evaluate',
                 '--bid', '20',
                 '--extras']
-    gd_text = [1.0, 2.5]
+    gd_text = [1.0, 0.0]
     gd_motion = [2.5, 1.0]
     schedulers = ['ddpm']
     init_from = ['noise', 'source']

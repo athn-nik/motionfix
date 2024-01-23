@@ -184,7 +184,9 @@ def render_vids(newcfg: DictConfig) -> None:
     from src.data.tools.collate import collate_batch_last_padding
     collate_fn = lambda b: collate_batch_last_padding(b,
                                                         features_to_load)
-
+    if cfg.data.dataname =='sinc_synth':
+        cfg.subset = None
+        
     if cfg.subset == 'cherries':
         from src.utils.eval_utils import test_keyds
 
@@ -226,7 +228,7 @@ def render_vids(newcfg: DictConfig) -> None:
     from src.utils.art_utils import color_map
     mode_cond = 'full_cond'
     tot_pkls = []
-    gd_text = [1.0, 2.5]
+    gd_text = [0.0] # [1.0, 2.5]
     gd_motion = [1.0, 2.5, 5.0]
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
     from aitviewer.models.smpl import SMPLLayer
