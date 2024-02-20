@@ -220,7 +220,10 @@ def render_vids(newcfg: DictConfig) -> None:
     ds_iterator = testloader
 
     from src.utils.art_utils import color_map
-    mode_cond = 'full_cond'
+    if cfg.model.motion_condition is None:
+        mode_cond = 'text_cond'
+    else:
+        mode_cond = 'full_cond'
     tot_pkls = []
     gd_text = [0.0] # [1.0, 2.5]
     gd_motion = [1.0, 2.5, 5.0]
