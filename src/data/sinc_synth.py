@@ -27,6 +27,8 @@ from src.tools.transforms3d import (
 from src.tools.transforms3d import canonicalize_rotations
 from src.model.utils.smpl_fast import smpl_forward_fast
 from src.utils.genutils import freeze
+from src.utils.file_io import read_json, write_json
+import os
 # A logger for this file
 log = logging.getLogger(__name__)
 
@@ -122,54 +124,45 @@ class SincSynthDataset(Dataset):
                 rots_flat_tgt = v['motion_target']['rots'].flatten(-2).float()
                 dataset_dict_raw[k]['motion_target']['rots'] = rots_flat_tgt
 
-            for mtype in ['motion_source', 'motion_target']:
+            # for mtype in ['motion_source', 'motion_target']:
             
-                rots_can, trans_can = cls._canonica_facefront(v[mtype]['rots'],
-                                                               v[mtype]['trans']
-                                                               )
-                dataset_dict_raw[k][mtype]['rots'] = rots_can
-                dataset_dict_raw[k][mtype]['trans'] = trans_can
-                seqlen, jts_no = rots_can.shape[:2]
+            #     rots_can, trans_can = cls._canonica_facefront(v[mtype]['rots'],
+            #                                                    v[mtype]['trans']
+            #                                                    )
+            #     dataset_dict_raw[k][mtype]['rots'] = rots_can
+            #     dataset_dict_raw[k][mtype]['trans'] = trans_can
+            #     seqlen, jts_no = rots_can.shape[:2]
                 
-                rots_can_rotm = transform_body_pose(rots_can,
-                                                  'aa->rot')
-                # self.body_model.batch_size = seqlen * jts_no
+                # rots_can_rotm = transform_body_pose(rots_can,
+                #                                   'aa->rot')
+                # # self.body_model.batch_size = seqlen * jts_no
 
-                jts_can_ds = body_model.smpl_forward_fast(transl=trans_can,
-                                                 body_pose=rots_can_rotm[:, 1:],
-                                             global_orient=rots_can_rotm[:, :1])
+                # jts_can_ds = body_model.smpl_forward_fast(transl=trans_can,
+                #                                  body_pose=rots_can_rotm[:, 1:],
+                #                              global_orient=rots_can_rotm[:, :1])
 
-                jts_can = jts_can_ds.joints[:, :22]
-                dataset_dict_raw[k][mtype]['joint_positions'] = jts_can
-
-
+                # jts_can = jts_can_ds.joints[:, :22]
+                # dataset_dict_raw[k][mtype]['joint_positions'] = jts_can
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
 
         # add id fiels in order to turn the dict into a list without loosing it
-        # random.seed(self.preproc.split_seed)
- 
-        data_ids = list(data_dict.keys())
-        data_ids.sort()
-        # random.shuffle(data_ids)
-        if debug:
-            # 70-10-20% train-val-test for each sequence
-            num_train = int(len(data_ids) * 0.8)
-            num_val = int(len(data_ids) * 0.1)
-        else:
-            # 70-10-20% train-val-test for each sequence
-            num_train = int(len(data_ids) * 0.8)
-            num_val = int(len(data_ids) * 0.05)
-        # give ids to data sets--> 0:train, 1:val, 2:test
-
-        split = np.zeros(len(data_ids))
-        split[num_train:num_train + num_val] = 1
-        split[num_train + num_val:] = 2
-        id_split_dict = {id: split[i] for i, id in enumerate(data_ids)}
-        # random.random()  # restore randomness in life (maybe randomness is life)
+        # random.seed(self.preproc.split_seed) 
         # calculate feature statistics
+        splits = read_json(f'{os.path.dirname(datapath)}/splits.json')
+        id_split_dict = {}
+        data_ids = list(data_dict.keys())
+        for id_sample in data_ids:
+            if id_sample in splits['train']:
+                id_split_dict[id_sample] = 0
+            elif id_sample in splits['val']:
+                id_split_dict[id_sample] = 1
+            else:
+                id_split_dict[id_sample] = 2
+
         for k, v in data_dict.items():
             v['id'] = k
             v['split'] = id_split_dict[k]
+
         return {
             'train': cls([v for k, v in data_dict.items()
                           if id_split_dict[k] == 0], **kwargs),
@@ -497,8 +490,8 @@ class SincSynthDataModule(BASEDataModule):
         # pass this or split for dataloading into sets
         dataset_dict_raw = joblib.load(ds_db_path)
         dataset_dict_raw = cast_dict_to_tensors(dataset_dict_raw)
-        for k, v in dataset_dict_raw.items():
-            
+        
+        for k, v in tqdm(dataset_dict_raw.items()):
             if len(v['motion_source']['rots'].shape) > 2:
                 rots_flat_src = v['motion_source']['rots'].flatten(-2).float()
                 dataset_dict_raw[k]['motion_source']['rots'] = rots_flat_src
@@ -553,32 +546,47 @@ class SincSynthDataModule(BASEDataModule):
         #     dataset_dict_raw[k]['motion_target']['joint_positions'] = dataset_dict_raw[k]['motion_target']['joint_positions'][:60] 
 
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
-
+        joblib.dump(data_dict, str(ds_db_path).replace('sinc_synth_edits_v1.pth.tar',
+                                                       'sinc_synth_edits_v2.pth.tar')
+                    )
         # add id fiels in order to turn the dict into a list without loosing it
         # random.seed(self.preproc.split_seed)
  
-        data_ids = list(data_dict.keys())
-        data_ids.sort()
-        # random.shuffle(data_ids)
-        if self.debug:
-            # 70-10-20% train-val-test for each sequence
-            num_train = int(len(data_ids) * 0.8)
-            num_val = int(len(data_ids) * 0.1)
-        else:
-            # 70-10-20% train-val-test for each sequence
-            num_train = int(len(data_ids) * 0.8)
-            num_val = int(len(data_ids) * 0.05)
-        # give ids to data sets--> 0:train, 1:val, 2:test
+        ########################OLD DATA SPLIT##########################
+        # data_ids.sort()
+        # # random.shuffle(data_ids)
+        # if self.debug:
+        #     # 70-10-20% train-val-test for each sequence
+        #     num_train = int(len(data_ids) * 0.8)
+        #     num_val = int(len(data_ids) * 0.1)
+        # else:
+        #     # 70-10-20% train-val-test for each sequence
+        #     num_train = int(len(data_ids) * 0.8)
+        #     num_val = int(len(data_ids) * 0.05)
+        # # give ids to data sets--> 0:train, 1:val, 2:test
 
-        split = np.zeros(len(data_ids))
-        split[num_train:num_train + num_val] = 1
-        split[num_train + num_val:] = 2
-        id_split_dict = {id: split[i] for i, id in enumerate(data_ids)}
+        # split = np.zeros(len(data_ids))
+        # split[num_train:num_train + num_val] = 1
+        # split[num_train + num_val:] = 2
+        ################################################################
         # random.random()  # restore randomness in life (maybe randomness is life)
         # calculate feature statistics
+        splits = read_json(f'{os.path.dirname(self.datapath)}/splits.json')
+        id_split_dict = {}
+        
+        data_ids = list(data_dict.keys())
+        for id_sample in data_ids:
+            if id_sample in splits['train']:
+                id_split_dict[id_sample] = 0
+            elif id_sample in splits['val']:
+                id_split_dict[id_sample] = 1
+            else:
+                id_split_dict[id_sample] = 2
+
         for k, v in data_dict.items():
             v['id'] = k
             v['split'] = id_split_dict[k]
+
         self.stats = self.calculate_feature_stats(SincSynthDataset([v for k,
                                                                   v in data_dict.items()
                                                        if id_split_dict[k] <= 1],

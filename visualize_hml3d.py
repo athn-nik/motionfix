@@ -223,14 +223,15 @@ def render_vids(newcfg: DictConfig) -> None:
 
         if cnt_sit > 10 and cnt_walk > 10 and tot_cnt >= 30:
             break
+    from src.utils.hml3d_utils import test_subset_hml3d
 
     batch_size_test = 16
-    batches_to_infer = 1
-    test_dataset_hml3d.data = subset_hml[:batches_to_infer * batch_size_test]
+    test_subset_hml3d = [elem for elem in test_dataset_hml3d.data
+                         if elem['id'] in test_subset_hml3d]
     # idss = [0,1,2,3,8]
     # filtered_list = [subset_hml[index] for index in idss]
     # test_dataset_hml3d.data = filtered_list[:1]
-    testloader_hml3d = torch.utils.data.DataLoader(test_dataset_hml3d,
+    testloader_hml3d = torch.utils.data.DataLoader(test_subset_hml3d,
                                                    shuffle=False,
                                                    num_workers=4,
                                                    batch_size=batch_size_test,

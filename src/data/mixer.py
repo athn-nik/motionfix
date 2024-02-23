@@ -32,7 +32,8 @@ from src.utils.genutils import freeze
 from src.data.bodilex import BodilexDataset
 from src.data.sinc_synth import SincSynthDataset
 from src.data.humanml3d import HumanML3DDataset
-
+from src.utils.file_io import read_json, write_json
+import os
 # A logger for this file
 log = logging.getLogger(__name__)
 
@@ -64,10 +65,22 @@ class MixerDataModule(BASEDataModule):
                  preproc: DictConfig = None,
                  smplh_path: str = "",
                  rot_repr: str = "6d",
+                 batch_sampler=None,
+                 hml3d_ratio=40,
+                 sinc_synth_ratio=30,
+                 bodilex_ratio=30,
                  **kwargs):
+        if batch_sampler is not None:
+            dataset_percentages = {'hml3d': hml3d_ratio / 100,
+                                   'sinc_synth': sinc_synth_ratio / 100,
+                                   'bodilex': bodilex_ratio / 100 }
+        else:
+            dataset_percentages = None
         super().__init__(batch_size=batch_size,
                          num_workers=num_workers,
-                         load_feats=load_feats)
+                         load_feats=load_feats, 
+                         batch_sampler=batch_sampler,
+                         dataset_percentages=dataset_percentages)
         self.datapaths = [datapaths[name] for name in dataset_names]
         # concatenate the sorted datapaths
         self.dataname = dataname
@@ -98,7 +111,7 @@ class MixerDataModule(BASEDataModule):
                          for split in ['train', 'val', 'test']}
 
         self.stats = self.calculate_feature_stats(self.dataset['train'])
-
+        
         # NOTE: arbitrarily choose to use the nfeats of the first dataset
         self.nfeats = self.dataset['train'].datasets[0].nfeats
 

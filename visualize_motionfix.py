@@ -229,7 +229,6 @@ def render_vids(newcfg: DictConfig) -> None:
     smpl_layer = SMPLLayer(model_type='smplh', ext='npz', gender='neutral')
 
     with torch.no_grad():
-        
         output_path = output_path / 'renders'
         output_path.mkdir(exist_ok=True, parents=True)
         for guid_text, guid_motion in guidances_mix:

@@ -7,8 +7,8 @@ dataset_names:
 - "hml3d"
 dataname: ${concat_string_list:${.dataset_names}}
 datapaths:
-  "bodilex": ${path.data}/amass_bodilex_v7.pth.tar
-  "sinc_synth": ${path.data}/sinc_synth_edits_cleaned.pth.tar
+  "bodilex": ${path.data}/bodilex/amass_bodilex_v9.pth.tar
+  "sinc_synth": ${path.data}/sinc_synth/sinc_synth_edits_v1.pth.tar
   "hml3d": ${path.data}/humanml3d_processed
 batch_size: ${machine.batch_size}
 num_workers: ${machine.num_workers}
@@ -25,6 +25,11 @@ smplh_path_dbg: ${path.minidata}/body_models
 
 load_with_rot: true
 
+# Define the percentages for each dataset_name value
+batch_sampler: 'ratio' # null false 
+hml3d_ratio: 40
+sinc_synth_ratio: 30
+bodilex_ratio: 30
 
 rot_repr: '6d'
 preproc:

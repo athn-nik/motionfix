@@ -2,7 +2,7 @@ dataname: bodilex
 _target_: src.data.bodilex.BodilexDataModule
 debug: ${debug}
 
-datapath: ${path.data}/amass_bodilex_v7.pth.tar # amass_bodilex.pth.tar
+datapath: ${path.data}/bodilex/amass_bodilex_v9.pth.tar # amass_bodilex.pth.tar
 debug_datapath: ${path.minidata}/amass_small.pth.tar
 
 # Amass

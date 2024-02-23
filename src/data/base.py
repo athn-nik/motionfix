@@ -9,7 +9,9 @@ class BASEDataModule(pl.LightningDataModule):
     def __init__(self,
                  batch_size: int,
                  num_workers: int,
-                 load_feats: List[str]):
+                 load_feats: List[str],
+                 batch_sampler: str | None = None,
+                 dataset_percentages: dict[str, int] | None = None):
         super().__init__()
 
         collate_fn = lambda b: collate_batch_last_padding(b, load_feats)
@@ -25,6 +27,9 @@ class BASEDataModule(pl.LightningDataModule):
             'worker_init_fn': set_worker_sharing_strategy
             # 'pin_memory': True,
             }
+        self.batch_sampler = batch_sampler
+        self.ds_perc = dataset_percentages
+        self.batch_size = batch_size
         # need to be overloaded:
         # - self.Dataset
         # - self._sample_set => load only a small subset
@@ -37,16 +42,26 @@ class BASEDataModule(pl.LightningDataModule):
 
         # Optional
         self._subset_dataset = None
-    
+        
     def get_sample_set(self, overrides={}):
         sample_params = self.hparams.copy()
         sample_params.update(overrides)
         return self.Dataset(**sample_params)
 
     def train_dataloader(self):
-        return DataLoader(self.dataset['train'],
-                          shuffle=True,
-                          **self.dataloader_options)
+        if self.batch_sampler is not None:
+            from src.data.sampling.custom_batch_sampler import PercBatchSampler
+            ratio_batch_sampler = PercBatchSampler(data_source=self.dataset['train'],
+                                                   batch_size=self.batch_size,
+                                                   dataset_percentages=self.ds_perc)
+            del self.dataloader_options['batch_size']
+            return DataLoader(self.dataset['train'],
+                              batch_sampler=ratio_batch_sampler,
+                              **self.dataloader_options)
+        else:
+            return DataLoader(self.dataset['train'],
+                              shuffle=True,
+                              **self.dataloader_options)
 
     def val_dataloader(self):
         return DataLoader(self.dataset['val'],

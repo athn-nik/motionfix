@@ -27,6 +27,8 @@ from src.tools.transforms3d import (
 from src.tools.transforms3d import canonicalize_rotations
 from src.model.utils.smpl_fast import smpl_forward_fast
 from src.utils.genutils import freeze
+from src.utils.file_io import read_json, write_json
+import os
 # A logger for this file
 log = logging.getLogger(__name__)
 
@@ -148,29 +150,21 @@ class BodilexDataset(Dataset):
 
         # add id fiels in order to turn the dict into a list without loosing it
         # random.seed(self.preproc.split_seed)
- 
+        splits = read_json(f'{os.path.dirname(datapath)}/splits.json')
+        id_split_dict = {}
         data_ids = list(data_dict.keys())
-        data_ids.sort()
-        # random.shuffle(data_ids)
-        if debug:
-            # 70-10-20% train-val-test for each sequence
-            num_train = int(len(data_ids) * 0.8)
-            num_val = int(len(data_ids) * 0.1)
-        else:
-            # 70-10-20% train-val-test for each sequence
-            num_train = int(len(data_ids) * 0.8)
-            num_val = int(len(data_ids) * 0.05)
-        # give ids to data sets--> 0:train, 1:val, 2:test
+        for id_sample in data_ids:
+            if id_sample in splits['train']:
+                id_split_dict[id_sample] = 0
+            elif id_sample in splits['val']:
+                id_split_dict[id_sample] = 1
+            else:
+                id_split_dict[id_sample] = 2
 
-        split = np.zeros(len(data_ids))
-        split[num_train:num_train + num_val] = 1
-        split[num_train + num_val:] = 2
-        id_split_dict = {id: split[i] for i, id in enumerate(data_ids)}
-        # random.random()  # restore randomness in life (maybe randomness is life)
-        # calculate feature statistics
         for k, v in data_dict.items():
             v['id'] = k
             v['split'] = id_split_dict[k]
+
         return {
             'train': cls([v for k, v in data_dict.items()
                           if id_split_dict[k] == 0], **kwargs),
@@ -558,28 +552,21 @@ class BodilexDataModule(BASEDataModule):
         # add id fiels in order to turn the dict into a list without loosing it
         # random.seed(self.preproc.split_seed)
  
+        splits = read_json(f'{os.path.dirname(datapath)}/splits.json')
+        id_split_dict = {}
         data_ids = list(data_dict.keys())
-        data_ids.sort()
-        # random.shuffle(data_ids)
-        if self.debug:
-            # 70-10-20% train-val-test for each sequence
-            num_train = int(len(data_ids) * 0.8)
-            num_val = int(len(data_ids) * 0.1)
-        else:
-            # 70-10-20% train-val-test for each sequence
-            num_train = int(len(data_ids) * 0.75)
-            num_val = int(len(data_ids) * 0.10)
-        # give ids to data sets--> 0:train, 1:val, 2:test
+        for id_sample in data_ids:
+            if id_sample in splits['train']:
+                id_split_dict[id_sample] = 0
+            elif id_sample in splits['val']:
+                id_split_dict[id_sample] = 1
+            else:
+                id_split_dict[id_sample] = 2
 
-        split = np.zeros(len(data_ids))
-        split[num_train:num_train + num_val] = 1
-        split[num_train + num_val:] = 2
-        id_split_dict = {id: split[i] for i, id in enumerate(data_ids)}
-        # random.random()  # restore randomness in life (maybe randomness is life)
-        # calculate feature statistics
         for k, v in data_dict.items():
             v['id'] = k
             v['split'] = id_split_dict[k]
+
         self.stats = self.calculate_feature_stats(BodilexDataset([v for k,
                                                                   v in data_dict.items()
                                                        if id_split_dict[k] <= 1],
@@ -592,7 +579,7 @@ class BodilexDataModule(BASEDataModule):
                                                       do_augmentations=False))
 
         # setup collate function meta parameters
-        # self.collate_fn = lambda b: collate_batch(b, self.cfg.load_feats)
+        # self.collate_fn = lambda b: collapPte_batch(b, self.cfg.load_feats)
         # create datasets
         self.dataset['train'], self.dataset['val'], self.dataset['test'] = (
            BodilexDataset([v for k, v in data_dict.items() if id_split_dict[k] == 0],
