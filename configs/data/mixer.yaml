@@ -27,9 +27,9 @@ load_with_rot: true
 
 # Define the percentages for each dataset_name value
 batch_sampler: 'ratio' # null false 
-hml3d_ratio: 40
-sinc_synth_ratio: 30
-bodilex_ratio: 30
+hml3d_ratio: 0
+sinc_synth_ratio: 50
+bodilex_ratio: 50
 
 rot_repr: '6d'
 preproc:
