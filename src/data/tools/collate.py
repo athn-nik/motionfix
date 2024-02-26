@@ -21,15 +21,13 @@ def collate_batch_last_padding(batch, feats):
     # this should be used only when we mix hml3d with other datasets
     # check if we need to duplicate the _target features as _source features
     # for hml3d in case of not t2m
-    import ipdb; ipdb.set_trace()
     if not t2m:
         for b in batch:
-            if 'dataset_name' in b:
-                if b['dataset_name'] == 'hml3d':
-                    keys = list(b.keys())
-                    for k in keys:
-                        if k.endswith('_target'):
-                            b[k.replace('target', 'source')] = b[k]
+            if b['dataset_name'] == 'hml3d':
+                keys = list(b.keys())
+                for k in keys:
+                    if k.endswith('_target'):
+                        b[k.replace('target', 'source')] = b[k]
 
     batch = pad_batch(batch, tot_feats, t2m=t2m)
     batch =  {k: torch.stack([b[k] for b in batch])\
