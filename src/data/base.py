@@ -11,7 +11,7 @@ class BASEDataModule(pl.LightningDataModule):
                  num_workers: int,
                  load_feats: List[str],
                  batch_sampler: str | None = None,
-                 dataset_percentages: dict[str, int] | None = None):
+                 dataset_percentages: dict[str, float] | None = None):
         super().__init__()
 
         collate_fn = lambda b: collate_batch_last_padding(b, load_feats)

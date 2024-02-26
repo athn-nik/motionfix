@@ -162,7 +162,6 @@ class SincSynthDataset(Dataset):
         for k, v in data_dict.items():
             v['id'] = k
             v['split'] = id_split_dict[k]
-
         return {
             'train': cls([v for k, v in data_dict.items()
                           if id_split_dict[k] == 0], **kwargs),
@@ -506,18 +505,18 @@ class SincSynthDataModule(BASEDataModule):
                                                                )
                 dataset_dict_raw[k][mtype]['rots'] = rots_can
                 dataset_dict_raw[k][mtype]['trans'] = trans_can
-                seqlen, jts_no = rots_can.shape[:2]
+                # seqlen, jts_no = rots_can.shape[:2]
                 
-                rots_can_rotm = transform_body_pose(rots_can,
-                                                  'aa->rot')
-                # self.body_model.batch_size = seqlen * jts_no
+                # rots_can_rotm = transform_body_pose(rots_can,
+                #                                   'aa->rot')
+                # # self.body_model.batch_size = seqlen * jts_no
 
-                jts_can_ds = self.body_model.smpl_forward_fast(transl=trans_can,
-                                                 body_pose=rots_can_rotm[:, 1:],
-                                             global_orient=rots_can_rotm[:, :1])
+                # jts_can_ds = self.body_model.smpl_forward_fast(transl=trans_can,
+                #                                  body_pose=rots_can_rotm[:, 1:],
+                #                              global_orient=rots_can_rotm[:, :1])
 
-                jts_can = jts_can_ds.joints[:, :22]
-                dataset_dict_raw[k][mtype]['joint_positions'] = jts_can
+                # jts_can = jts_can_ds.joints[:, :22]
+                # dataset_dict_raw[k][mtype]['joint_positions'] = jts_can
                 # from src.tools.interpolation import flip_motion
                 # from src.render.mesh_viz import render_skeleton, render_motion
                 # from src.model.utils.tools import remove_padding, pack_to_render
@@ -586,7 +585,6 @@ class SincSynthDataModule(BASEDataModule):
         for k, v in data_dict.items():
             v['id'] = k
             v['split'] = id_split_dict[k]
-
         self.stats = self.calculate_feature_stats(SincSynthDataset([v for k,
                                                                   v in data_dict.items()
                                                        if id_split_dict[k] <= 1],

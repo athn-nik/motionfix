@@ -223,7 +223,7 @@ def render_vids(newcfg: DictConfig) -> None:
 
         if cnt_sit > 10 and cnt_walk > 10 and tot_cnt >= 30:
             break
-    from src.utils.hml3d_utils import test_subset_hml3d
+    from src.utils.motionfix_utils import test_subset_hml3d
 
     batch_size_test = 16
     test_subset_hml3d = [elem for elem in test_dataset_hml3d.data
