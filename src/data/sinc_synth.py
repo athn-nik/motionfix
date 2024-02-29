@@ -162,7 +162,6 @@ class SincSynthDataset(Dataset):
         for k, v in data_dict.items():
             v['id'] = k
             v['split'] = id_split_dict[k]
-
         return {
             'train': cls([v for k, v in data_dict.items()
                           if id_split_dict[k] == 0], **kwargs),
@@ -586,7 +585,6 @@ class SincSynthDataModule(BASEDataModule):
         for k, v in data_dict.items():
             v['id'] = k
             v['split'] = id_split_dict[k]
-
         self.stats = self.calculate_feature_stats(SincSynthDataset([v for k,
                                                                   v in data_dict.items()
                                                        if id_split_dict[k] <= 1],

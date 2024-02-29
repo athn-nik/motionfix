@@ -16,6 +16,7 @@ load_splits:
 - "val"
 - "test"
 
+proportion: 1.0
 # Machine
 batch_size: 32 # it's tiny
 num_workers: ${machine.num_workers}

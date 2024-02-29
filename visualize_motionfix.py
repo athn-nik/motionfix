@@ -176,46 +176,57 @@ def render_vids(newcfg: DictConfig) -> None:
     test_dataset = data_module.dataset['test']
     features_to_load = test_dataset.load_feats
     from src.data.tools.collate import collate_batch_last_padding
-    collate_fn = lambda b: collate_batch_last_padding(b,
-                                                        features_to_load)
-    if cfg.data.dataname =='sinc_synth':
-        cfg.subset = None
+    collate_fn = lambda b: collate_batch_last_padding(b, features_to_load)
+    # if cfg.data.dataname =='sinc_synth':
+    #     cfg.subset = None
         
-    if cfg.subset == 'cherries':
-        from src.utils.eval_utils import test_keyds
+    # if cfg.subset == 'cherries':
+    #     from src.utils.eval_utils import test_keyds
 
-        subset = []
-        for elem in test_dataset.data:
-            if elem['id'] in test_keyds:
-                subset.append(elem)
-        batch_size_test = len(subset)
-        test_dataset.data = subset
-    elif cfg.subset == 'cherries2':
-        from src.utils.eval_utils import keyids_for_testing
+    #     subset = []
+    #     for elem in test_dataset.data:
+    #         if elem['id'] in test_keyds:
+    #             subset.append(elem)
+    #     batch_size_test = len(subset)
+    #     test_dataset.data = subset
+    # elif cfg.subset == 'cherries2':
+    #     from src.utils.eval_utils import keyids_for_testing
         
-        subset = []
-        for elem in test_dataset.data:
-            if elem['id'] in keyids_for_testing:
-                subset.append(elem)
-        batch_size_test = min(len(subset), 20)
-        test_dataset.data = subset
+    #     subset = []
+    #     for elem in test_dataset.data:
+    #         if elem['id'] in keyids_for_testing:
+    #             subset.append(elem)
+    #     batch_size_test = min(len(subset), 20)
+    #     test_dataset.data = subset
 
-        # elif cfg.subset == 'test_cherries':
-        #     from src.utils.cherrypick import test_keyds_cherries
-        #     subset = []
-        #     for elem in test_dataset.data:
-        #         if elem['id'] in test_keyds_cherries:
-        #             subset.append(elem)
-        #     batch_size_test = min(len(subset), 12) 
-        #     test_dataset.data = subset
-    else:
-        batch_size_test = 8
-        test_dataset.data = test_dataset.data[:batch_size_test*4]
+    #     # elif cfg.subset == 'test_cherries':
+    #     #     from src.utils.cherrypick import test_keyds_cherries
+    #     #     subset = []
+    #     #     for elem in test_dataset.data:
+    #     #         if elem['id'] in test_keyds_cherries:
+    #     #             subset.append(elem)
+    #     #     batch_size_test = min(len(subset), 12) 
+    #     #     test_dataset.data = subset
+    # # else:
+    # #     batch_size_test = 8
+    # #     test_dataset.data = test_dataset.data[:batch_size_test*4]
+    if cfg.data.dataname == 'sinc_synth':
+        from src.utils.motionfix_utils import test_subset_sinc_synth
+        test_dataset_subset = [elem for elem in test_dataset
+                            if elem['id'] in test_subset_sinc_synth]
+        batch_to_use = len(test_subset_sinc_synth)
 
-    testloader = torch.utils.data.DataLoader(test_dataset,
+    elif cfg.data.dataname == 'bodilex':
+        from src.utils.motionfix_utils import test_subset_amt
+        test_dataset_subset = [elem for elem in test_dataset
+                         if elem['id'] in test_subset_amt]
+        batch_to_use = len(test_subset_amt)
+
+
+    testloader = torch.utils.data.DataLoader(test_dataset_subset,
                                              shuffle=False,
                                              num_workers=0,
-                                             batch_size=batch_size_test,
+                                             batch_size=batch_to_use,
                                              collate_fn=collate_fn)
     ds_iterator = testloader
 

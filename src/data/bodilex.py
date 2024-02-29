@@ -164,7 +164,6 @@ class BodilexDataset(Dataset):
         for k, v in data_dict.items():
             v['id'] = k
             v['split'] = id_split_dict[k]
-
         return {
             'train': cls([v for k, v in data_dict.items()
                           if id_split_dict[k] == 0], **kwargs),
@@ -449,6 +448,7 @@ class BodilexDataModule(BASEDataModule):
                  smplh_path: str = "",
                  dataname: str = "",
                  rot_repr: str = "6d",
+                 proportion: float = 1.0,
                  **kwargs):
         super().__init__(batch_size=batch_size,
                          num_workers=num_workers,
@@ -581,8 +581,14 @@ class BodilexDataModule(BASEDataModule):
         # setup collate function meta parameters
         # self.collate_fn = lambda b: collapPte_batch(b, self.cfg.load_feats)
         # create datasets
+        slice_to = int(proportion * len(data_dict.items()))
+        
+        log.info(f'Using {100*round(slice_to/len(data_dict.items()),2)}% of the data.')
+        log.info(f'Using {slice_to}/{len(data_dict.items())} of the data.')
+
         self.dataset['train'], self.dataset['val'], self.dataset['test'] = (
-           BodilexDataset([v for k, v in data_dict.items() if id_split_dict[k] == 0],
+           BodilexDataset([v for k, v in data_dict.items()
+                           if id_split_dict[k] == 0][:slice_to],
                         self.preproc.n_body_joints,
                         self.preproc.stats_file,
                         self.preproc.norm_type,
@@ -590,7 +596,8 @@ class BodilexDataModule(BASEDataModule):
                         self.rot_repr,
                         self.load_feats,
                         do_augmentations=True), 
-           BodilexDataset([v for k, v in data_dict.items() if id_split_dict[k] == 1],
+           BodilexDataset([v for k, v in data_dict.items() 
+                           if id_split_dict[k] == 1],
                         self.preproc.n_body_joints,
                         self.preproc.stats_file,
                         self.preproc.norm_type,
@@ -598,7 +605,8 @@ class BodilexDataModule(BASEDataModule):
                         self.rot_repr,
                         self.load_feats,
                         do_augmentations=True), 
-           BodilexDataset([v for k, v in data_dict.items() if id_split_dict[k] == 2],
+           BodilexDataset([v for k, v in data_dict.items() 
+                           if id_split_dict[k] == 2],
                         self.preproc.n_body_joints,
                         self.preproc.stats_file,
                         self.preproc.norm_type,
