@@ -114,8 +114,8 @@ class MldDenoiser(nn.Module):
 
     def forward(self,
                 noised_motion,
-                in_motion_mask,
                 timestep,
+                in_motion_mask,
                 text_embeds,
                 condition_mask, 
                 motion_embeds=None,
@@ -245,5 +245,36 @@ class MldDenoiser(nn.Module):
 
         # 5. [batch_size, latent_dim[0], latent_dim[1]] <= [latent_dim[0], batch_size, latent_dim[1]]
         denoised_motion = denoised_motion.permute(1, 0, 2)
-
         return denoised_motion
+
+    def forward_with_guidance(self,
+                              noised_motion,
+                              timestep,
+                              in_motion_mask,
+                              text_embeds,
+                              condition_mask,
+                              guidance_motion,
+                              guidance_text_n_motion, 
+                              motion_embeds=None,
+                              lengths=None,
+                              **kwargs):
+        third = noised_motion[: len(noised_motion) // 3]
+        combined = torch.cat([third, third, third], dim=0)
+        model_out = self.forward(combined, timestep,
+                                 in_motion_mask=in_motion_mask,
+                                 text_embeds=text_embeds,
+                                 condition_mask=condition_mask, 
+                                 motion_embeds=motion_embeds,
+                                 lengths=lengths)
+        # For exact reproducibility reasons, we apply classifier-free guidance on only
+        # three channels by default. The standard approach to cfg applies it to all channels.
+        # This can be done by uncommenting the following line and commenting-out the line following that.
+        # eps, rest = model_out[:, :self.in_channels], model_out[:, self.in_channels:]
+        # eps, rest = model_out[:, :3], model_out[:, 3:]
+        uncond_eps, cond_eps_motion, cond_eps_text_n_motion = torch.split(model_out,
+                                                                          len(model_out) // 3,
+                                                                          dim=0)
+        third_eps = uncond_eps + guidance_motion * (cond_eps_motion - uncond_eps) + \
+                     guidance_text_n_motion * (cond_eps_text_n_motion - cond_eps_motion)
+        eps = torch.cat([third_eps, third_eps, third_eps], dim=0)
+        return torch.cat([third_eps, rest], dim=1)

@@ -19,7 +19,7 @@ save_pkl: false
 render_vids: true
 subset: null
 
-steps: 1000
+num_sampling_steps: 1000
 guidance_scale_text: 2.5 #
 guidance_scale_motion: 1.5
 init_from: 'noise' # noise
@@ -27,7 +27,6 @@ condition_mode: 'full_cond' # 'mot_cond' 'text_cond'
 
 defaults:
   - _self_
-  - model/infer_scheduler: ddpm
   - data: bodilex
   - /path@path
   - override hydra/job_logging: rich # custom

@@ -546,12 +546,12 @@ class BodilexDataModule(BASEDataModule):
         #     dataset_dict_raw[k]['motion_target']['rots'] = dataset_dict_raw[k]['motion_target']['rots'][:60]
         #     dataset_dict_raw[k]['motion_target']['trans'] = dataset_dict_raw[k]['motion_target']['trans'][:60] 
         #     dataset_dict_raw[k]['motion_target']['joint_positions'] = dataset_dict_raw[k]['motion_target']['joint_positions'][:60] 
-
+ 
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
 
         # add id fiels in order to turn the dict into a list without loosing it
         # random.seed(self.preproc.split_seed)
- 
+
         splits = read_json(f'{os.path.dirname(datapath)}/splits.json')
         id_split_dict = {}
         data_ids = list(data_dict.keys())

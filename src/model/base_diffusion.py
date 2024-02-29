@@ -29,6 +29,8 @@ import torch
 import torch.distributions as dist
 import logging
 import wandb
+from src.diffusion import create_diffusion
+
 log = logging.getLogger(__name__)
 
 class MD(BaseModel):
@@ -116,19 +118,46 @@ class MD(BaseModel):
         self.diff_params = diff_params
         denoiser['use_deltas'] = self.input_deltas
         self.denoiser = instantiate(denoiser)
+        from src.diffusion import create_diffusion
 
-        self.infer_scheduler = instantiate(infer_scheduler)
-        self.train_scheduler = instantiate(train_scheduler)
+        from src.diffusion.gaussian_diffusion import ModelMeanType, ModelVarType
+        from src.diffusion.gaussian_diffusion import LossType
+
+        # ARGUMENTS FOR DIFFUSION
+        # timestep_respacing --> None just the default linear things
+        # noise_schedule="linear", squaredcos_cap_v2
+        # use_kl=False,
+        # sigma_small=False,
+        # predict_xstart=False,
+        # learn_sigma=True,
+        # rescale_learned_sigmas=False,
+        # diffusion_steps=1000
+        # default: 1000 steps, linear noise schedule
+        self.diffusion_process = create_diffusion(timestep_respacing=None,
+                                     learn_sigma=False,
+                                     sigma_small=True,
+                                     diffusion_steps=self.diff_params.num_train_timesteps,
+                                     noise_schedule=self.diff_params.noise_schedule,
+                                     predict_xstart=False if self.diff_params.predict_type == 'noise' else True) # noise vs sample
+
+        # self.diffusion = GaussianDiffusion(
+        #       betas=betas,
+        #       model_mean_type=ModelMeanType.EPSILON,
+        #       model_var_type=ModelVarType.FIXED_SMALL,
+        #       loss_type=LossType.MSE
+        #         )
+        # self.infer_scheduler = instantiate(infer_scheduler)
+        # self.train_scheduler = instantiate(train_scheduler)
         # distribution of timesteps
         shape = 2.0
         scale = 1.0
         self.tsteps_distr = dist.Gamma(torch.tensor(shape),
                                        torch.tensor(scale))
         # Keep track of the losses
-        if train_scheduler.prediction_type == 'sample':
-            self.predict_noise = False
-        else:
-            self.predict_noise = True
+        # if train_scheduler.prediction_type == 'sample':
+        #     self.predict_noise = False
+        # else:
+        #     self.predict_noise = True
         # self._losses = ModuleDict({split: instantiate(losses)
         #     for split in ["losses_train", "losses_test", "losses_val"]
         # })
@@ -153,6 +182,18 @@ class MD(BaseModel):
 
         self.__post_init__()
 
+    @torch.no_grad()
+    def update_ema(ema_model, model, decay=0.9999):
+        """
+        Step the EMA model towards the current model.
+        """
+        ema_params = OrderedDict(ema_model.named_parameters())
+        model_params = OrderedDict(model.named_parameters())
+
+        for name, param in model_params.items():
+            # TODO: Consider applying only to params that require_grad to avoid small numerical changes of pos_embed
+            ema_params[name].mul_(decay).add_(param.data, alpha=1 - decay)
+        
     def sample_from_distribution(
         self,
         dist,
@@ -181,7 +222,8 @@ class MD(BaseModel):
     def _diffusion_reverse(self,
                            text_embeds, text_masks, 
                            motion_embeds, cond_motion_masks,
-                           inp_motion_mask, init_vec=None,
+                           inp_motion_mask, diff_process,
+                           init_vec=None,
                            init_from='noise',
                            gd_text=None, gd_motion=None, 
                            mode='full_cond',
@@ -190,10 +232,10 @@ class MD(BaseModel):
         # guidance_scale_text: 7.5 #
         #  guidance_scale_motion: 1.5
         # init latents
-    
+
         bsz = inp_motion_mask.shape[0]
         assert mode in ['full_cond', 'text_cond', 'mot_cond']
-        assert inp_motion_mask is not None, "no vae (diffusion only) need lengths for diffusion"
+        assert inp_motion_mask is not None
         # len_to_gen = max(lengths) if not self.input_deltas else max(lengths) + 1
         if init_vec is None:
             initial_latents = torch.randn(
@@ -202,7 +244,7 @@ class MD(BaseModel):
                 dtype=torch.float,
             )
             # scale the initial noise by the standard deviation required by the scheduler
-            initial_latents = initial_latents * self.infer_scheduler.init_noise_sigma
+            initial_latents = initial_latents
         else:
             initial_latents = init_vec
 
@@ -219,22 +261,16 @@ class MD(BaseModel):
         # set timesteps
         if steps_num is not None:
             rev_steps = steps_num
-            self.infer_scheduler.set_timesteps(rev_steps)
             log.info(f'Inference of: {rev_steps}') 
         elif init_from == 'source':
-            rev_steps = self.diff_params.num_inference_timesteps // 5
-            self.infer_scheduler.set_timesteps(rev_steps)
+            rev_steps = diff_process.num_timesteps // 5
             log.info(f'Inference of: {rev_steps}')
         else:
-            if self.diff_params.num_inference_timesteps > len(self.infer_scheduler):
-                rev_steps = len(self.infer_scheduler)
-            else:
-                rev_steps = self.diff_params.num_inference_timesteps
-            self.infer_scheduler.set_timesteps(rev_steps)
-
-        timesteps = self.infer_scheduler.timesteps.to(inp_motion_mask.device)
+            log.info(f'Inference of: 1000')
+        # timesteps = self.infer_scheduler.timesteps.to(inp_motion_mask.device)
         # prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
         # eta (η) is only used with the DDIMScheduler, and between [0, 1]
+
 
         # extra_step_kwargs = {}
         # if "eta" in set(
@@ -320,93 +356,46 @@ class MD(BaseModel):
             # condition_mask_text *= text_masks
 
         latent_model_input = initial_latents
-        # reverse
-        for i, t in enumerate(timesteps):
 
             # # expand the latents if we are doing classifier free guidance
             # latent_model_input = torch.cat(
             #     [latents] * 2) if class_free else latents
             # predict the noise residual
-            if self.motion_condition == 'source' and motion_embeds is not None:
-                mot_pred_uncond = self.denoiser(
-                                        noised_motion=latent_model_input,
-                                        in_motion_mask=inp_motion_mask,
-                                        timestep=t,
-                                        text_embeds=text_embeds,
-                                        condition_mask=uncondition_mask,
-                                        motion_embeds=motion_embeds,
-                                        )
-                mot_pred_text = self.denoiser(
-                                        noised_motion=latent_model_input,
-                                        in_motion_mask=inp_motion_mask,
-                                        timestep=t,
-                                        text_embeds=text_embeds,
-                                        condition_mask=condition_mask_text,
-                                        motion_embeds=motion_embeds,
-                                        )
-                mot_pred_motion = self.denoiser(
-                                               noised_motion=latent_model_input,
-                                               in_motion_mask=inp_motion_mask,
-                                               timestep=t,
-                                               text_embeds=text_embeds,
-                                               condition_mask=condition_mask_motion,
-                                               motion_embeds=motion_embeds,
-                                               )
-                mot_pred_both = self.denoiser(noised_motion=latent_model_input,
-                                              in_motion_mask=inp_motion_mask,
-                                              timestep=t,
-                                              text_embeds=text_embeds,
-                                              condition_mask=condition_mask_both,
-                                              motion_embeds=motion_embeds)
+            # Create sampling noise:
+            
+        # z = torch.randn(n, 4, latent_size, latent_size, device=device)
+        # y = torch.tensor(class_labels, device=device)
+        # cat_embeds = torch.cat([text_embeds, motion_embeds], 0)
+        # Setup classifier-free guidance:
+        z = torch.cat([initial_latents, initial_latents, initial_latents], 0)
+        # y_null = torch.tensor([1000] * n, device=device)
+        # y = torch.cat([y, y_null], 0)
 
-            elif self.condition in ['text', 'text_uncondp']:
-                mot_pred_uncond = self.denoiser(noised_motion=latent_model_input,
-                                                in_motion_mask=inp_motion_mask,
-                                                timestep=t,
-                                                text_embeds=text_embeds,
-                                                condition_mask=uncondition_mask,
-                                                motion_embeds=None)
+        model_kwargs = dict(# noised_motion=latent_model_input,
+                            # timestep=t,
+                            in_motion_mask=torch.cat([inp_motion_mask,
+                                                      inp_motion_mask,
+                                                      inp_motion_mask], 0),
+                            text_embeds=torch.cat([torch.zeros_like(text_embeds),
+                                                   torch.zeros_like(text_embeds),
+                                                   text_embeds], 0),
+                            condition_mask=torch.cat([uncondition_mask,
+                                                      condition_mask_motion,
+                                                      condition_mask_both], 0),
+                            motion_embeds=torch.cat([torch.zeros_like(motion_embeds),
+                                                     motion_embeds,
+                                                     motion_embeds], 1),
+                            guidance_motion=gd_motion,
+                            guidance_text_n_motion=gd_text)
+        # model_kwargs = dict(y=y, cfg_scale=args.cfg_scale)
+        # Sample images:
+        samples = diff_process.p_sample_loop(self.denoiser.forward_with_guidance,
+                                             z.shape, z, clip_denoised=False, 
+                                             model_kwargs=model_kwargs,
+                                             progress=True,
+                                             device=initial_latents.device)
 
-                mot_pred_text = self.denoiser(noised_motion=latent_model_input,
-                                              in_motion_mask=inp_motion_mask,
-                                              timestep=t,
-                                              text_embeds=text_embeds,
-                                              condition_mask=condition_mask_text,
-                                              motion_embeds=None)
-            # perform guidance
-            if self.motion_condition == 'source' and mode=='full_cond':
-                motion_pred = mot_pred_uncond +\
-                            gd_scale_text * (
-                            mot_pred_text - mot_pred_uncond)+\
-                            gd_scale_motion * (
-                                mot_pred_both - mot_pred_text
-                            )
-                            
-                            # --> mot_pred_both
-                            # > 1 --> mot_pred_both - l*uncondp
-
-            # elif class_free_motion or class_free_text:
-            #     latent_model_input = torch.cat([latents] * 2)
-            #     lengths_reverse = lengths * 2
-            elif mode=='text_cond':
-
-                motion_pred = mot_pred_uncond +\
-                             gd_scale_text*(
-                                mot_pred_text - mot_pred_uncond
-                             )
-
-            elif mode=='mot_cond':
-                motion_pred = mot_pred_uncond + gd_scale_motion*(mot_pred_motion 
-                                                                     - mot_pred_uncond)
-
-
-            # text_embeddings_for_guidance = encoder_hidden_states.chunk(
-            #     2)[1] if self.do_classifier_free_guidance else encoder_hidden_states
-            latents_next = self.infer_scheduler.step(motion_pred, 
-                                                     t, 
-                                                     latent_model_input
-                                                     ).prev_sample
-            latent_model_input = latents_next
+        samples, _ = samples.chunk(2, dim=0)  # Remove null class samples
 
         # [batch_size, 1, latent_dim] -> [1, batch_size, latent_dim]
 
@@ -422,13 +411,13 @@ class MD(BaseModel):
 
                 gamma_samples = self.tsteps_distr.sample((samples,))
                 lower_bound = 0
-                upper_bound = self.train_scheduler.config.num_train_timesteps
+                upper_bound = self.diffusion_process.num_timesteps
                 scaled_samples = upper_bound * (gamma_samples / gamma_samples.max()) 
                 # Convert the samples to integers
                 timesteps_sampled = scaled_samples.floor().int().to(self.device)
             else:
                 timesteps_sampled = torch.randint(0,
-                                    self.train_scheduler.config.num_train_timesteps,
+                                    self.diffusion_process.num_timesteps,
                                      (samples, ),
                                     device=self.device)
         # elif isinstance(sample_mode, list):
@@ -437,7 +426,7 @@ class MD(BaseModel):
             
             if sample_mode == 'uniform':
                 timesteps_sampled = torch.randint(0,
-                                        self.train_scheduler.config.num_train_timesteps,
+                                        self.diffusion_process.num_timesteps,
                                         (samples, ),
                                         device=self.device)
         return timesteps_sampled
@@ -545,41 +534,48 @@ class MD(BaseModel):
         timesteps = self.sample_timesteps(samples=bsz,
                                           sample_mode='uniform')
         timesteps = timesteps.long()
-
+        model_args = dict(in_motion_mask=mask_in_mot,
+                        #   timestep=timesteps,
+                          text_embeds=text_encoded,
+                          condition_mask=mask_for_condition,
+                          motion_embeds=motion_encoded)
+        diff_outs = self.diffusion_process.training_losses(self.denoiser,
+                                                           input_motion_feats,
+                                                           timesteps,
+                                                           model_args)
+        
         # Add noise to the latents according to the noise magnitude at each timestep
-        noisy_motion = self.train_scheduler.add_noise(input_motion_feats.clone(),
-                                                      noise,
-                                                      timesteps)
+        # noisy_motion = self.train_scheduler.add_noise(input_motion_feats.clone(),
+        #                                               noise,
+        #                                               timesteps)
         # Predict the noise residual
-        diffusion_fw_out = self.denoiser(noised_motion=noisy_motion,
-                                         in_motion_mask=mask_in_mot,
-                                         timestep=timesteps,
-                                         text_embeds=text_encoded,
-                                         condition_mask=mask_for_condition,
-                                         motion_embeds=motion_encoded,
-                                         )
+        # diffusion_fw_out = self.denoiser(noised_motion=noisy_motion,
+        #                                  in_motion_mask=mask_in_mot,
+        #                                  timestep=timesteps,
+        #                                  text_embeds=text_encoded,
+        #                                  condition_mask=mask_for_condition,
+        #                                  motion_embeds=motion_encoded,
+        #                                  )
 
         # Chunk the noise and noise_pred into two parts and compute the loss on each part separately.
         # if self.losses.lmd_prior != 0.0:
         #     noise_pred, noise_pred_prior = torch.chunk(noise_pred, 2, dim=0)
         #     noise, noise_prior = torch.chunk(noise, 2, dim=0)
         # else:
-        if self.predict_noise:
-            n_set = {
-                "noise": noise,
-                "noise_pred": diffusion_fw_out,
-            }
+        # if self.predict_noise:
+        #     n_set = {
+        #         "noise": noise,
+        #         "noise_pred": diffusion_fw_out,
+        #     }
 
-        else:
-            n_set = {
-                "pred_motion_feats": diffusion_fw_out,
-                "noised_motion_feats": noisy_motion,
-                "input_motion_feats": input_motion_feats,
-                "timesteps": timesteps
-            }
-
-
-        return n_set
+        # else:
+        #     n_set = {
+        #         "pred_motion_feats": diffusion_fw_out,
+        #         "noised_motion_feats": noisy_motion,
+        #         "input_motion_feats": input_motion_feats,
+        #         "timesteps": timesteps
+        #     }
+        return diff_outs
 
     def filter_conditions(self, max_text_len, max_motion_len,
                           batch_size, 
@@ -787,12 +783,12 @@ class MD(BaseModel):
             cond_emb_motion = cond_emb_motion[:, rand_perm]
 
         # diffusion process return with noise and noise_pred
-        n_set = self._diffusion_process(feats_for_denois,
+        diff_outs = self._diffusion_process(feats_for_denois,
                                         mask_in_mot=mask_target_motion,
                                         text_encoded=cond_emb_text, 
                                         motion_encoded=cond_emb_motion,
                                         mask_for_condition=aug_mask)
-        return {**n_set}
+        return diff_outs 
 
     #     return self.allsplit_epoch_end("train")
 
@@ -850,25 +846,33 @@ class MD(BaseModel):
                                           trans=motion_unnorm[...,:3])
         gt_smpl_params = pack_to_render(rots=gt_mot_unnorm[..., 3:],
                                           trans=gt_mot_unnorm[...,:3])
-
+        if not self.loss_on_verts:
+            fast_smpl_layer = True
+        else:
+            fast_smpl_layer = False
         pred_smpl_out = self.run_smpl_fwd(pred_smpl_params['body_transl'],
                                         pred_smpl_params['body_orient'],
                                         pred_smpl_params['body_pose'].reshape(B,
                                                                               S, 
                                                                               63),
-                                        fast=False)
-        pred_verts = pred_smpl_out.vertices
+                                        fast=fast_smpl_layer)
+        if self.loss_on_verts:
+            pred_verts = pred_smpl_out.vertices
+
         pred_jts = pred_smpl_out.joints[:, :22] 
         gt_smpl_out= self.run_smpl_fwd(gt_smpl_params['body_transl'],
                                      gt_smpl_params['body_orient'],
                                      gt_smpl_params['body_pose'].reshape(B,S,63),
-                                        fast=False)
-        gt_verts = gt_smpl_out.vertices
+                                        fast=fast_smpl_layer)
+        if self.loss_on_verts:
+            gt_verts = gt_smpl_out.vertices
         gt_jts = gt_smpl_out.joints[:, :22]
-        pred_verts = rearrange(pred_verts, '(b s) ... -> b s ...',
-                                s=S, b=B)
-        gt_verts = rearrange(gt_verts, '(b s) ... -> b s ...',
-                                s=S, b=B)
+
+        if self.loss_on_verts:
+            pred_verts = rearrange(pred_verts, '(b s) ... -> b s ...',
+                                    s=S, b=B)
+            gt_verts = rearrange(gt_verts, '(b s) ... -> b s ...',
+                                    s=S, b=B)
         pred_jts = rearrange(pred_jts, '(b s) ... -> b s ...',
                                 s=S, b=B)
         gt_jts = rearrange(gt_jts, '(b s) ... -> b s ...',
@@ -1006,13 +1010,13 @@ class MD(BaseModel):
         all_losses_dict = {}
         tot_loss = torch.tensor(0.0, device=self.device)
         if self.loss_params['predict_epsilon']:
-            noise_loss = self.loss_func_feats(out_dict['noise_pred'],
-                                              out_dict['noise'],
+            noise_loss = self.loss_func_feats(out_dict['target'],
+                                              out_dict['model_output'],
                                               reduction='none')
         # predict x
         else:
-            data_loss = self.loss_func_feats(out_dict['pred_motion_feats'],
-                                             out_dict['input_motion_feats'],
+            data_loss = self.loss_func_feats(out_dict['target'],
+                                             out_dict['model_output'],
                                              reduction='none')
             if self.input_deltas:
                 first_pose_loss = data_loss[:, 0].mean(-1)
@@ -1021,7 +1025,7 @@ class MD(BaseModel):
             else:
                 first_pose_loss = torch.tensor(0.0)
                 full_feature_loss = data_loss
-
+            # maybe i should do weighted average .. maybe not
             for i, _ in enumerate(f_rg[:-1]):
                 if 'delta' in self.input_feats[i]:
                     cur_feat_loss = full_feature_loss[:, 1:, f_rg[i]:f_rg[i+1]
@@ -1034,7 +1038,6 @@ class MD(BaseModel):
                     tot_feat_loss = cur_feat_loss.sum() / pad_mask.sum()
                     all_losses_dict.update({self.input_feats[i]: tot_feat_loss})
                 tot_loss += tot_feat_loss
-            all_losses_dict['total_loss'] = tot_loss
             # trans_loss = full_feature_loss[..., :lparts[0]].mean(-1)*pad_mask
             # trans_loss = trans_loss.sum() / pad_mask.sum()
 
@@ -1061,9 +1064,11 @@ class MD(BaseModel):
                 all_losses_dict['loss_jts'] = loss_jts
 
             tot_loss = tot_loss + loss_verts + loss_jts
+        tot_div = len(self.input_feats) + 1 if self.loss_on_positions else len(self.input_feats)
+        tot_loss /= len(self.input_feats)
+        all_losses_dict['total_loss'] = tot_loss
+
         return tot_loss, all_losses_dict 
-    
-    
     # {'total_loss': total_loss,
     #                         self.input_feats[2]: pose_loss,
     #                         self.input_feats[1]: orient_loss,
@@ -1144,12 +1149,14 @@ class MD(BaseModel):
         pass
     
     def generate_motion(self, texts_cond, motions_cond,
-                        mask_source, mask_target, 
+                        mask_source, mask_target,
+                        diffusion_process, 
                         init_vec_method='noise', init_vec=None,
                         gd_text=None, gd_motion=None, 
                         return_init_noise=False, 
                         condition_mode='full_cond',
-                        num_diff_steps=None):
+                        num_diff_steps=None, 
+                        ):
         # uncond_tokens = [""] * len(texts_cond)
         # if self.condition == 'text':
         #     uncond_tokens.extend(texts_cond)
@@ -1218,6 +1225,7 @@ class MD(BaseModel):
                                                 cond_emb_motion,
                                                 cond_motion_mask,
                                                 mask_target, 
+                                                diffusion_process,
                                                 init_vec=init_diff_rev,
                                                 init_from=init_vec_method,
                                                 gd_text=gd_text, 
@@ -1233,6 +1241,7 @@ class MD(BaseModel):
                                                 cond_emb_motion,
                                                 cond_motion_mask,
                                                 mask_target, 
+                                                diffusion_process,
                                                 init_vec=init_diff_rev,
                                                 init_from=init_vec_method,
                                                 gd_text=gd_text, 
@@ -1541,7 +1550,6 @@ class MD(BaseModel):
 
 
         # rs_set Bx(S+1)xN --> first pose included
-        
         total_loss, loss_dict = self.compute_losses(dif_dict,
                                                     mask_source, 
                                                     mask_target)

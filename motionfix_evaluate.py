@@ -72,13 +72,26 @@ def render_vids(newcfg: DictConfig) -> None:
     # Overload it
     cfg = OmegaConf.merge(prevcfg, newcfg)
     # change scheduler for inference
-    cfg.model.infer_scheduler = newcfg.model.infer_scheduler
-    cfg.model.diff_params.num_inference_timesteps = newcfg.steps
-    cfg.model.diff_params.guidance_scale_motion = newcfg.guidance_scale_motion
-    cfg.model.diff_params.guidance_scale_text = newcfg.guidance_scale_text
-    init_diff_from = cfg.init_from
+    from src.diffusion import create_diffusion
 
-    fd_name = get_folder_name(cfg)
+    from src.diffusion.gaussian_diffusion import ModelMeanType, ModelVarType
+    from src.diffusion.gaussian_diffusion import LossType
+    diffusion_process = create_diffusion(timestep_respacing=None,
+                                    learn_sigma=False,
+                                    sigma_small=True,
+                                    diffusion_steps=cfg.num_sampling_steps,
+                                    noise_schedule=cfg.model.diff_params.noise_schedule,
+                                    predict_xstart=False if cfg.model.diff_params.predict_type == 'noise' else True) # noise vs sample
+
+    # cfg.model.infer_scheduler = newcfg.model.infer_scheduler
+    # cfg.model.diff_params.num_inference_timesteps = newcfg.steps
+    # cfg.model.diff_params.guidance_scale_motion = newcfg.guidance_scale_motion
+    # cfg.model.diff_params.guidance_scale_text = newcfg.guidance_scale_text
+    # init_diff_from = cfg.init_from
+    init_diff_from = 'noise'
+    # TODO pUT THIS BACK    
+    # fd_name = get_folder_name(cfg)
+    fd_name = 'testing_cusotkmm'
     log_name = '__'.join(str(exp_folder).split('/')[-2:])
     log_name = f'{log_name}_{init_diff_from}_{cfg.ckpt_name}'
 
@@ -112,14 +125,13 @@ def render_vids(newcfg: DictConfig) -> None:
     # Load the last checkpoint
     model = model.load_from_checkpoint(last_ckpt_path,
                                        renderer=aitrenderer,
-                                       infer_scheduler=cfg.model.infer_scheduler,
-                                       diff_params=cfg.model.diff_params,
+                                    #    diff_params=cfg.model.diff_params,
                                        strict=False)
     model.freeze()
     logger.info("Model weights restored")
     logger.info("Trainer initialized")
-    logger.info('------Generating using Scheduler------\n\n'\
-                f'{model.infer_scheduler}')
+    # logger.info('------Generating using Scheduler------\n\n'\
+    #             f'{model.infer_scheduler}')
     logger.info('------Diffusion Parameters------\n\n'\
                 f'{model.diff_params}')
 
@@ -206,12 +218,13 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 source_mot_pad,
                                                 mask_source,
                                                 mask_target,
+                                                diffusion_process,
                                                 init_vec=source_init,
                                                 init_vec_method=init_diff_from,
                                                 condition_mode=mode_cond,
                                                 gd_motion=guid_motion,
                                                 gd_text=guid_text,
-                                                num_diff_steps=newcfg.steps)
+                                                num_diff_steps=cfg.num_sampling_steps)
                 gen_mo = model.diffout2motion(diffout)
                 from src.tools.transforms3d import transform_body_pose
                 for i in range(gen_mo.shape[0]):

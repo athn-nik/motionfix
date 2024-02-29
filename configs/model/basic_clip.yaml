@@ -19,11 +19,14 @@ norm_type: standardize # min_max standardize
 # diffusion related
 diff_params:
   num_inference_timesteps: 200
+  num_train_timesteps: 1000
   prob_uncondp: 0.1 # 0.1 0.25
   prob_drop_text: 0.05 # 0.1 0.25
   prob_drop_motion: 0.05
   guidance_scale_text: 2.5 #
   guidance_scale_motion: 2.0
+  noise_schedule: 'squaredcos_cap_v2' # Optional: ['linear', 'scaled_linear', 'squaredcos_cap_v2']
+  predict_type: 'sample' # noise
 
 motion_condition: null
 source_encoder: null # trans_enc 
