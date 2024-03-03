@@ -1,4 +1,3 @@
-from turtle import bk
 from typing import List, Dict
 from torch import Tensor
 import torch
@@ -35,7 +34,6 @@ def collate_batch_last_padding(batch, feats):
               for k in batch[0].keys()}
     
     return batch
-
 
 def collate_tensor_with_padding(batch: List[Tensor]) -> Tensor:
     dims = batch[0].dim()

@@ -81,9 +81,9 @@ class BaseModel(LightningModule):
             self.smpl_ait = SMPLLayer(model_type='smplh',
                                     ext='npz',
                                     gender='neutral')
-        log.info(f'Training using these features: {self.input_feats}')
+        log.info(f'Using these features: {self.input_feats}')
         data_path = Path(hack_path(smpl_path, keyword='data')).parent
-        self.test_subset = joblib.load(data_path / 'test_kinedit.pth.tar')
+        # self.test_subset = joblib.load(data_path / 'test_kinedit.pth.tar')
         self.paths_of_rendered_subset = []
         self.paths_of_rendered_subset_tgt = []
         self.paths_of_rendered_subset_src = []

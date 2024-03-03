@@ -100,19 +100,27 @@ def render_vids(newcfg: DictConfig) -> None:
     # Overload it
     cfg = OmegaConf.merge(prevcfg, newcfg)
     # change scheduler for inference
-    cfg.model.infer_scheduler = newcfg.model.infer_scheduler
-    cfg.model.diff_params.num_inference_timesteps = newcfg.steps
-    cfg.model.diff_params.guidance_scale_motion = newcfg.guidance_scale_motion
-    cfg.model.diff_params.guidance_scale_text = newcfg.guidance_scale_text
+    from src.diffusion import create_diffusion
+
+    from src.diffusion.gaussian_diffusion import ModelMeanType, ModelVarType
+    from src.diffusion.gaussian_diffusion import LossType
+    diffusion_process = create_diffusion(timestep_respacing=None,
+                                    learn_sigma=False,
+                                    sigma_small=True,
+                                    diffusion_steps=cfg.num_sampling_steps,
+                                    noise_schedule=cfg.model.diff_params.noise_schedule,
+                                    predict_xstart=False if cfg.model.diff_params.predict_type == 'noise' else True) # noise vs sample
+
+    # cfg.model.infer_scheduler = newcfg.model.infer_scheduler
+    # cfg.model.diff_params.num_inference_timesteps = newcfg.steps
+    # cfg.model.diff_params.guidance_scale_motion = newcfg.guidance_scale_motion
+    # cfg.model.diff_params.guidance_scale_text = newcfg.guidance_scale_text
     init_diff_from = cfg.init_from
 
-    fd_name = get_folder_name(cfg)
+    # fd_name = get_folder_name(cfg)
+    fd_name = f'steps_{cfg.num_sampling_steps}'
     log_name = '__'.join(str(exp_folder).split('/')[-2:])
-    
-    sched_name = cfg.model.infer_scheduler._target_.split('.')[-1]
-    sched_name = sched_name.replace('Scheduler', '').lower()
-    infer_steps = cfg.model.diff_params.num_inference_timesteps
-    log_name = f'{log_name}_{sched_name}{infer_steps}_{init_diff_from}_{cfg.ckpt_name}'
+    log_name = f'steps-{cfg.num_sampling_steps}_{cfg.init_from}_{cfg.ckpt_name}'
 
     output_path = exp_folder / fd_name
     output_path.mkdir(exist_ok=True, parents=True)
@@ -140,26 +148,26 @@ def render_vids(newcfg: DictConfig) -> None:
     import wandb
     
     wandb.init(project="motionfix-visuals", job_type="evaluate",
-               name=log_name, dir=output_path)
+               name=log_name, dir=output_path,
+            #    settings=wandb.Settings(start_method="fork")
+               )
 
     logger.info("Loading model")
-    model = instantiate(cfg.model,
-                        renderer=aitrenderer,
-                        _recursive_=False).eval()
-
-    logger.info(f"Model '{cfg.model.modelname}' loaded")
+    # model = instantiate(cfg.model,
+    #                     renderer=aitrenderer,
+    #                     _recursive_=False).eval()
+    from src.model.base_diffusion import MD
     
     # Load the last checkpoint
-    model = model.load_from_checkpoint(last_ckpt_path,
+    model = MD.load_from_checkpoint(last_ckpt_path,
                                        renderer=aitrenderer,
-                                       infer_scheduler=cfg.model.infer_scheduler,
-                                       diff_params=cfg.model.diff_params,
+                                    #    infer_scheduler=cfg.model.infer_scheduler,
+                                    #    diff_params=cfg.model.diff_params,
                                        strict=False)
     model.freeze()
-    logger.info("Model weights restored")
-    logger.info("Trainer initialized")
-    logger.info('------Generating using Scheduler------\n\n'\
-                f'{model.infer_scheduler}')
+    logger.info(f"Model '{cfg.model.modelname}' loaded")
+    # logger.info('------Generating using Scheduler------\n\n'\
+    #             f'{model.infer_scheduler}')
     logger.info('------Diffusion Parameters------\n\n'\
                 f'{model.diff_params}')
 
@@ -276,12 +284,13 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 source_mot_pad,
                                                 mask_source,
                                                 mask_target,
+                                                diffusion_process,
                                                 init_vec=source_init,
                                                 init_vec_method=init_diff_from,
                                                 condition_mode=mode_cond,
                                                 gd_motion=guid_motion,
                                                 gd_text=guid_text,
-                                                num_diff_steps=newcfg.steps)
+                                                num_diff_steps=cfg.num_sampling_steps)
                 gen_mo = model.diffout2motion(diffout)
                 
                 src_mot_cond, tgt_mot = model.batch2motion(input_batch,
@@ -302,8 +311,9 @@ def render_vids(newcfg: DictConfig) -> None:
                                     [target_lens, target_lens],
                                     [source_lens, target_lens]]
                 lof_mots = output2renderable(mots_to_render)
-                lens_to_mask = [None, None, target_lens,
-                                target_lens, target_lens, target_lens]
+                crop_lens = [max(a, b) for a, b in zip(target_lens, source_lens)]
+                lens_to_mask = [crop_lens, crop_lens, crop_lens,
+                                crop_lens, crop_lens, crop_lens]
                 for elem_id in range(no_of_motions):
                     cur_group_of_vids = []
                     curid = keyids[elem_id]
@@ -328,7 +338,7 @@ def render_vids(newcfg: DictConfig) -> None:
                                     cur_colors = [color_map['source'],
                                                 color_map['target']]
                         else:
-                            cur_mol.append({k: v[elem_id] 
+                            cur_mol.append({k: v[elem_id][:crop_len[elem_id]]
                                                 for k, v in one_motion.items()})
                             cur_colors.append(color_map[monames[moid]])
 

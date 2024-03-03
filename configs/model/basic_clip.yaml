@@ -36,15 +36,18 @@ smpl_path: ${data.smplh_path}
 nfeats: 135
 dim_per_feat: [135]
 # data related
-input_feats:
-- "body_transl_delta_pelv"
-# - "body_pose_delta"
-# - "body_transl"
-- "body_orient"
-- "body_pose"
-# [body_transl_delta_pelv_xy, body_orient_delta, body_pose_delta]
-# [body_transl, body_orient, body_pose]
 
+input_feats:
+# - "body_transl_delta"
+- "body_transl_delta_pelv"
+# - "body_transl_delta_pelv_xy_wo_z"
+# - "body_transl_z"
+# - "body_transl"
+- "body_orient_xy"
+- "z_orient_delta"
+- "body_pose"
+- "body_joints_local_wo_z_rot"
+ 
 loss_on_positions: false
 loss_on_verts: false
 

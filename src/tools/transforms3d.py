@@ -213,7 +213,6 @@ def get_z_rot(rot_, in_format="6d"):
         euler_angles_to_matrix(euler_z, "ZYX"),
         min=-1.0, max=1.0)  # add zero XY euler angles
     return z_rot
-    
 
 def remove_z_rot(pose, in_format="6d", out_format="6d"):
     """

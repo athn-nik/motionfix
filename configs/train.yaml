@@ -22,7 +22,7 @@ run_id: ${generate_id:}
 # For finetuning
 resume: null
 resume_ckpt_name: null
-renderer: ait # null
+renderer: null # ait # null
 devices: 1
 
 # For finetuning

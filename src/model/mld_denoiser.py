@@ -276,5 +276,6 @@ class MldDenoiser(nn.Module):
                                                                           dim=0)
         third_eps = uncond_eps + guidance_motion * (cond_eps_motion - uncond_eps) + \
                      guidance_text_n_motion * (cond_eps_text_n_motion - cond_eps_motion)
-        eps = torch.cat([third_eps, third_eps, third_eps], dim=0)
-        return torch.cat([third_eps, rest], dim=1)
+        eps = torch.cat([ cond_eps_motion, cond_eps_text_n_motion, 
+                         third_eps], dim=0)
+        return eps

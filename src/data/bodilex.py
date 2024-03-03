@@ -75,14 +75,17 @@ class BodilexDataset(Dataset):
             "body_transl_delta": self._get_body_transl_delta,
             "body_transl_delta_pelv": self._get_body_transl_delta_pelv,
             "body_transl_delta_pelv_xy": self._get_body_transl_delta_pelv_xy,
+            "body_transl_delta_pelv_xy_wo_z": self._get_body_transl_delta_pelv_xy_wo_z,
             "body_orient": self._get_body_orient,
             "body_orient_xy": self._get_body_orient_xy,
             "body_orient_delta": self._get_body_orient_delta,
+            "z_orient_delta": self._get_z_orient_delta,
             "body_pose": self._get_body_pose,
             "body_pose_delta": self._get_body_pose_delta,
 
             "body_joints": self._get_body_joints,
             "body_joints_rel": self._get_body_joints_rel,
+            "body_joints_local_wo_z_rot": self._get_body_joints_local_wo_z_rot,
             "body_joints_vel": self._get_body_joints_vel,
             "joint_global_oris": self._get_joint_global_orientations,
             "joint_ang_vel": self._get_joint_angular_velocity,
@@ -241,6 +244,20 @@ class BodilexDataset(Dataset):
         joint_vel[0] = 0
         return rearrange(joint_vel, '... j c -> ... (j c)')
 
+    def _get_body_joints_local_wo_z_rot(self, data):
+        """get body joint coordinates relative to the pelvis"""
+        joints = to_tensor(data['joint_positions'][:, :self.n_body_joints, :])
+        pelvis_transl = to_tensor(joints[:, 0, :])
+        joints_glob = to_tensor(joints[:, :self.n_body_joints, :])
+        pelvis_orient = to_tensor(data['rots'][..., :3])
+
+        pelvis_orient_z = get_z_rot(pelvis_orient, in_format="aa")
+        # pelvis_orient_z = transform_body_pose(pelvis_orient_z, "aa->rot").float()
+        # relative_joints = R.T @ (p_global - pelvis_translation)
+        rel_joints = torch.einsum('fdi,fjd->fji', pelvis_orient_z, joints_glob - pelvis_transl[:, None, :])
+ 
+        return rearrange(rel_joints, '... j c -> ... (j c)')
+
     def _get_body_joints_rel(self, data):
         """get body joint coordinates relative to the pelvis"""
         joints = to_tensor(data['joint_positions'][:, :self.n_body_joints, :])
@@ -275,7 +292,7 @@ class BodilexDataset(Dataset):
 
     def _get_body_transl_z(self, data):
         """get body pelvis tranlation"""
-        return to_tensor(data['trans'])[..., 2:] # only z
+        return to_tensor(data['joint_positions'])[:, 0, 2:] # only z
 
     def _get_body_transl_delta(self, data):
         """get body pelvis tranlation delta"""
@@ -310,6 +327,21 @@ class BodilexDataset(Dataset):
         trans_vel_pelv[0] = 0  # zero out velocity of first frame
         return trans_vel_pelv
 
+    def _get_body_transl_delta_pelv_xy_wo_z(self, data):
+        """
+        get body pelvis tranlation delta while removing the global z rotation of the pelvis
+        v_i = t_i - t_{i-1} relative to R_{i-1}_xy
+        """
+        trans = to_tensor(data['joint_positions'][:, 0, :])
+        # trans = to_tensor(data['trans'])
+        trans_vel = trans - trans.roll(1, 0)  # shift one right and subtract
+        pelvis_orient = to_tensor(data['rots'][..., :3])
+        R_z = get_z_rot(pelvis_orient, in_format="aa")
+        # rotate -R_z
+        trans_vel_pelv = change_for(trans_vel, R_z.roll(1, 0), forward=True)
+        trans_vel_pelv[0] = 0  # zero out velocity of first frame
+        return trans_vel_pelv[..., :2]
+
     def _get_body_orient(self, data):
         """get body global orientation"""
         # default is axis-angle representation
@@ -335,6 +367,17 @@ class BodilexDataset(Dataset):
         pelvis_orient_delta = rot_diff(pelvis_orient, in_format="aa",
                                        out_format=self.rot_repr)
         return pelvis_orient_delta
+
+
+    def _get_z_orient_delta(self, data):
+        """get global body orientation delta"""
+        # default is axis-angle representation
+        pelvis_orient = to_tensor(data['rots'][..., :3])
+        pelvis_orient_z = get_z_rot(pelvis_orient, in_format="aa")
+        pelvis_orient_z = transform_body_pose(pelvis_orient_z, "rot->aa")
+        z_orient_delta = rot_diff(pelvis_orient_z, in_format="aa",
+                                       out_format=self.rot_repr)
+        return z_orient_delta
 
     def _get_body_pose(self, data):
         """get body pose"""
@@ -490,9 +533,12 @@ class BodilexDataModule(BASEDataModule):
         #     yield {k:data[k] for k in islice(it, SIZE)}
         # and then process with the AmassDataset as you like
         # pass this or split for dataloading into sets
+        log.info(f'...Loading data from {ds_db_path}...')
         dataset_dict_raw = joblib.load(ds_db_path)
+        log.info(f'Loaded data from {ds_db_path}.')
+
         dataset_dict_raw = cast_dict_to_tensors(dataset_dict_raw)
-        for k, v in dataset_dict_raw.items():
+        for k, v in tqdm(dataset_dict_raw.items()):
             
             if len(v['motion_source']['rots'].shape) > 2:
                 rots_flat_src = v['motion_source']['rots'].flatten(-2).float()
@@ -547,8 +593,9 @@ class BodilexDataModule(BASEDataModule):
         #     dataset_dict_raw[k]['motion_target']['trans'] = dataset_dict_raw[k]['motion_target']['trans'][:60] 
         #     dataset_dict_raw[k]['motion_target']['joint_positions'] = dataset_dict_raw[k]['motion_target']['joint_positions'][:60] 
  
+ 
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
-
+        
         # add id fiels in order to turn the dict into a list without loosing it
         # random.seed(self.preproc.split_seed)
 
@@ -577,7 +624,6 @@ class BodilexDataModule(BASEDataModule):
                                                       self.rot_repr,
                                                       self.load_feats,
                                                       do_augmentations=False))
-
         # setup collate function meta parameters
         # self.collate_fn = lambda b: collapPte_batch(b, self.cfg.load_feats)
         # create datasets

@@ -15,12 +15,12 @@ ckpt_name: 'last'
 last_ckpt_path: ${get_last_checkpoint:${folder},${ckpt_name}}
 logger_level: INFO
 
-steps: 1000
+num_sampling_steps: 1000
 guidance_scale_text: 2.5 #
 guidance_scale_motion: 1.5
 
 subset: cherries2
-init_from: 'source' # noise
+init_from: 'noise' # source
 
 defaults:
   - _self_

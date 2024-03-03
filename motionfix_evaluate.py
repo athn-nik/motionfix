@@ -87,11 +87,11 @@ def render_vids(newcfg: DictConfig) -> None:
     # cfg.model.diff_params.num_inference_timesteps = newcfg.steps
     # cfg.model.diff_params.guidance_scale_motion = newcfg.guidance_scale_motion
     # cfg.model.diff_params.guidance_scale_text = newcfg.guidance_scale_text
-    # init_diff_from = cfg.init_from
-    init_diff_from = 'noise'
+    init_diff_from = cfg.init_from
+    # init_diff_from = 'noise'
     # TODO pUT THIS BACK    
     # fd_name = get_folder_name(cfg)
-    fd_name = 'testing_cusotkmm'
+    fd_name = f'steps_{cfg.num_sampling_steps}'
     log_name = '__'.join(str(exp_folder).split('/')[-2:])
     log_name = f'{log_name}_{init_diff_from}_{cfg.ckpt_name}'
 

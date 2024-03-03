@@ -37,9 +37,14 @@ sampler: ${sampler}
 load_feats:
 # - "body_transl_delta"
 - "body_transl_delta_pelv"
-# - "body_transl_delta_pelv_xy"
-- "body_orient"
+# - "body_transl_delta_pelv_xy_wo_z"
+# - "body_transl"
+- "body_orient_xy"
+- "z_orient_delta"
 - "body_pose"
+- "body_joints_local_wo_z_rot"
+ 
+# - "body_orient"
 # - "body_transl"
 # - "body_joints"
 

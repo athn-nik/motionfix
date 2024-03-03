@@ -34,7 +34,6 @@ def render_skeleton(renderer: HeadlessRenderer, positions: torch.Tensor,
                               color=color,
                               radius=0.03)
 
-
     #  if 'gender' in datum.keys():
     #  gender = datum['gender']
     import sys
@@ -42,7 +41,6 @@ def render_skeleton(renderer: HeadlessRenderer, positions: torch.Tensor,
     old = os.dup(1)
     os.close(1)
     os.open(os.devnull, os.O_WRONLY)
-    
 
     renderer.scene.add(skeletons_seq)
     # camera follows smpl sequence
