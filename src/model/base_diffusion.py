@@ -60,6 +60,7 @@ class MD(BaseModel):
                  loss_func_pos: str = 'mse', # l1 mse
                  loss_func_feats: str = 'mse', # l1 mse
                  renderer = None,
+                 pad_inputs = False,
                  source_encoder: str = 'trans_enc',
                  **kwargs):
 
@@ -95,7 +96,7 @@ class MD(BaseModel):
                 self.motion_cond_encoder = instantiate(motion_condition_encoder)
             else:
                 self.motion_cond_encoder = None
-                
+        self.pad_inputs = pad_inputs 
         self.text_encoder = instantiate(text_encoder)
         self.loss_on_positions = loss_on_positions
         self.loss_on_verts = loss_on_verts
@@ -1595,18 +1596,25 @@ class MD(BaseModel):
             else:
                 batch[f'{k}_motion'] = v
                 # batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
-            if v.shape[0] > 1:
+            if v.shape[0] > 1 and self.pad_inputs:
                 batch[f'{k}_motion'] = torch.nn.functional.pad(v, (0, 0, 0, 0, 0,
                                                                300 - v.size(0)),
                                                            value=0)
         if self.motion_condition:
-            mask_source, mask_target = self.prepare_mot_masks(batch['length_source'],
-                                                              batch['length_target'])
+            if self.pad_inputs:
+                mask_source, mask_target = self.prepare_mot_masks(batch['length_source'],
+                                                              batch['length_target'],
+                                                              max_len=300)
+            else:
+                mask_source, mask_target = self.prepare_mot_masks(batch['length_source'],
+                                                              batch['length_target'],
+                                                              max_len=None)
+
         else:
 
             mask_target = lengths_to_mask(batch['length_target'],
                                           device=self.device)
-            if v.shape[0] > 1:
+            if v.shape[0] > 1 and self.pad_inputs:
                 mask_target = F.pad(mask_target, (0, 300 - mask_target.size(1)),
                                 value=0)
 

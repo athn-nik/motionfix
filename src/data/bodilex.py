@@ -368,7 +368,6 @@ class BodilexDataset(Dataset):
                                        out_format=self.rot_repr)
         return pelvis_orient_delta
 
-
     def _get_z_orient_delta(self, data):
         """get global body orientation delta"""
         # default is axis-angle representation

@@ -76,11 +76,13 @@ class SincSynthDataset(Dataset):
             "body_orient": self._get_body_orient,
             "body_orient_xy": self._get_body_orient_xy,
             "body_orient_delta": self._get_body_orient_delta,
+            "z_orient_delta": self._get_z_orient_delta,
             "body_pose": self._get_body_pose,
             "body_pose_delta": self._get_body_pose_delta,
 
             "body_joints": self._get_body_joints,
             "body_joints_rel": self._get_body_joints_rel,
+            "body_joints_local_wo_z_rot": self._get_body_joints_local_wo_z_rot,
             "body_joints_vel": self._get_body_joints_vel,
             "joint_global_oris": self._get_joint_global_orientations,
             "joint_ang_vel": self._get_joint_angular_velocity,
@@ -239,6 +241,20 @@ class SincSynthDataset(Dataset):
         joint_vel[0] = 0
         return rearrange(joint_vel, '... j c -> ... (j c)')
 
+    def _get_body_joints_local_wo_z_rot(self, data):
+        """get body joint coordinates relative to the pelvis"""
+        joints = to_tensor(data['joint_positions'][:, :self.n_body_joints, :])
+        pelvis_transl = to_tensor(joints[:, 0, :])
+        joints_glob = to_tensor(joints[:, :self.n_body_joints, :])
+        pelvis_orient = to_tensor(data['rots'][..., :3])
+
+        pelvis_orient_z = get_z_rot(pelvis_orient, in_format="aa")
+        # pelvis_orient_z = transform_body_pose(pelvis_orient_z, "aa->rot").float()
+        # relative_joints = R.T @ (p_global - pelvis_translation)
+        rel_joints = torch.einsum('fdi,fjd->fji', pelvis_orient_z, joints_glob - pelvis_transl[:, None, :])
+ 
+        return rearrange(rel_joints, '... j c -> ... (j c)')
+
     def _get_body_joints_rel(self, data):
         """get body joint coordinates relative to the pelvis"""
         joints = to_tensor(data['joint_positions'][:, :self.n_body_joints, :])
@@ -325,6 +341,17 @@ class SincSynthDataset(Dataset):
             # axis-angle to rotation matrix & drop last row
             pelvis_orient_xy = remove_z_rot(pelvis_orient, in_format="aa")
         return pelvis_orient_xy
+
+    def _get_z_orient_delta(self, data):
+        """get global body orientation delta"""
+        # default is axis-angle representation
+        pelvis_orient = to_tensor(data['rots'][..., :3])
+        pelvis_orient_z = get_z_rot(pelvis_orient, in_format="aa")
+        pelvis_orient_z = transform_body_pose(pelvis_orient_z, "rot->aa")
+        z_orient_delta = rot_diff(pelvis_orient_z, in_format="aa",
+                                       out_format=self.rot_repr)
+        return z_orient_delta
+
 
     def _get_body_orient_delta(self, data):
         """get global body orientation delta"""
@@ -505,18 +532,18 @@ class SincSynthDataModule(BASEDataModule):
                                                                )
                 dataset_dict_raw[k][mtype]['rots'] = rots_can
                 dataset_dict_raw[k][mtype]['trans'] = trans_can
-                # seqlen, jts_no = rots_can.shape[:2]
+                seqlen, jts_no = rots_can.shape[:2]
                 
-                # rots_can_rotm = transform_body_pose(rots_can,
-                #                                   'aa->rot')
+                rots_can_rotm = transform_body_pose(rots_can,
+                                                  'aa->rot')
                 # # self.body_model.batch_size = seqlen * jts_no
 
-                # jts_can_ds = self.body_model.smpl_forward_fast(transl=trans_can,
-                #                                  body_pose=rots_can_rotm[:, 1:],
-                #                              global_orient=rots_can_rotm[:, :1])
+                jts_can_ds = self.body_model.smpl_forward_fast(transl=trans_can,
+                                                 body_pose=rots_can_rotm[:, 1:],
+                                             global_orient=rots_can_rotm[:, :1])
 
-                # jts_can = jts_can_ds.joints[:, :22]
-                # dataset_dict_raw[k][mtype]['joint_positions'] = jts_can
+                jts_can = jts_can_ds.joints[:, :22]
+                dataset_dict_raw[k][mtype]['joint_positions'] = jts_can
                 # from src.tools.interpolation import flip_motion
                 # from src.render.mesh_viz import render_skeleton, render_motion
                 # from src.model.utils.tools import remove_padding, pack_to_render
@@ -545,9 +572,10 @@ class SincSynthDataModule(BASEDataModule):
         #     dataset_dict_raw[k]['motion_target']['joint_positions'] = dataset_dict_raw[k]['motion_target']['joint_positions'][:60] 
 
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
-        joblib.dump(data_dict, str(ds_db_path).replace('sinc_synth_edits_v1.pth.tar',
-                                                       'sinc_synth_edits_v2.pth.tar')
-                    )
+        import ipdb; ipdb.set_trace()
+        # joblib.dump(data_dict, str(ds_db_path).replace('sinc_synth_edits_v1.pth.tar',
+        #                                                'sinc_synth_edits_v2.pth.tar')
+        #             )
         # add id fiels in order to turn the dict into a list without loosing it
         # random.seed(self.preproc.split_seed)
  
@@ -595,7 +623,7 @@ class SincSynthDataModule(BASEDataModule):
                                                       self.rot_repr,
                                                       self.load_feats,
                                                       do_augmentations=False))
-
+        import ipdb; ipdb.set_trace()
         # setup collate function meta parameters
         # self.collate_fn = lambda b: collate_batch(b, self.cfg.load_feats)
         # create datasets
