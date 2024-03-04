@@ -76,10 +76,20 @@ def render_vids(newcfg: DictConfig) -> None:
 
     from src.diffusion.gaussian_diffusion import ModelMeanType, ModelVarType
     from src.diffusion.gaussian_diffusion import LossType
+    if cfg.num_sampling_steps is not None:
+        if cfg.num_sampling_steps <= cfg.model.diff_params.num_train_timesteps:
+            num_infer_steps = cfg.num_sampling_steps
+        else:
+            num_infer_steps = cfg.model.diff_params.num_train_timesteps
+            logger.info('More sampling steps than the training ones! Sampling with maximum')
+            logger.info(f'Number of steps: {num_infer_steps}')
+    else:
+        num_infer_steps = cfg.model.diff_params.num_train_timesteps
+
     diffusion_process = create_diffusion(timestep_respacing=None,
                                     learn_sigma=False,
                                     sigma_small=True,
-                                    diffusion_steps=cfg.num_sampling_steps,
+                                    diffusion_steps=num_infer_steps,
                                     noise_schedule=cfg.model.diff_params.noise_schedule,
                                     predict_xstart=False if cfg.model.diff_params.predict_type == 'noise' else True) # noise vs sample
 
@@ -93,13 +103,11 @@ def render_vids(newcfg: DictConfig) -> None:
     # fd_name = get_folder_name(cfg)
     fd_name = f'steps_{cfg.num_sampling_steps}'
     log_name = '__'.join(str(exp_folder).split('/')[-2:])
-    log_name = f'{log_name}_{init_diff_from}_{cfg.ckpt_name}'
+    log_name = f'samples_{log_name}_steps-{cfg.num_sampling_steps}_{cfg.init_from}_{cfg.ckpt_name}'
 
     output_path = exp_folder / f'{fd_name}_{cfg.data.dataname}'
     output_path.mkdir(exist_ok=True, parents=True)
-
-    log_name = '__'.join(str(exp_folder).split('/')[-2:])
-
+    logger.info(f"-------Output path:{output_path}------")
     import pytorch_lightning as pl
     import numpy as np
     from hydra.utils import instantiate
@@ -116,27 +124,23 @@ def render_vids(newcfg: DictConfig) -> None:
     #            name=log_name, dir=output_path)
     aitrenderer = None
     logger.info("Loading model")
-    model = instantiate(cfg.model,
-                        renderer=None,
-                        _recursive_=False)
-
-    logger.info(f"Model '{cfg.model.modelname}' loaded")
-    
+    from src.model.base_diffusion import MD    
     # Load the last checkpoint
-    model = model.load_from_checkpoint(last_ckpt_path,
+    model = MD.load_from_checkpoint(last_ckpt_path,
                                        renderer=aitrenderer,
+                                    #    infer_scheduler=cfg.model.infer_scheduler,
                                     #    diff_params=cfg.model.diff_params,
                                        strict=False)
     model.freeze()
-    logger.info("Model weights restored")
-    logger.info("Trainer initialized")
+    logger.info(f"Model '{cfg.model.modelname}' loaded")
     # logger.info('------Generating using Scheduler------\n\n'\
     #             f'{model.infer_scheduler}')
     logger.info('------Diffusion Parameters------\n\n'\
                 f'{model.diff_params}')
 
     import numpy as np
-    data_module = instantiate(cfg.data, amt_only=True, load_splits=['test'])
+    data_module = instantiate(cfg.data, amt_only=True,
+                              load_splits=['test'])
 
     transl_feats = [x for x in model.input_feats if 'transl' in x]
     if set(transl_feats).issubset(["body_transl_delta", "body_transl_delta_pelv",
@@ -175,13 +179,12 @@ def render_vids(newcfg: DictConfig) -> None:
         mode_cond = 'full_cond'
     logger.info(f'Evaluation Set length:{len(test_dataset)}')
     with torch.no_grad():
-        output_path = output_path / 'samples'
-        logger.info(f"Sample MotionFix test set\n in:{output_path}")
-        output_path.mkdir(exist_ok=True, parents=True)
         for guid_text, guid_motion in guidances_mix:
             cur_guid_comb = f'ld_txt-{guid_text}_ld_mot-{guid_motion}'
             cur_outpath = output_path / cur_guid_comb
             cur_outpath.mkdir(exist_ok=True, parents=True)
+            logger.info(f"Sample MotionFix test set\n in:{cur_outpath}")
+
             for batch in tqdm(ds_iterator):
 
                 text_diff = batch['text']
@@ -190,19 +193,24 @@ def render_vids(newcfg: DictConfig) -> None:
                 no_of_motions = len(keyids)
 
                 input_batch = prepare_test_batch(model, batch)
-                # for k, v in input_batch.items():
-                #     batch[f'{k}_motion'] = torch.nn.functional.pad(v,
-                #                                                    (0, 0, 0, 0,
-                #                                                     0, 300 - v.size(0)),
-                #                                                    value=0)
-                source_mot_pad = torch.nn.functional.pad(input_batch['source_motion'],
-                                                        (0, 0, 0, 0, 0,
-                                            300 - input_batch['source_motion'].size(0)),
-                                                        value=0)
+                if model.pad_inputs:
+                    source_mot_pad = torch.nn.functional.pad(input_batch['source_motion'],
+                                                            (0, 0, 0, 0, 0,
+                                                300 - input_batch['source_motion'].size(0)),
+                                                            value=0)
+                else:
+                    source_mot_pad = input_batch['source_motion'].clone()
                 if model.motion_condition == 'source' or init_diff_from == 'source':
                     source_lens = batch['length_source']
-                    mask_source, mask_target = model.prepare_mot_masks(source_lens,
-                                                                    target_lens)
+                    if model.pad_inputs:
+                        mask_source, mask_target = model.prepare_mot_masks(source_lens,
+                                                                        target_lens,
+                                                                        max_len=300)
+                    else:
+                        mask_source, mask_target = model.prepare_mot_masks(source_lens,
+                                                                        target_lens,
+                                                                        max_len=None)
+
                 else:
                     from src.data.tools.tensors import lengths_to_mask
                     mask_target = lengths_to_mask(target_lens,
@@ -224,7 +232,7 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 condition_mode=mode_cond,
                                                 gd_motion=guid_motion,
                                                 gd_text=guid_text,
-                                                num_diff_steps=cfg.num_sampling_steps)
+                                                num_diff_steps=num_infer_steps)
                 gen_mo = model.diffout2motion(diffout)
                 from src.tools.transforms3d import transform_body_pose
                 for i in range(gen_mo.shape[0]):
