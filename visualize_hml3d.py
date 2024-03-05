@@ -118,7 +118,9 @@ def render_vids(newcfg: DictConfig) -> None:
                                     ,"body_pose"
                                     ,"body_orient_delta"
                                     ,"body_pose_delta"
-                                    ,"body_orient_xy"
+                                    ,"body_orient_xy",
+                                    'z_orient_delta', 
+                                    'body_joints_local_wo_z_rot'
                                     ,"body_joints"],
                                     progress_bar=True
                         )
@@ -132,11 +134,27 @@ def render_vids(newcfg: DictConfig) -> None:
 
     # Overload it
     cfg = OmegaConf.merge(prevcfg, newcfg)
+    from src.diffusion import create_diffusion
+
+    from src.diffusion.gaussian_diffusion import ModelMeanType, ModelVarType
+    from src.diffusion.gaussian_diffusion import LossType
+    if cfg.num_sampling_steps is not None:
+        if cfg.num_sampling_steps <= cfg.model.diff_params.num_train_timesteps:
+            num_infer_steps = cfg.num_sampling_steps
+        else:
+            num_infer_steps = cfg.model.diff_params.num_train_timesteps
+            logger.info('More sampling steps than the training ones! Sampling with maximum')
+            logger.info(f'Number of steps: {num_infer_steps}')
+    else:
+        num_infer_steps = cfg.model.diff_params.num_train_timesteps
+    diffusion_process = create_diffusion(timestep_respacing=None,
+                                    learn_sigma=False,
+                                    sigma_small=True,
+                                    diffusion_steps=num_infer_steps,
+                                    noise_schedule=cfg.model.diff_params.noise_schedule,
+                                    predict_xstart=False if cfg.model.diff_params.predict_type == 'noise' else True) # noise vs sample
+
     # change scheduler for inference
-    cfg.model.infer_scheduler = newcfg.model.infer_scheduler
-    cfg.model.diff_params.num_inference_timesteps = newcfg.steps
-    cfg.model.diff_params.guidance_scale_motion = newcfg.guidance_scale_motion
-    cfg.model.diff_params.guidance_scale_text = newcfg.guidance_scale_text
     init_diff_from = cfg.init_from
 
     fd_name = get_folder_name(cfg)
@@ -167,27 +185,22 @@ def render_vids(newcfg: DictConfig) -> None:
                                 'z_up': True})
     aitrenderer = HeadlessRenderer()
     import wandb
-    wandb.init(project="motion-edit-eval", job_type="evaluate",
+    wandb.init(project="hml3d_visuals", job_type="evaluate",
                name=log_name, dir=output_path)
 
     logger.info("Loading model")
-    model = instantiate(cfg.model,
-                        renderer=aitrenderer,
-                        _recursive_=False).eval()
-
-    logger.info(f"Model '{cfg.model.modelname}' loaded")
-    
+    from src.model.base_diffusion import MD    
     # Load the last checkpoint
-    model = model.load_from_checkpoint(last_ckpt_path,
+    model = MD.load_from_checkpoint(last_ckpt_path,
                                        renderer=aitrenderer,
-                                       infer_scheduler=cfg.model.infer_scheduler,
-                                       diff_params=cfg.model.diff_params,
+                                    #    infer_scheduler=cfg.model.infer_scheduler,
+                                    #    diff_params=cfg.model.diff_params,
                                        strict=False)
     model.freeze()
     logger.info("Model weights restored")
     logger.info("Trainer initialized")
-    logger.info('------Generating using Scheduler------\n\n'\
-                f'{model.infer_scheduler}')
+    # logger.info('------Generating using Scheduler------\n\n'\
+    #             f'{model.infer_scheduler}')
     logger.info('------Diffusion Parameters------\n\n'\
                 f'{model.diff_params}')
 
@@ -226,14 +239,14 @@ def render_vids(newcfg: DictConfig) -> None:
     from src.utils.motionfix_utils import test_subset_hml3d
 
     batch_size_test = 16
-    test_subset_hml3d = [elem for elem in test_dataset_hml3d.data
+    test_subset_hml3d = [elem for elem in test_dataset_hml3d
                          if elem['id'] in test_subset_hml3d]
     # idss = [0,1,2,3,8]
     # filtered_list = [subset_hml[index] for index in idss]
     # test_dataset_hml3d.data = filtered_list[:1]
     testloader_hml3d = torch.utils.data.DataLoader(test_subset_hml3d,
                                                    shuffle=False,
-                                                   num_workers=4,
+                                                   num_workers=0,
                                                    batch_size=batch_size_test,
                                                    collate_fn=collate_fn)
 
@@ -270,14 +283,15 @@ def render_vids(newcfg: DictConfig) -> None:
                                             value=0)
                     source_lens = batch['length_target']
                     mask_source, mask_target = model.prepare_mot_masks(source_lens,
-                                                                    target_lens)
+                                                                       target_lens)
                 else:
                     from src.data.tools.tensors import lengths_to_mask
                     mask_target = lengths_to_mask(target_lens,
                                                 model.device)
-                    mask_target = F.pad(mask_target, 
-                                        (0, 300 - mask_target.size(1)),
-                                        value=0)
+                    if model.pad_inputs:
+                        mask_target = F.pad(mask_target, 
+                                            (0, 300 - mask_target.size(1)),
+                                            value=0)
                     in_batch['source_motion'] = None
                     mask_source = None
                 if init_diff_from == 'source':
@@ -288,11 +302,12 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 None, # source
                                                 mask_source,
                                                 mask_target,
+                                                diffusion_process,
                                                 gd_text=g_text,
                                                 init_vec=source_init,
                                                 init_vec_method=init_diff_from,
                                                 condition_mode=mode_cond,
-                                                num_diff_steps=newcfg.steps,
+                                                num_diff_steps=num_infer_steps,
                                                 )
                 gen_mo = model.diffout2motion(diffout)
 
@@ -308,14 +323,18 @@ def render_vids(newcfg: DictConfig) -> None:
 
                 lof_mots = output2renderable(model,
                                             mots_to_render)
-
-                for elem_id in range(no_of_motions):
+                lens_to_mask = [target_lens, target_lens]
+                logger.info(f"Rendering the motion videos...")
+                for elem_id in tqdm(range(no_of_motions)):
                     cur_group_of_vids = []
                     curid = keyids[elem_id]
                     for moid in range(len(monames)):
                         one_motion = lof_mots[moid]
                         cur_mol = []
                         cur_colors = []
+                        if lens_to_mask[moid] is not None:
+                            crop_len = lens_to_mask[moid]
+
                         if isinstance(one_motion, list):
                             for xx in one_motion:
                                 cur_mol.append({k: v[elem_id] 
@@ -323,7 +342,7 @@ def render_vids(newcfg: DictConfig) -> None:
                             cur_colors = [color_map['source'],
                                         color_map['target']]
                         else:
-                            cur_mol.append({k: v[elem_id] 
+                            cur_mol.append({k: v[elem_id][:crop_len[elem_id]]
                                                 for k, v in one_motion.items()})
                             cur_colors.append(color_map[monames[moid]])
 

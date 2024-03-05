@@ -368,36 +368,55 @@ class MD(BaseModel):
         # y = torch.tensor(class_labels, device=device)
         # cat_embeds = torch.cat([text_embeds, motion_embeds], 0)
         # Setup classifier-free guidance:
-        z = torch.cat([initial_latents, initial_latents, initial_latents], 0)
+        if motion_embeds is not None:
+            z = torch.cat([initial_latents, initial_latents, initial_latents], 0)
+        else:
+            z = torch.cat([initial_latents, initial_latents], 0)
+
         # y_null = torch.tensor([1000] * n, device=device)
         # y = torch.cat([y, y_null], 0)
+        if motion_embeds is not None:
+            model_kwargs = dict(# noised_motion=latent_model_input,
+                                # timestep=t,
+                                in_motion_mask=torch.cat([inp_motion_mask,
+                                                        inp_motion_mask,
+                                                        inp_motion_mask], 0),
+                                text_embeds=torch.cat([torch.zeros_like(text_embeds),
+                                                    torch.zeros_like(text_embeds),
+                                                    text_embeds], 0),
+                                condition_mask=torch.cat([uncondition_mask,
+                                                        condition_mask_motion,
+                                                        condition_mask_both], 0),
+                                motion_embeds=torch.cat([torch.zeros_like(motion_embeds),
+                                                        motion_embeds,
+                                                        motion_embeds], 1),
+                                guidance_motion=gd_motion,
+                                guidance_text_n_motion=gd_text)
+        else:
+            model_kwargs = dict(# noised_motion=latent_model_input,
+                    # timestep=t,
+                    in_motion_mask=torch.cat([inp_motion_mask,
+                                            inp_motion_mask], 0),
+                    text_embeds=torch.cat([torch.zeros_like(text_embeds),
+                                        text_embeds], 0),
+                    condition_mask=torch.cat([uncondition_mask,
+                                            condition_mask_text], 0),
+                    motion_embeds=None,
+                    guidance_motion=gd_motion,
+                    guidance_text_n_motion=gd_text)
 
-        model_kwargs = dict(# noised_motion=latent_model_input,
-                            # timestep=t,
-                            in_motion_mask=torch.cat([inp_motion_mask,
-                                                      inp_motion_mask,
-                                                      inp_motion_mask], 0),
-                            text_embeds=torch.cat([torch.zeros_like(text_embeds),
-                                                   torch.zeros_like(text_embeds),
-                                                   text_embeds], 0),
-                            condition_mask=torch.cat([uncondition_mask,
-                                                      condition_mask_motion,
-                                                      condition_mask_both], 0),
-                            motion_embeds=torch.cat([torch.zeros_like(motion_embeds),
-                                                     motion_embeds,
-                                                     motion_embeds], 1),
-                            guidance_motion=gd_motion,
-                            guidance_text_n_motion=gd_text)
         # model_kwargs = dict(y=y, cfg_scale=args.cfg_scale)
         # Sample images:
         samples = diff_process.p_sample_loop(self.denoiser.forward_with_guidance,
-                                             z.shape, z, clip_denoised=False, 
+                                             z.shape, z, 
+                                             clip_denoised=False, 
                                              model_kwargs=model_kwargs,
                                              progress=True,
-                                             device=initial_latents.device)
-
-        _, _, samples = samples.chunk(3, dim=0)  # Remove null class samples
-
+                                             device=initial_latents.device,)
+        if motion_embeds is not None:
+            _, _, samples = samples.chunk(3, dim=0)  # Remove null class samples
+        else:
+            _, samples = samples.chunk(2, dim=0)
         # [batch_size, 1, latent_dim] -> [1, batch_size, latent_dim]
 
         final_diffout = samples.permute(1, 0, 2)
