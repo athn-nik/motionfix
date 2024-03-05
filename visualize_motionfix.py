@@ -129,7 +129,7 @@ def render_vids(newcfg: DictConfig) -> None:
     # fd_name = get_folder_name(cfg)
     fd_name = f'steps_{cfg.num_sampling_steps}'
     log_name = '_'.join(str(exp_folder).split('/')[-2:])
-    log_name = f'{log_name}_steps-{um_infer_steps}_{cfg.init_from}_{cfg.ckpt_name}'
+    log_name = f'{log_name}_steps-{num_infer_steps}_{cfg.init_from}_{cfg.ckpt_name}'
 
     output_path = exp_folder / fd_name
     output_path.mkdir(exist_ok=True, parents=True)
