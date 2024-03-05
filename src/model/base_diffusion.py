@@ -309,7 +309,8 @@ class MD(BaseModel):
                                         perc_text_n_motion=0.0,
                                         perc_uncond=0.0, 
                                         randomize=False)
-            # condition_mask_text[:, :max_text_len] *= text_masks
+            if max_text_len > 1:
+                condition_mask_text[:, :max_text_len] *= text_masks
 
             condition_mask_motion = self.filter_conditions(
                                         max_text_len=max_text_len,
@@ -332,7 +333,8 @@ class MD(BaseModel):
                             perc_uncond=0.0,
                             randomize=False)
             # might need to adjust for motion if it is more than 1 token
-            # condition_mask_both[:, :max_text_len] *= text_masks
+            if max_text_len > 1:
+                condition_mask_both[:, :max_text_len] *= text_masks
             condition_mask_both[:, max_text_len:] *= cond_motion_masks
 
         elif self.condition in ['text', 'text_uncondp']:
@@ -354,8 +356,8 @@ class MD(BaseModel):
                                         perc_text_n_motion=0.0, 
                                         perc_uncond=0.0,
                                         randomize=False)
-
-            # condition_mask_text *= text_masks
+            if max_text_len > 1:
+                condition_mask_text *= text_masks
 
         latent_model_input = initial_latents
 
@@ -700,8 +702,8 @@ class MD(BaseModel):
                                               perc_text_n_motion=0.85,
                                               perc_uncond=perc_uncondp, 
                                               randomize=False)
-            
-            aug_mask[:, :max_text_len] *= text_mask
+            if max_text_len > 1:
+                aug_mask[:, :max_text_len] *= text_mask
             aug_mask[:, max_text_len:] *= mask_source_motion
             # aug_mask[-idx_motion_only:] *= motion_source_mask[-idx_motion_only:]
             aug_mask = aug_mask[torch.randperm(batch_size)]
@@ -766,11 +768,11 @@ class MD(BaseModel):
         #                                 |rows_txt_only|
         #                                 |rows_mot_only|
         #                                 ---------------
+        max_text_len = cond_emb_text.shape[1]
 
         if self.motion_condition == 'source':
             # motion should be alwasys S, B
             # text should be B, S
-            max_text_len = cond_emb_text.shape[1]
             max_motion_len = cond_emb_motion.shape[0]
             aug_mask = self.filter_conditions(max_text_len=max_text_len,
                                               max_motion_len=max_motion_len,
@@ -781,7 +783,8 @@ class MD(BaseModel):
                                               perc_uncond=perc_uncondp, 
                                               randomize=False)
             assert cond_emb_motion.shape[0] + cond_emb_text.shape[1] == aug_mask.shape[1]
-            aug_mask[:, :max_text_len] *= text_mask
+            if max_text_len > 1:
+                aug_mask[:, :max_text_len] *= text_mask
             aug_mask[:, max_text_len:] *= mask_source_motion
         else:
             aug_mask = self.filter_conditions(max_text_len=cond_emb_text.shape[1],
@@ -792,7 +795,8 @@ class MD(BaseModel):
                                               perc_text_n_motion=0.0,
                                               perc_uncond=perc_uncondp,
                                               randomize=False)
-            aug_mask *= text_mask
+            if max_text_len > 1:
+                aug_mask *= text_mask
         
         rand_perm = torch.randperm(batch_size)
         # random permutation along the batch dimension same for all
@@ -1167,7 +1171,6 @@ class MD(BaseModel):
 
             return diff_out.permute(1, 0, 2)
 
-        pass
     
     def generate_motion(self, texts_cond, motions_cond,
                         mask_source, mask_target,
