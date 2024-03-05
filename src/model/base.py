@@ -495,13 +495,13 @@ class BaseModel(LightningModule):
         optim_dict = {}
         optimizer = torch.optim.AdamW(lr=self.hparams.optim.lr,
                                       params=self.parameters())
-        
+        scheduler = None
         # optim_dict['optimizer'] = optimizer
-        scheduler = torch.optim.lr_scheduler.LinearLR(optimizer,
-                                                      start_factor=1.0, 
-                                                      end_factor=0.1,
-                                                      total_iters=1000,
-                                                      verbose=True)
+        # scheduler = torch.optim.lr_scheduler.LinearLR(optimizer,
+        #                                              start_factor=1.0, 
+        #                                              end_factor=0.1,
+        #                                              total_iters=1000,
+        #                                              verbose=True)
         # # if self.hparams.NAME 
         # if self.hparams.lr_scheduler == 'reduceonplateau':
         #     optim_dict['lr_scheduler'] = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer,
@@ -510,12 +510,13 @@ class BaseModel(LightningModule):
         # elif self.hparams.lr_scheduler == 'steplr':
         #     optim_dict['lr_scheduler'] = torch.optim.lr_scheduler.StepLR(optimizer,
         #                                                                  step_size=200)
-        return {
-                    "optimizer": optimizer,
-                    "lr_scheduler": {
-                        "scheduler": scheduler,
-                    },
-                }
+        # return {
+        #            "optimizer": optimizer,
+        #            "lr_scheduler": {
+        #                "scheduler": scheduler,
+        #            },
+        #        }
+        return optimizer
         # return optim_dict
     
     def prepare_mot_masks(self, source_lens, target_lens, max_len=300):
