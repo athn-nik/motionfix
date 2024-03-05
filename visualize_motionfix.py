@@ -129,7 +129,7 @@ def render_vids(newcfg: DictConfig) -> None:
     # fd_name = get_folder_name(cfg)
     fd_name = f'steps_{cfg.num_sampling_steps}'
     log_name = '_'.join(str(exp_folder).split('/')[-2:])
-    log_name = f'{log_name}_steps-{um_infer_steps}_{cfg.init_from}_{cfg.ckpt_name}'
+    log_name = f'{log_name}_steps-{num_infer_steps}_{cfg.init_from}_{cfg.ckpt_name}'
 
     output_path = exp_folder / fd_name
     output_path.mkdir(exist_ok=True, parents=True)
@@ -249,8 +249,8 @@ def render_vids(newcfg: DictConfig) -> None:
     else:
         mode_cond = 'full_cond'
     tot_pkls = []
-    gd_text = [1.0, 5.0]
-    gd_motion = [1.0, 5.0]
+    gd_text = [1.0, 2.5, 5.0]
+    gd_motion = [1.0, 2.5, 5.0]
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
     from aitviewer.models.smpl import SMPLLayer
     smpl_layer = SMPLLayer(model_type='smplh', ext='npz', gender='neutral')
