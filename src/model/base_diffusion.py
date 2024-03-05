@@ -118,6 +118,7 @@ class MD(BaseModel):
         self.latent_dim = latent_dim
         self.diff_params = diff_params
         denoiser['use_deltas'] = self.input_deltas
+        denoiser.motion_condition = self.motion_condition
         self.denoiser = instantiate(denoiser)
         from src.diffusion import create_diffusion
 
@@ -780,7 +781,7 @@ class MD(BaseModel):
                                               perc_uncond=perc_uncondp, 
                                               randomize=False)
             assert cond_emb_motion.shape[0] + cond_emb_text.shape[1] == aug_mask.shape[1]
-            # aug_mask[:, :max_text_len] *= text_mask
+            aug_mask[:, :max_text_len] *= text_mask
             aug_mask[:, max_text_len:] *= mask_source_motion
         else:
             aug_mask = self.filter_conditions(max_text_len=cond_emb_text.shape[1],
@@ -791,7 +792,7 @@ class MD(BaseModel):
                                               perc_text_n_motion=0.0,
                                               perc_uncond=perc_uncondp,
                                               randomize=False)
-            # aug_mask *= text_mask
+            aug_mask *= text_mask
         
         rand_perm = torch.randperm(batch_size)
         # random permutation along the batch dimension same for all

@@ -108,17 +108,17 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
 
     if cfg.ftune is not None:
         logger.info(f"Loading model from {cfg.ftune_ckpt_path}")
-        model = instantiate(cfg.model,
-                            renderer=renderer,
-                            _recursive_=False)
+        # model = instantiate(cfg.model,
+        #                     renderer=renderer,
+        #                     _recursive_=False)
+        from src.model.base_diffusion import MD
+        model = MD.load_from_checkpoint(cfg.ftune_ckpt_path,
+                                        renderer=renderer,
+                                        diff_params=cfg.model.diff_params,
+                                        motion_condition=cfg.model.motion_condition,
+                                        statistics_path=cfg.model.statistics_path,
+                                        strict=False)
 
-        model = model.load_from_checkpoint(cfg.ftune_ckpt_path,
-                                           renderer=renderer,
-                                           diff_params=cfg.model.diff_params,
-                                           motion_condition=cfg.model.motion_condition,
-                                           statistics_path=cfg.model.statistics_path,
-                                           strict=False)
-        
     else:
         # diffusion related
         model = instantiate(cfg.model,

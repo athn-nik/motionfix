@@ -115,7 +115,9 @@ class SincSynthDataset(Dataset):
         freeze(body_model)
 
         ds_db_path = Path(datapath)
+        log.info(f'Loading data from {ds_db_path}....')
         dataset_dict_raw = joblib.load(ds_db_path)
+
         dataset_dict_raw = cast_dict_to_tensors(dataset_dict_raw)
         for k, v in dataset_dict_raw.items():
             
@@ -514,7 +516,10 @@ class SincSynthDataModule(BASEDataModule):
         #     yield {k:data[k] for k in islice(it, SIZE)}
         # and then process with the AmassDataset as you like
         # pass this or split for dataloading into sets
+        log.info(f'Loading data from {ds_db_path}....')
         dataset_dict_raw = joblib.load(ds_db_path)
+        log.info(f'Loaded data from {ds_db_path}.')
+
         dataset_dict_raw = cast_dict_to_tensors(dataset_dict_raw)
         
         for k, v in tqdm(dataset_dict_raw.items()):

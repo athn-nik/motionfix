@@ -118,7 +118,10 @@ class BodilexDataset(Dataset):
         freeze(body_model)
 
         ds_db_path = Path(datapath)
+        log.info(f'...Loading data from {ds_db_path}...')
         dataset_dict_raw = joblib.load(ds_db_path)
+        log.info(f'Loaded data from {ds_db_path}.')
+
         dataset_dict_raw = cast_dict_to_tensors(dataset_dict_raw)
         for k, v in dataset_dict_raw.items():
             

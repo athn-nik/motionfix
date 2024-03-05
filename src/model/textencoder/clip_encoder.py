@@ -14,7 +14,6 @@ class ClipTextEncoder(pl.LightningModule):
             modelpath: str,
             finetune: bool = False,
             last_hidden_state: bool = True,
-            variant: str = "clip_hidden",
             **kwargs
         ) -> None:
 
