@@ -110,7 +110,7 @@ class HumanML3DDataset(Dataset):
         load_splits = ['val', 'test', 'train']
         for split in load_splits:
             # TODO: remove the _small
-            list_for_split = joblib.load(f'{datapath}/{split}_small.pth.tar')
+            list_for_split = joblib.load(f'{datapath}/{split}.pth.tar')
             for elem in list_for_split:
                 assert elem['joint_positions'].shape[0] == elem['rots'].shape[0] == elem['trans'].shape[0]
                 if elem['rots'].shape[0] > 300:

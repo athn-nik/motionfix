@@ -3,11 +3,11 @@ from torch import Tensor
 import torch
 
 def collate_batch_last_padding(batch, feats):
-    batch_keys = batch[0].keys()
     t2m = True
-    for x in batch_keys:
-        if 'source' in x:
-            t2m = False
+    for batch_items in batch:
+        for bk in batch_items.keys():
+            if 'source' in bk:
+                t2m = False
     if not t2m:
         feats_src = [f'{featype}_source' for featype in feats]
         feats_tgt = [f'{featype}_target' for featype in feats]
@@ -26,7 +26,10 @@ def collate_batch_last_padding(batch, feats):
                 keys = list(b.keys())
                 for k in keys:
                     if k.endswith('_target'):
-                        b[k.replace('target', 'source')] = b[k]
+                        if k == 'length_target':
+                            b[k.replace('target', 'source')] = 0
+                        else:
+                            b[k.replace('target', 'source')] = b[k]
 
     batch = pad_batch(batch, tot_feats, t2m=t2m)
     batch =  {k: torch.stack([b[k] for b in batch])\

@@ -7,7 +7,7 @@ dataset_names:
 - "hml3d"
 dataname: ${concat_string_list:${.dataset_names}}
 datapaths:
-  "bodilex": ${path.data}/bodilex/amass_bodilex_v9.pth.tar
+  "bodilex": ${path.data}/bodilex/amass_bodilex_v11.pth.tar
   "sinc_synth": ${path.data}/sinc_synth/sinc_synth_edits_v1.pth.tar
   "hml3d": ${path.data}/humanml3d_processed
 
@@ -28,8 +28,8 @@ load_with_rot: true
 
 # Define the percentages for each dataset_name value
 batch_sampler: 'ratio' # null false 
-hml3d_ratio: 0
-sinc_synth_ratio: 50
+hml3d_ratio: 50
+sinc_synth_ratio: 0
 bodilex_ratio: 50
 
 rot_repr: '6d'
@@ -49,8 +49,7 @@ sampler: ${sampler}
 load_feats:
 # - "body_transl_delta"
 # - "body_transl_delta_pelv"
-- "body_transl_delta_pelv_xy_wo_z"
-- "body_transl_z"
+- "body_transl_delta_pelv"
 - "body_orient_xy"
 - "z_orient_delta"
 - "body_pose"
