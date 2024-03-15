@@ -64,9 +64,19 @@ class BASEDataModule(pl.LightningDataModule):
                               **self.dataloader_options)
 
     def val_dataloader(self):
-        return DataLoader(self.dataset['val'],
-                          shuffle=True,
-                          **self.dataloader_options)
+        if self.batch_sampler is not None:
+            from src.data.sampling.custom_batch_sampler import PercBatchSampler
+            ratio_batch_sampler = PercBatchSampler(data_source=self.dataset['train'],
+                                                   batch_size=self.batch_size,
+                                                   dataset_percentages=self.ds_perc)
+            del self.dataloader_options['batch_size']
+            return DataLoader(self.dataset['train'],
+                              batch_sampler=ratio_batch_sampler,
+                              **self.dataloader_options)
+        else:
+            return DataLoader(self.dataset['val'],
+                             shuffle=True,
+                              **self.dataloader_options)
 
     def test_dataloader(self):
         return DataLoader(self.dataset['test'],
