@@ -156,9 +156,8 @@ class MldDenoiser(nn.Module):
             time_token_mask = torch.ones((bs, time_emb.shape[0]),
                                         dtype=bool, device=xseq.device)
             aug_mask = torch.cat((time_token_mask,
-                                    condition_mask[:,
-                                                    :text_emb_latent.shape[0]],
-                                    motion_in_mask), 1)
+                                  condition_mask[:, :text_emb_latent.shape[0]],
+                                  motion_in_mask), 1)
         else:
             time_token_mask = torch.ones((bs, time_emb.shape[0]),
                                         dtype=bool,
@@ -168,13 +167,13 @@ class MldDenoiser(nn.Module):
                                         device=xseq.device)
 
             aug_mask = torch.cat((time_token_mask,
-                                    condition_mask[:, :text_emb_latent.shape[0]],
-                                    motion_in_mask,
-                                    sep_token_mask,
-                                    condition_mask[:,text_emb_latent.shape[0]:]
+                                  condition_mask[:, :text_emb_latent.shape[0]],
+                                  motion_in_mask,
+                                  sep_token_mask,
+                                  condition_mask[:,text_emb_latent.shape[0]:]
                                     ), 1)
 
-        tokens = self.encoder(xseq,src_key_padding_mask=~aug_mask)
+        tokens = self.encoder(xseq, src_key_padding_mask=~aug_mask)
 
         # if self.diffusion_only:
         if motion_embeds is not None:
@@ -193,13 +192,9 @@ class MldDenoiser(nn.Module):
         #         denoised_motion_proj = denoised_motion_proj
         denoised_motion = self.pose_proj_out(denoised_motion_proj)
         denoised_motion[~motion_in_mask.T] = 0
-
-
-            # zero for padded area
-            # else:
-            #     sample = tokens[:sample.shape[0]]
-
-
+        # zero for padded area
+        # else:
+        #     sample = tokens[:sample.shape[0]]
         # 5. [batch_size, latent_dim[0], latent_dim[1]] <= [latent_dim[0], batch_size, latent_dim[1]]
         denoised_motion = denoised_motion.permute(1, 0, 2)
         return denoised_motion
