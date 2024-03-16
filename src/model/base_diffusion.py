@@ -1624,8 +1624,8 @@ class MD(BaseModel):
                 batch[f'{k}_motion'] = torch.nn.functional.pad(v, (0, 0, 0, 0, 0,
                                                                300 - v.size(0)),
                                                            value=0)
-        if split == 'val':
-            import ipdb; ipdb.set_trace()
+        #if split == 'val':
+        #    import ipdb; ipdb.set_trace()
         if 0 in batch['length_source']:
             max_source_len = max(batch['length_source'])
             sliced_tensors = []
