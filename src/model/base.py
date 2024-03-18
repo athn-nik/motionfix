@@ -501,11 +501,7 @@ class BaseModel(LightningModule):
         if self.trainer.max_steps != -1:
             return self.trainer.max_steps
 
-        dataset_size = (
-            self.trainer.limit_train_batches
-            if self.trainer.limit_train_batches != 0
-            else len_dataset
-        )
+        dataset_size = len_dataset
 
         num_devices = max(1, self.trainer.num_devices, self.trainer.num_nodes)
 
