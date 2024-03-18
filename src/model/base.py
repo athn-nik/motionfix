@@ -491,12 +491,40 @@ class BaseModel(LightningModule):
     def on_test_epoch_end(self):
         return self.allsplit_epoch_end("test")
 
+    @property
+    def num_training_steps(self) -> int:
+        """Total training steps inferred from datamodule and devices."""
+        # import ipdb; ipdb.set_trace()
+        #dataset = self.train_dataloader(i)
+        len_dataset = len(self.trainer.datamodule.dataset['train'])
+        batch_size = self.trainer.datamodule.batch_size
+        if self.trainer.max_steps != -1:
+            return self.trainer.max_steps
+
+        dataset_size = (
+            self.trainer.limit_train_batches
+            if self.trainer.limit_train_batches != 0
+            else len_dataset
+        )
+
+        num_devices = max(1, self.trainer.num_devices, self.trainer.num_nodes)
+
+        effective_batch_size = batch_size * self.trainer.accumulate_grad_batches * num_devices
+        return (dataset_size // effective_batch_size) * self.trainer.max_epochs
+    
     def configure_optimizers(self):
         optim_dict = {}
+        from src.model.utils.lr_scheduler import get_cosine_with_hard_restarts_schedule_with_warmup
         optimizer = torch.optim.AdamW(lr=self.hparams.optim.lr,
                                       params=self.parameters())
         scheduler = None
         # optim_dict['optimizer'] = optimizer
+        scheduler = get_cosine_with_hard_restarts_schedule_with_warmup(optimizer,
+                                                                       500,
+                                                                       self.num_training_steps)
+        optim_dict = {"optimizer": optimizer,
+                      "lr_scheduler": scheduler}
+        # optim_dict['lr_scheduler'] = scheduler
         # scheduler = torch.optim.lr_scheduler.LinearLR(optimizer,
         #                                              start_factor=1.0, 
         #                                              end_factor=0.1,
@@ -516,8 +544,8 @@ class BaseModel(LightningModule):
         #                "scheduler": scheduler,
         #            },
         #        }
-        return optimizer
-        # return optim_dict
+        # return optimizer
+        return optim_dict
     
     def prepare_mot_masks(self, source_lens, target_lens, max_len=300):
         from src.data.tools.tensors import lengths_to_mask

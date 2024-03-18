@@ -1624,14 +1624,13 @@ class MD(BaseModel):
                 batch[f'{k}_motion'] = torch.nn.functional.pad(v, (0, 0, 0, 0, 0,
                                                                300 - v.size(0)),
                                                            value=0)
-        #if split == 'val':
-        #    import ipdb; ipdb.set_trace()
-        if 0 in batch['length_source']:
-            max_source_len = max(batch['length_source'])
-            sliced_tensors = []
-            for i in range(batch['source_motion'].shape[1]):
-                sliced_tensors.append(batch['source_motion'][:max_source_len, i][:, None])
-            batch['source_motion'] = torch.cat(sliced_tensors, dim=1)
+        if 'length_source' in batch: #hml_3d only case
+            if 0 in batch['length_source']:
+                max_source_len = max(batch['length_source'])
+                sliced_tensors = []
+                for i in range(batch['source_motion'].shape[1]):
+                    sliced_tensors.append(batch['source_motion'][:max_source_len, i][:, None])
+                batch['source_motion'] = torch.cat(sliced_tensors, dim=1)
 
         if self.motion_condition:
             if self.pad_inputs:
