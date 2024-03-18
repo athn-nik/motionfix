@@ -688,7 +688,7 @@ class MD(BaseModel):
         #                                 |rows_txt_only|
         #                                 |rows_mot_only|
         #                                 ---------------
-
+        
         if self.motion_condition == 'source':
             max_text_len = cond_emb_text.shape[1]
             max_motion_len = cond_emb_motion.shape[0]
@@ -767,7 +767,7 @@ class MD(BaseModel):
         #                                 |rows_mot_only|
         #                                 ---------------
         max_text_len = cond_emb_text.shape[1]
-
+        # import ipdb;ipdb.set_trace()
         if self.motion_condition == 'source':
             # motion should be alwasys S, B
             # text should be B, S
@@ -1611,6 +1611,7 @@ class MD(BaseModel):
     def allsplit_step(self, split: str, batch, batch_idx):
         from src.data.tools.tensors import lengths_to_mask
         input_batch = self.norm_and_cat(batch, self.input_feats)
+        # import ipdb;ipdb.set_trace()
         for k, v in input_batch.items():
             if self.input_deltas:
                 batch[f'{k}_motion'] = v[1:]
@@ -1661,7 +1662,7 @@ class MD(BaseModel):
         gt_texts = batch['text']
         gt_keyids = batch['id']
         self.batch_size = len(gt_texts)
-
+        # import ipdb;ipdb.set_trace()
         dif_dict = self.train_diffusion_forward(batch,
                                                 mask_source,
                                                 mask_target)

@@ -494,21 +494,22 @@ class BaseModel(LightningModule):
     @property
     def num_training_steps(self) -> int:
         """Total training steps inferred from datamodule and devices."""
-        dataset = self.train_dataloader()
-        if self.trainer.max_steps:
+        # import ipdb; ipdb.set_trace()
+        #dataset = self.train_dataloader(i)
+        len_dataset = len(self.trainer.datamodule.dataset['train'])
+        batch_size = self.trainer.datamodule.batch_size
+        if self.trainer.max_steps != -1:
             return self.trainer.max_steps
 
         dataset_size = (
             self.trainer.limit_train_batches
             if self.trainer.limit_train_batches != 0
-            else len(dataset)
+            else len_dataset
         )
 
-        num_devices = max(1, self.trainer.num_gpus, self.trainer.num_processes)
-        if self.trainer.tpu_cores:
-            num_devices = max(num_devices, self.trainer.tpu_cores)
+        num_devices = max(1, self.trainer.num_devices, self.trainer.num_nodes)
 
-        effective_batch_size = dataset.batch_size * self.trainer.accumulate_grad_batches * num_devices
+        effective_batch_size = batch_size * self.trainer.accumulate_grad_batches * num_devices
         return (dataset_size // effective_batch_size) * self.trainer.max_epochs
     
     def configure_optimizers(self):
@@ -521,7 +522,9 @@ class BaseModel(LightningModule):
         scheduler = get_cosine_with_hard_restarts_schedule_with_warmup(optimizer,
                                                                        500,
                                                                        self.num_training_steps)
-        optim_dict['lr_scheduler'] = scheduler
+        optim_dict = {"optimizer": optimizer,
+                      "lr_scheduler": scheduler}
+        # optim_dict['lr_scheduler'] = scheduler
         # scheduler = torch.optim.lr_scheduler.LinearLR(optimizer,
         #                                              start_factor=1.0, 
         #                                              end_factor=0.1,

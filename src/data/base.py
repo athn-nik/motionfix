@@ -69,7 +69,8 @@ class BASEDataModule(pl.LightningDataModule):
             ratio_batch_sampler = PercBatchSampler(data_source=self.dataset['train'],
                                                    batch_size=self.batch_size,
                                                    dataset_percentages=self.ds_perc)
-            del self.dataloader_options['batch_size']
+            if 'batch_size' in self.dataloader_options:
+                del self.dataloader_options['batch_size']
             return DataLoader(self.dataset['train'],
                               batch_sampler=ratio_batch_sampler,
                               **self.dataloader_options)

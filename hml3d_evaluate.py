@@ -255,7 +255,7 @@ def hml3d_sample(newcfg: DictConfig) -> None:
                                                 init_vec=source_init,
                                                 init_vec_method=init_diff_from,
                                                 condition_mode=mode_cond,
-                                                gd_motion=guid_motion,
+                                                gd_motion=None,
                                                 gd_text=guid_text,
                                                 num_diff_steps=num_infer_steps)
                 gen_mo = model.diffout2motion(diffout)
