@@ -37,8 +37,6 @@ class MD(BaseModel):
     def __init__(self, 
                  text_encoder: DictConfig,
                  motion_condition_encoder: DictConfig,
-                 infer_scheduler: DictConfig,
-                 train_scheduler: DictConfig,
                  denoiser: DictConfig,
                  losses: DictConfig,
                  diff_params: DictConfig,

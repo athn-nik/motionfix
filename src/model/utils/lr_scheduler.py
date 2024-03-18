@@ -1,6 +1,7 @@
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LambdaLR, ReduceLROnPlateau
 from functools import partial
+import math
 
 def _get_cosine_with_hard_restarts_schedule_with_warmup_lr_lambda(
     current_step: int, *, num_warmup_steps: int, num_training_steps: int, num_cycles: int
