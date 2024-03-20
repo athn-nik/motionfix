@@ -1000,7 +1000,7 @@ class MD(BaseModel):
             # total_loss = pose_loss + trans_loss + orient_loss + first_pose_loss
 
             # total_loss = first_pose_loss
-sel        if self.loss_on_verts or self.loss_on_positions:
+        if self.loss_on_verts or self.loss_on_positions:
             loss_verts, loss_jts = self.compute_verts_loss(out_dict, 
                                                     pad_mask_jts_pos)
             all_losses_dict['total_loss'] += loss_verts
