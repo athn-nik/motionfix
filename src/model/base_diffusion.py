@@ -654,81 +654,6 @@ class MD(BaseModel):
 
         return final_mask.bool().to(self.device)
 
-    def denoise_forward(self, batch, mask_source_motion,
-                        mask_target_motion,
-                        sample_schema='uniform'):
-
-        cond_emb_motion = None
-        if self.motion_condition == 'source':
-            source_motion_condition = batch['source_motion']
-            if self.motion_cond_encoder is not None:
-                cond_emb_motion = self.motion_cond_encoder(source_motion_condition,
-                                                        mask_source_motion)
-                cond_emb_motion = cond_emb_motion.unsqueeze(0)
-            else:
-                cond_emb_motion = source_motion_condition
-
-        feats_for_denois = batch['target_motion']
-        target_lens = batch['length_target']
-        # motion encode
-        # with torch.no_grad():
-            
-        # motion_feats = feats_ref.permute(1, 0, 2)
-        batch_size = len(batch["text"])
-
-        text = batch["text"]
-
-        perc_uncondp = self.diff_params.prob_uncondp
-        # text encode
-        cond_emb_text, text_mask = self.text_encoder(text)
-        # ALWAYS --> [ text condition || motion condition ] 
-        # row order (rows=batch size) --> ---------------
-        #                                 | rows_mixed  |
-        #                                 | rows_uncond |
-        #                                 |rows_txt_only|
-        #                                 |rows_mot_only|
-        #                                 ---------------
-        
-        if self.motion_condition == 'source':
-            max_text_len = cond_emb_text.shape[1]
-            max_motion_len = cond_emb_motion.shape[0]
-            aug_mask = self.filter_conditions(max_text_len=max_text_len,
-                                              max_motion_len=max_motion_len,
-                                              batch_size=batch_size, 
-                                              perc_only_text=0.05,
-                                              perc_only_motion=0.05,
-                                              perc_text_n_motion=0.85,
-                                              perc_uncond=perc_uncondp, 
-                                              randomize=False)
-            if max_text_len > 1:
-                aug_mask[:, :max_text_len] *= text_mask
-            aug_mask[:, max_text_len:] *= mask_source_motion
-            # aug_mask[-idx_motion_only:] *= motion_source_mask[-idx_motion_only:]
-            aug_mask = aug_mask[torch.randperm(batch_size)]
-        else:
-            max_text_len = cond_emb_text.shape[1]
-            aug_mask = self.filter_conditions(max_text_len=max_text_len,
-                                              max_motion_len=0,
-                                              batch_size=batch_size,
-                                              perc_only_text=0.9,
-                                              perc_only_motion=0.00,
-                                              perc_text_n_motion=0.0,
-                                              perc_uncond=perc_uncondp,
-                                              randomize=False)
-            # final_mask = final_mask[torch.randperm(final_mask.size(0))]
-            no_of_uncond = int(round(batch_size * perc_uncondp))
-            # aug_mask[:, :max_text_len] *= text_mask[no_of_uncond:]
-            aug_mask = aug_mask[torch.randperm(batch_size)]
-
-        # diffusion process return with noise and noise_pred
-        n_set = self._diffusion_process(feats_for_denois,
-                                        mask_in_mot=mask_target_motion,
-                                        text_encoded=cond_emb_text, 
-                                        motion_encoded=cond_emb_motion,
-                                        mask_for_condition=aug_mask,
-                                        lengths=target_lens,
-                                        sample=sample_schema)
-        return {**n_set}
 
     def train_diffusion_forward(self, batch, mask_source_motion,
                                 mask_target_motion):
@@ -811,6 +736,7 @@ class MD(BaseModel):
                                         text_encoded=cond_emb_text, 
                                         motion_encoded=cond_emb_motion,
                                         mask_for_condition=aug_mask)
+        diff_outs['motion_mask_target'] = mask_target_motion
         return diff_outs 
 
     #     return self.allsplit_epoch_end("train")
@@ -1018,17 +944,16 @@ class MD(BaseModel):
 
         return loss_joints, pred_smpl_params
 
-    def compute_losses(self, out_dict, motion_mask_source, 
-                       motion_mask_target):
+    def compute_losses(self, out_dict):
         from torch import nn
         from src.data.tools.tensors import lengths_to_mask
 
         if self.input_deltas:
-            pad_mask_jts_pos = motion_mask_target
-            pad_mask = motion_mask_target
+            pad_mask_jts_pos = out_dict['motion_mask_target']
+            pad_mask = out_dict['motion_mask_target']
         else:
-            pad_mask_jts_pos = motion_mask_target
-            pad_mask = motion_mask_target
+            pad_mask_jts_pos = out_dict['motion_mask_target']
+            pad_mask = out_dict['motion_mask_target']
         f_rg = np.cumsum([0] + self.input_feats_dims)
         all_losses_dict = {}
         tot_loss = torch.tensor(0.0, device=self.device)
@@ -1075,7 +1000,7 @@ class MD(BaseModel):
             # total_loss = pose_loss + trans_loss + orient_loss + first_pose_loss
 
             # total_loss = first_pose_loss
-        if self.loss_on_verts or self.loss_on_positions:
+sel        if self.loss_on_verts or self.loss_on_positions:
             loss_verts, loss_jts = self.compute_verts_loss(out_dict, 
                                                     pad_mask_jts_pos)
             all_losses_dict['total_loss'] += loss_verts
@@ -1439,8 +1364,7 @@ class MD(BaseModel):
                                             forward=False)
 
                 # new_state_pos = prev_trans_norm.squeeze() + trans_vel_pelv
-                full_trans = torch.cumsum(trans_vel_pelv,
-                                                dim=1) + first_trans
+                full_trans = torch.cumsum(trans_vel_pelv, dim=1) + first_trans
                 full_trans = torch.cat([first_trans, full_trans], dim=1)
 
                 #  "body_transl_delta_pelv_xy_wo_z"
@@ -1669,9 +1593,7 @@ class MD(BaseModel):
 
 
         # rs_set Bx(S+1)xN --> first pose included
-        total_loss, loss_dict = self.compute_losses(dif_dict,
-                                                    mask_source, 
-                                                    mask_target)
+        total_loss, loss_dict = self.compute_losses(dif_dict)
 
         # if self.trainer.current_epoch % 100 == 0 and self.trainer.current_epoch != 0:
         #     if self.global_rank == 0 and split=='train' and batch_idx == 0:

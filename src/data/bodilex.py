@@ -257,7 +257,9 @@ class BodilexDataset(Dataset):
         pelvis_orient_z = get_z_rot(pelvis_orient, in_format="aa")
         # pelvis_orient_z = transform_body_pose(pelvis_orient_z, "aa->rot").float()
         # relative_joints = R.T @ (p_global - pelvis_translation)
-        rel_joints = torch.einsum('fdi,fjd->fji', pelvis_orient_z, joints_glob - pelvis_transl[:, None, :])
+        rel_joints = torch.einsum('fdi,fjd->fji',
+                                  pelvis_orient_z,
+                                  joints_glob - pelvis_transl[:, None, :])
  
         return rearrange(rel_joints, '... j c -> ... (j c)')
 

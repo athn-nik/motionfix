@@ -85,6 +85,8 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
     from aitviewer.renderables.smpl import SMPLSequence
     import trimesh
     from src.render.video import put_text
+    from src.tools.transforms3d import transform_body_pose
+
     if isinstance(datum, dict): datum = [datum]
     if not isinstance(color, list): 
         colors = [color] 
@@ -133,7 +135,6 @@ def render_motion(renderer: HeadlessRenderer, datum: dict,
         renderer.scene.add(smpl_template)
     # camera follows smpl sequence
     # FIX CAMERA
-    from src.tools.transforms3d import transform_body_pose
     from src.tools.transforms3d import get_z_rot
     R_z = get_z_rot(global_orient[0], in_format='aa')
     heading = -R_z[:, 1]

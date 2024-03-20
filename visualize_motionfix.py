@@ -345,13 +345,13 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 for k, v in xx.items()})
                                 if monames[moid] == 'generated_vs_source':
                                     cur_colors = [color_map['source'],
-                                                color_map['generated']]
+                                                  color_map['generated']]
                                 elif monames[moid] == 'generated_vs_target':
                                     cur_colors = [color_map['target'],
-                                                color_map['generated']]
+                                                  color_map['generated']]
                                 elif monames[moid] == 'overlaid_GT':
                                     cur_colors = [color_map['source'],
-                                                color_map['target']]
+                                                  color_map['target']]
                         else:
                             cur_mol.append({k: v[elem_id][:crop_len[elem_id]]
                                                 for k, v in one_motion.items()})

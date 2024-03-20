@@ -3,6 +3,7 @@ _target_: src.data.humanml3d.HumanML3DDataModule
 debug: ${debug}
 
 datapath: ${path.data}/humanml3d_processed # amass_bodilex.pth.tar
+# original path --> /amass_smplhn/amass.pth.tar 
 debug_datapath: ${path.minidata}/amass_small.pth.tar
 annot_path: ${path.data}/annotations/humanml3d/annotations.json
 
@@ -35,14 +36,14 @@ framerate: 30
 sampler: ${sampler}
 
 load_feats:
-# - "body_transl_delta"
 - "body_transl_delta_pelv"
-# - "body_transl_delta_pelv_xy_wo_z"
-# - "body_transl"
-# - "body_transl"
 - "body_orient_xy"
 - "z_orient_delta"
 - "body_pose"
 - "body_joints_local_wo_z_rot"
- 
+# - "body_transl_delta"
+# - "body_transl_delta_pelv_xy_wo_z"
+# - "body_transl"
+# - "body_transl"
+
 progress_bar: true

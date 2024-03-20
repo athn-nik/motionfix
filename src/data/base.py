@@ -76,7 +76,7 @@ class BASEDataModule(pl.LightningDataModule):
                               **self.dataloader_options)
         else:
             return DataLoader(self.dataset['val'],
-                             shuffle=True,
+                             shuffle=False,
                               **self.dataloader_options)
 
     def test_dataloader(self):

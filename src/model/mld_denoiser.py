@@ -60,8 +60,7 @@ class MldDenoiser(nn.Module):
             # project time+text to latent_dim
             if text_encoded_dim != self.latent_dim:
                 # todo 10.24 debug why relu
-                self.emb_proj = nn.Sequential(
-                    nn.ReLU(), nn.Linear(text_encoded_dim, self.latent_dim))
+                self.emb_proj = nn.Linear(text_encoded_dim, self.latent_dim)
         else:
             raise TypeError(f"condition type {self.condition} not supported")
 
