@@ -171,11 +171,11 @@ def render_vids(newcfg: DictConfig) -> None:
 
     tot_pkls = []
     if cfg.guidance_scale_text is None:
-        gd_text = [1.0, 2.5]
+        gd_text = [2.5]
     else:
         gd_text = [cfg.guidance_scale_text] # [1.0, 2.5, 5.0]
     if cfg.guidance_scale_motion is None:
-        gd_motion = [1.0, 2.5, 5.0, 7.5]
+        gd_motion = [2.5, 5.0, 7.5]
     else:
         gd_motion = [cfg.guidance_scale_motion] #[1.0, 2.5, 5.0]
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]

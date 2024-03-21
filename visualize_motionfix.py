@@ -233,7 +233,7 @@ def render_vids(newcfg: DictConfig) -> None:
         counter_short = 24
         from src.utils.motionfix_utils import test_subset_amt
         test_dataset_subset = [elem for elem in test_dataset
-                         if elem['id'] in test_subset_amt[:12]]
+                         if elem['id'] in test_subset_amt[:1]]
         test_dataset_subset2 = []
         for elem in test_dataset:
             if len(elem['text'].split()) <= 5 and counter_short > 0:
@@ -256,8 +256,8 @@ def render_vids(newcfg: DictConfig) -> None:
     else:
         mode_cond = 'full_cond'
     tot_pkls = []
-    gd_text = [1.0, 2.5, 5.0]
-    gd_motion = [1.0, 2.5, 5.0]
+    gd_text = [2.5, 5.0]
+    gd_motion = [2.5, 5.0]
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
     from aitviewer.models.smpl import SMPLLayer
     smpl_layer = SMPLLayer(model_type='smplh', ext='npz', gender='neutral')
