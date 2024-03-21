@@ -87,7 +87,7 @@ class TimestepEmbedderMDM(nn.Module):
 
         time_embed_dim = self.latent_dim
         self.sequence_pos_encoder = PositionalEncoding(d_model=self.latent_dim)
-
+        # TODO add time embedding learnable
         self.time_embed = nn.Sequential(
             nn.Linear(self.latent_dim, time_embed_dim),
             nn.SiLU(),

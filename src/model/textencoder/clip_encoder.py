@@ -72,6 +72,7 @@ class ClipTextEncoder(pl.LightningModule):
         # use pooled ouuput if latent dim is two-dimensional
         # pooled = 0 if self.latent_dim[0] == 1 else 1 # (bs, seq_len, text_encoded_dim) -> (bs, text_encoded_dim)
         # text encoder forward, clip must use get_text_features
+        # TODO check the CLIP network
         if self.variant == "clip":
             # (batch_Size, text_encoded_dim)
             text_embeddings = self.text_model.get_text_features(
