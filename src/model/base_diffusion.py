@@ -408,7 +408,7 @@ class MD(BaseModel):
         # Sample images:
         samples = diff_process.p_sample_loop(self.denoiser.forward_with_guidance,
                                              z.shape, z, 
-                                             clip_denoised=True, 
+                                             clip_denoised=False, 
                                              model_kwargs=model_kwargs,
                                              progress=True,
                                              device=initial_latents.device,)
