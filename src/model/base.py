@@ -516,8 +516,8 @@ class BaseModel(LightningModule):
         scheduler = None
         # optim_dict['optimizer'] = optimizer
         scheduler = get_cosine_with_hard_restarts_schedule_with_warmup(optimizer,
-                                                                       500,
-                                                                       self.num_training_steps)
+                                                                       20,
+                                                                       self.trainer.max_epochs)
         optim_dict = {"optimizer": optimizer,
                       "lr_scheduler": scheduler}
         # optim_dict['lr_scheduler'] = scheduler
