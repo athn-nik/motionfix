@@ -244,7 +244,7 @@ class MD(BaseModel):
                 dtype=torch.float,
             )
             # scale the initial noise by the standard deviation required by the scheduler
-            initial_latents = initial_latents
+            # initial_latents = initial_latents
         else:
             initial_latents = init_vec
 
@@ -284,80 +284,18 @@ class MD(BaseModel):
             max_text_len = text_embeds.shape[1]
         else:
             max_text_len = 0
-
-        #  both_rows, uncond_rows, text_rows1, motion_rows2
         if self.motion_condition == 'source' and motion_embeds is not None:
-            max_motion_len = motion_embeds.shape[0] 
-            # uncondition_mask = self.filter_conditions(
-            #                             max_text_len=max_text_len,
-            #                             max_motion_len=max_motion_len,
-            #                             batch_size=bsz, 
-            #                             perc_only_text=0.0,
-            #                             perc_only_motion=0.0,
-            #                             perc_text_n_motion=0.0,
-            #                             perc_uncond=1.0, 
-            #                             randomize=False)
+            max_motion_len = cond_motion_masks.shape[1]
+            aug_mask = torch.ones(bsz,
+                                  max_text_len+max_motion_len 
+                                  ,dtype=torch.bool).to(self.device)
+            aug_mask[:, max_text_len:] *= cond_motion_masks
+            aug_mask = torch.cat([aug_mask, aug_mask, aug_mask],
+                                 dim=0)
+            aug_mask[:, :max_text_len] *= text_masks
 
-            # condition_mask_text = self.filter_conditions(
-            #                             max_text_len=max_text_len,
-            #                             max_motion_len=max_motion_len,
-            #                             batch_size=bsz, 
-            #                             perc_only_text=1.0,
-            #                             perc_only_motion=0.0,
-            #                             perc_text_n_motion=0.0,
-            #                             perc_uncond=0.0, 
-            #                             randomize=False)
-            if max_text_len > 1:
-                condition_mask_text[:, :max_text_len] *= text_masks
-
-            condition_mask_motion = self.filter_conditions(
-                                        max_text_len=max_text_len,
-                                        max_motion_len=max_motion_len,
-                                        batch_size=bsz, 
-                                        perc_only_text=0.0,
-                                        perc_only_motion=1.0,
-                                        perc_text_n_motion=0.0,
-                                        perc_uncond=0.0, 
-                                        randomize=False)
-            condition_mask_motion[:, max_text_len:] *= cond_motion_masks
-
-            condition_mask_both = self.filter_conditions(
-                            max_text_len=max_text_len,
-                            max_motion_len=max_motion_len,
-                            batch_size=bsz, 
-                            perc_only_text=0.0,
-                            perc_only_motion=0.0,
-                            perc_text_n_motion=1.0, 
-                            perc_uncond=0.0,
-                            randomize=False)
-            # might need to adjust for motion if it is more than 1 token
-            if max_text_len > 1:
-                condition_mask_both[:, :max_text_len] *= text_masks
-            condition_mask_both[:, max_text_len:] *= cond_motion_masks
-
-        elif self.condition in ['text', 'text_uncondp']:
-            uncondition_mask = self.filter_conditions(
-                                        max_text_len=max_text_len,
-                                        max_motion_len=0,
-                                        batch_size=bsz, 
-                                        perc_only_text=0.0,
-                                        perc_only_motion=0.0,
-                                        perc_text_n_motion=0.0, 
-                                        perc_uncond=1.0,
-                                        randomize=False)
-            condition_mask_text = self.filter_conditions(
-                                        max_text_len=max_text_len,
-                                        max_motion_len=0,
-                                        batch_size=bsz, 
-                                        perc_only_text=1.0,
-                                        perc_only_motion=0.0,
-                                        perc_text_n_motion=0.0, 
-                                        perc_uncond=0.0,
-                                        randomize=False)
-            if max_text_len > 1:
-                condition_mask_text *= text_masks
-
-        latent_model_input = initial_latents
+        else:
+            aug_mask = text_masks
 
             # # expand the latents if we are doing classifier free guidance
             # latent_model_input = torch.cat(
@@ -383,9 +321,7 @@ class MD(BaseModel):
                                                         inp_motion_mask,
                                                         inp_motion_mask], 0),
                                 text_embeds=text_embeds,
-                                condition_mask=torch.cat([uncondition_mask,
-                                                        condition_mask_motion,
-                                                        condition_mask_both], 0),
+                                condition_mask=aug_mask,
                                 motion_embeds=torch.cat([torch.zeros_like(motion_embeds),
                                                         motion_embeds,
                                                         motion_embeds], 1),
@@ -396,10 +332,8 @@ class MD(BaseModel):
                     # timestep=t,
                     in_motion_mask=torch.cat([inp_motion_mask,
                                             inp_motion_mask], 0),
-                    text_embeds=torch.cat([torch.zeros_like(text_embeds),
-                                        text_embeds], 0),
-                    condition_mask=torch.cat([uncondition_mask,
-                                            condition_mask_text], 0),
+                    text_embeds=text_embeds,
+                    condition_mask=aug_mask,
                     motion_embeds=None,
                     guidance_motion=gd_motion,
                     guidance_text_n_motion=gd_text)
@@ -1081,9 +1015,10 @@ class MD(BaseModel):
         bsz, seqlen_tgt = mask_target.shape
         feat_sz = sum(self.input_feats_dims)
         if texts_cond is not None:
-            texts_cond = ['']*len(texts_cond) + texts_cond
+            no_of_texts = len(texts_cond)
+            texts_cond = ['']*no_of_texts + texts_cond
             if self.motion_condition == 'source':
-                texts_cond = ['']*len(texts_cond) + texts_cond
+                texts_cond = ['']*no_of_texts + texts_cond
             text_emb, text_mask = self.text_encoder(texts_cond)
 
         cond_emb_motion = None

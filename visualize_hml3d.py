@@ -248,7 +248,7 @@ def render_vids(newcfg: DictConfig) -> None:
     testloader_hml3d = torch.utils.data.DataLoader(test_subset_hml3d,
                                                    shuffle=False,
                                                    num_workers=4,
-                                                   batch_size=1,#batch_size_test,
+                                                   batch_size=batch_size_test,
                                                    collate_fn=collate_fn)
 
     ds_iterator_hml3d = testloader_hml3d 
