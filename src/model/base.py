@@ -514,6 +514,7 @@ class BaseModel(LightningModule):
         optimizer = torch.optim.AdamW(lr=self.hparams.optim.lr,
                                       params=self.parameters())
         scheduler = None
+        self.hparams.lr_scheduler 
         # optim_dict['optimizer'] = optimizer
         scheduler = CosineAnnealingLRWarmup(optimizer, 
                                             T_max=self.trainer.max_epochs, 

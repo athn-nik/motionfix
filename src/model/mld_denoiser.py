@@ -176,7 +176,8 @@ class MldDenoiser(nn.Module):
 
         # if self.diffusion_only:
         if motion_embeds is not None:
-            denoised_motion_proj = tokens[emb_latent.shape[0]:-(1+motion_embeds_proj.shape[0])]
+            denoised_motion_proj = tokens[emb_latent.shape[0]:]
+            denoised_motion_proj = denoised_motion_proj[:-(1+motion_embeds_proj.shape[0])]
         else:
             denoised_motion_proj = tokens[emb_latent.shape[0]:]
 
