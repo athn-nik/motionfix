@@ -128,25 +128,26 @@ class SincSynthDataset(Dataset):
                 rots_flat_tgt = v['motion_target']['rots'].flatten(-2).float()
                 dataset_dict_raw[k]['motion_target']['rots'] = rots_flat_tgt
 
-            # for mtype in ['motion_source', 'motion_target']:
-            
-            #     rots_can, trans_can = cls._canonica_facefront(v[mtype]['rots'],
-            #                                                    v[mtype]['trans']
-            #                                                    )
-            #     dataset_dict_raw[k][mtype]['rots'] = rots_can
-            #     dataset_dict_raw[k][mtype]['trans'] = trans_can
-            #     seqlen, jts_no = rots_can.shape[:2]
+            #for mtype in ['motion_source', 'motion_target']:
+            #
+            #    rots_can, trans_can = cls._canonica_facefront(v[mtype]['rots'],
+            #                                                   v[mtype]['trans']
+            #                                                   )
+            #    dataset_dict_raw[k][mtype]['rots'] = rots_can
+            #    dataset_dict_raw[k][mtype]['trans'] = trans_can
+            #    seqlen, jts_no = rots_can.shape[:2]
                 
-                # rots_can_rotm = transform_body_pose(rots_can,
+            #    rots_can_rotm = transform_body_pose(rots_can,
                 #                                   'aa->rot')
                 # # self.body_model.batch_size = seqlen * jts_no
 
-                # jts_can_ds = body_model.smpl_forward_fast(transl=trans_can,
-                #                                  body_pose=rots_can_rotm[:, 1:],
-                #                              global_orient=rots_can_rotm[:, :1])
+            #    jts_can_ds = body_model.smpl_forward_fast(transl=trans_can,
+            #                                     body_pose=rots_can_rotm[:, 1:],
+            #                                 global_orient=rots_can_rotm[:, :1])
 
-                # jts_can = jts_can_ds.joints[:, :22]
-                # dataset_dict_raw[k][mtype]['joint_positions'] = jts_can
+            #    jts_can = jts_can_ds.joints[:, :22]
+            #    dataset_dict_raw[k][mtype]['joint_positions'] = jts_can
+        #import ipdb;ipdb.set_trace()
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
 
         # add id fiels in order to turn the dict into a list without loosing it
@@ -475,6 +476,7 @@ class SincSynthDataModule(BASEDataModule):
                  smplh_path: str = "",
                  dataname: str = "",
                  rot_repr: str = "6d",
+                 proportion: float = 1.0,
                  **kwargs):
         super().__init__(batch_size=batch_size,
                          num_workers=num_workers,
@@ -562,6 +564,9 @@ class SincSynthDataModule(BASEDataModule):
                 #                 positions=jts_can.detach().numpy(),
                 #                 filename='/home/nathanasiou/Desktop/conditional_action_gen/modilex/jts.mp4')
 
+        import ipdb;ipdb.set_trace()
+        pts = '/home/nathanasiou/Desktop/conditional_action_gen/modilex/data/sinc_synth/sinc_synth_edits_v4_with_jts.pth.tar'
+        joblib.dump( dataset_dict_raw, pts)
         # debug overfitting
         # less frames less motions
         # subkeys = list(dataset_dict_raw.keys())[:20]
@@ -629,11 +634,16 @@ class SincSynthDataModule(BASEDataModule):
                                                       self.load_feats,
                                                       do_augmentations=False))
         import ipdb; ipdb.set_trace()
+        slice_to = int(proportion * len(data_dict.items()))
+
         # setup collate function meta parameters
         # self.collate_fn = lambda b: collate_batch(b, self.cfg.load_feats)
         # create datasets
+        log.info(f'Using {100*round(slice_to/len(data_dict.items()),2)}% of the data.')
+        log.info(f'Using {slice_to}/{len(data_dict.items())} of the data.')
+
         self.dataset['train'], self.dataset['val'], self.dataset['test'] = (
-           SincSynthDataset([v for k, v in data_dict.items() if id_split_dict[k] == 0],
+           SincSynthDataset([v for k, v in data_dict.items() if id_split_dict[k] == 0][:slice_to],
                         self.preproc.n_body_joints,
                         self.preproc.stats_file,
                         self.preproc.norm_type,

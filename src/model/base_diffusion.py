@@ -548,7 +548,8 @@ class MD(BaseModel):
 
         # Sample noise that we'll add to the latents
         # [batch_size, n_token, latent_dim]
-        input_motion_feats = input_motion_feats.permute(1, 0, 2)
+        # input_motion_feats = input_motion_feats.permute(1, 0, 2)
+        
         noise = torch.randn_like(input_motion_feats)
         bsz = input_motion_feats.shape[0]
         # Sample a random timestep for each motion
@@ -676,13 +677,13 @@ class MD(BaseModel):
         feats_for_denois = batch['target_motion']
         target_lens = batch['length_target']
 
-        text = batch["text"]
+        text_list = batch["text"]
         perc_uncondp = self.diff_params.prob_uncondp
         perc_drop_text = self.diff_params.prob_drop_text
         perc_drop_motion = self.diff_params.prob_drop_motion
         perc_keep_both = 1 - perc_uncondp - perc_drop_motion - perc_drop_text
         # text encode
-        cond_emb_text, text_mask = self.text_encoder(text)
+        # cond_emb_text, text_mask = self.text_encoder(text)
         
         # ALWAYS --> [ text condition || motion condition ] 
         # row order (rows=batch size) --> ---------------
@@ -696,39 +697,63 @@ class MD(BaseModel):
         if self.motion_condition == 'source':
             # motion should be alwasys S, B
             # text should be B, S
+            
             max_motion_len = cond_emb_motion.shape[0]
-            aug_mask = self.filter_conditions(max_text_len=max_text_len,
-                                              max_motion_len=max_motion_len,
-                                              batch_size=batch_size, 
-                                              perc_only_text=perc_drop_motion,
-                                              perc_only_motion=perc_drop_text,
-                                              perc_text_n_motion=perc_keep_both,
-                                              perc_uncond=perc_uncondp, 
-                                              randomize=False)
+            bs_cond = cond_emb_motion.shape[1]
             assert cond_emb_motion.shape[0] + cond_emb_text.shape[1] == aug_mask.shape[1]
+
+            mask = (torch.rand(bs_cond, 1, 1, device=cond_emb_motion.device) > perc_drop_motion).float()
+            cond_emb_motion = cond_emb_motion.permute(1, 0, 2) * mask
+            cond_emb_motion = cond_emb_motion.permute(1, 0, 2)
+
             if max_text_len > 1:
                 aug_mask[:, :max_text_len] *= text_mask
-            aug_mask[:, max_text_len:] *= mask_source_motion
-        else:
-            aug_mask = self.filter_conditions(max_text_len=cond_emb_text.shape[1],
-                                              max_motion_len=0,
-                                              batch_size=batch_size,
-                                              perc_only_text=perc_drop_motion,
-                                              perc_only_motion=0.0,
-                                              perc_text_n_motion=0.0,
-                                              perc_uncond=perc_uncondp,
-                                              randomize=False)
-            if max_text_len > 1:
-                aug_mask *= text_mask
+            text_list = [
+                "" if np.random.rand(1) < perc_drop_text else i
+                for i in text_list
+            ]
 
-        rand_perm = torch.randperm(batch_size)
+            mask_both = (torch.rand(bs_cond, 1, 1, device=cond_emb_motion.device) > (1-perc_keep_both)).float()
+            zeroed_rows_indices = torch.nonzero(mask_both.squeeze() == 0).squeeze().tolist()
+            for idx in zeroed_rows_indices:
+                text_list[idx] = ""
+            cond_emb_motion = cond_emb_motion.permute(1, 0, 2) * mask_both
+            cond_emb_motion = cond_emb_motion.permute(1, 0, 2)
+
+            # aug_mask[:, max_text_len:] *= mask_source_motion
+
+
+        else:
+            text_list = [
+                "" if np.random.rand(1) < self.diff_params.prob_uncondp else i
+                for i in text_list
+            ]
+            # aug_mask = self.filter_conditions(max_text_len=cond_emb_text.shape[1],
+            #                                  max_motion_len=0,
+            #                                  batch_size=batch_size,
+            #                                  perc_only_text=perc_drop_motion,
+            #                                  perc_only_motion=0.0,
+            #                                  perc_text_n_motion=0.0,
+            #                                  perc_uncond=perc_uncondp,
+            #                                  randomize=False)
+            #if max_text_len > 1:
+            #    aug_mask *= text_mask
+        cond_emb_text, text_mask = self.text_encoder(text_list)
+        #rand_perm = torch.randperm(batch_size)
         # random permutation along the batch dimension same for all
-        aug_mask = aug_mask[rand_perm]
-        cond_emb_text = cond_emb_text[rand_perm]
-        mask_target_motion = mask_target_motion[rand_perm]
-        feats_for_denois = feats_for_denois[:, rand_perm]
-        if cond_emb_motion is not None:
-            cond_emb_motion = cond_emb_motion[:, rand_perm]
+        if self.motion_condition == 'source':
+            mask_tensor = torch.ones(bs_cond,
+                                     max_text_len+max_motion_len 
+                                     ,dtype=torch.bool).to(self.device)
+            mask_tensor[:, max_text_len:] *= mask_source_motion
+            mask_tensor[:, :max_text_len] *= text_mask
+        else:
+            aug_mask = text_mask
+        # cond_emb_text = cond_emb_text[rand_perm]
+        # mask_target_motion = mask_target_motion[rand_perm]
+        # feats_for_denois = feats_for_denois[:, rand_perm]
+        # if cond_emb_motion is not None:
+        #    cond_emb_motion = cond_emb_motion[:, rand_perm]
 
         # diffusion process return with noise and noise_pred
         diff_outs = self._diffusion_process(feats_for_denois,
@@ -862,56 +887,6 @@ class MD(BaseModel):
             motion_unnorm = self.unnorm_delta(out_motion['pred_motion_feats'])
             motion_norm = out_motion['pred_motion_feats']
         B, S = motion_unnorm.shape[:2]
-
-        if False: # self.trainer.current_epoch % 20 == 0:
-            iid = f'epoch-{self.trainer.current_epoch}'
-            tot_dim_deltas = 0
-            if self.using_deltas:
-                for idx_feat, in_feat in enumerate(self.input_feats):
-                    if 'delta' in in_feat:
-                        tot_dim_deltas += self.input_feats_dims[idx_feat]
-                motion_unnorm = motion_unnorm[..., tot_dim_deltas:]
-
-            motion_unnorm_rd = pack_to_render(rots=motion_unnorm[..., 3:],
-                                           trans=motion_unnorm[..., :3])
-
-            B, S = motion_unnorm_rd['body_transl'].shape[:2]
-
-            jts_unnorm = self.run_smpl_fwd(motion_unnorm_rd['body_transl'],
-                                            motion_unnorm_rd['body_orient'],
-                            motion_unnorm_rd['body_pose'].reshape(B, S, 63)
-                                           ).joints
-
-            jts_unnorm = rearrange(jts_unnorm[:, :22], '(b s) ... -> b s ...',
-                                    s=S, b=B)
-            
-            render_skeleton(self.renderer,
-                            positions=jts_unnorm[0].detach().cpu().numpy(),
-                            filename=f'jts_unnorm_0{iid}')
-            render_skeleton(self.renderer,
-                            positions=jts_unnorm[1].detach().cpu().numpy(),
-                            filename=f'jts_unnorm_1{iid}')
-
-            motion_norm_rd = pack_to_render(rots=motion_norm[..., 3:],
-                                         trans=motion_norm[..., :3])
-
-            jts_norm = self.run_smpl_fwd(motion_norm_rd['body_transl'],
-                                            motion_norm_rd['body_orient'],
-                                            motion_norm_rd['body_pose'].reshape(B,
-                                                                                S, 
-                                                                                63)).joints
-            jts_norm = rearrange(jts_norm[:, :22], '(b s) ... -> b s ...',
-                                    s=S, b=B)
-            render_skeleton(self.renderer, positions=jts_norm[0].detach().cpu().numpy(),
-                            filename=f'jts_norm_0{iid}')
-            render_skeleton(self.renderer, positions=jts_norm[1].detach().cpu().numpy(),
-                            filename=f'jts_norm_1{iid}')
-
-
-            render_skeleton(self.renderer, positions=joints_gt[0].detach().cpu().numpy(),
-                            filename=f'jts_gt_0{iid}')
-            render_skeleton(self.renderer, positions=joints_gt[1].detach().cpu().numpy(),
-                            filename=f'jts_gt_1{iid}')
         tot_dim_deltas = 0
         if self.using_deltas:
             for idx_feat, in_feat in enumerate(self.input_feats):

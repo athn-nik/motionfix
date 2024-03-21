@@ -230,9 +230,16 @@ def render_vids(newcfg: DictConfig) -> None:
         batch_to_use = len(test_subset_sinc_synth)
 
     elif cfg.data.dataname == 'bodilex':
+        counter_short = 24
         from src.utils.motionfix_utils import test_subset_amt
         test_dataset_subset = [elem for elem in test_dataset
-                         if elem['id'] in test_subset_amt]
+                         if elem['id'] in test_subset_amt[:12]]
+        test_dataset_subset2 = []
+        for elem in test_dataset:
+            if len(elem['text'].split()) < 5 and counter_short > 0:
+                test_dataset_subset2.append(elem)
+                counter_short -= 1
+        test_dataset_subset.extend(test_dataset_subset2)
         batch_to_use = len(test_subset_amt)
 
 

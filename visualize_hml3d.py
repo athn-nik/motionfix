@@ -256,7 +256,7 @@ def render_vids(newcfg: DictConfig) -> None:
     mode_cond = 'text_cond'
 
     tot_pkls = []
-    gd_text = [1.0, 2.5, 5.0] #, 7.5]
+    gd_text = [2.5, 5.0, 7.5]
 
     from aitviewer.models.smpl import SMPLLayer
     smpl_layer = SMPLLayer(model_type='smplh', 
