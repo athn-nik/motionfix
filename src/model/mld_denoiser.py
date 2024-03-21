@@ -215,7 +215,7 @@ class MldDenoiser(nn.Module):
         # text unconditional more or less 2 replicas
         # 
         if motion_embeds is None:
-            half  = noised_motion[: len(noised_motion) // 2]
+            half = noised_motion[: len(noised_motion) // 2]
             combined = torch.cat([half, half], dim=0)
             model_out = self.forward(combined, timestep,
                                     in_motion_mask=in_motion_mask,
@@ -224,14 +224,14 @@ class MldDenoiser(nn.Module):
                                     motion_embeds=motion_embeds,
                                     lengths=lengths)
             # For exact reproducibility reasons, we apply classifier-free guidance on only
-            # three channels by default. The standard approach to cfg applies it to all channels.
+            # three channels by defau2lt. The standard approach to cfg applies it to all channels.
             # This can be done by uncommenting the following line and commenting-out the line following that.
             # eps, rest = model_out[:, :self.in_channels], model_out[:, self.in_channels:]
             # eps, rest = model_out[:, :3], model_out[:, 3:]
             uncond_eps, cond_eps_text = torch.split(model_out, len(model_out) // 2,
                                                      dim=0)
             half_eps = uncond_eps + guidance_text_n_motion * (cond_eps_text - uncond_eps) 
-            eps = torch.cat([ uncond_eps, half_eps], dim=0)
+            eps = torch.cat([uncond_eps, half_eps], dim=0)
         else:
             third = noised_motion[: len(noised_motion) // 3]
             combined = torch.cat([third, third, third], dim=0)

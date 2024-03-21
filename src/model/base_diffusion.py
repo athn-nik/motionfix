@@ -602,7 +602,7 @@ class MD(BaseModel):
                           batch_size, 
                           perc_only_text=0.05,  perc_only_motion=0.05,
                           perc_text_n_motion=0.85, perc_uncond=0.05,
-                          randomize=True):
+                          randomize=False):
 
         # Define the dimensions of the tensor
         M = batch_size # Number of rows (adjust as needed)
@@ -720,7 +720,7 @@ class MD(BaseModel):
                                               randomize=False)
             if max_text_len > 1:
                 aug_mask *= text_mask
-        
+
         rand_perm = torch.randperm(batch_size)
         # random permutation along the batch dimension same for all
         aug_mask = aug_mask[rand_perm]
@@ -732,10 +732,10 @@ class MD(BaseModel):
 
         # diffusion process return with noise and noise_pred
         diff_outs = self._diffusion_process(feats_for_denois,
-                                        mask_in_mot=mask_target_motion,
-                                        text_encoded=cond_emb_text, 
-                                        motion_encoded=cond_emb_motion,
-                                        mask_for_condition=aug_mask)
+                                            mask_in_mot=mask_target_motion,
+                                            text_encoded=cond_emb_text, 
+                                            motion_encoded=cond_emb_motion,
+                                            mask_for_condition=aug_mask)
         diff_outs['motion_mask_target'] = mask_target_motion
         return diff_outs 
 

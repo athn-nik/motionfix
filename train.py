@@ -62,7 +62,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
         os.environ['DISPLAY'] = ":12"
         os.environ['WANDB_SILENT'] = "true"
     # multiprocessing.set_start_method('spawn')
-    logger.info("Training script. The outputs will be stored in:")
+        logger.info("Training script. The outputs will be stored in:")
     working_dir = cfg.path.working_dir
     logger.info(f"The working directory is:{to_absolute_path(working_dir)}")
     logger.info("Loading libraries")
