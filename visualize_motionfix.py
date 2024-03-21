@@ -236,11 +236,11 @@ def render_vids(newcfg: DictConfig) -> None:
                          if elem['id'] in test_subset_amt[:12]]
         test_dataset_subset2 = []
         for elem in test_dataset:
-            if len(elem['text'].split()) < 5 and counter_short > 0:
+            if len(elem['text'].split()) <= 5 and counter_short > 0:
                 test_dataset_subset2.append(elem)
                 counter_short -= 1
         test_dataset_subset.extend(test_dataset_subset2)
-        batch_to_use = len(test_subset_amt)
+        batch_to_use = len(test_dataset_subset)
 
 
     testloader = torch.utils.data.DataLoader(test_dataset_subset,
@@ -383,7 +383,11 @@ def render_vids(newcfg: DictConfig) -> None:
 
                     cleanup_files(cur_group_of_vids+[stacked_vid])
                     video_key = fnal_fl.split('/')[-1].replace('.mp4','')
-                    wandb.log({f"{cur_guid_comb}/{video_key}":
+                    if len(text_diff[elem_id].split()) <= 5:
+                        short = '_short'
+                    else:
+                        short = ''
+                    wandb.log({f"{cur_guid_comb}{short}/{video_key}":
                                     wandb.Video(fnal_fl, fps=30, format="mp4")
                                 })
 

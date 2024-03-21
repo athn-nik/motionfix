@@ -34,6 +34,7 @@ preproc:
 # Motion
 framerate: 30
 sampler: ${sampler}
+proportion: 1.0 
 
 load_feats:
 - "body_transl_delta_pelv"
