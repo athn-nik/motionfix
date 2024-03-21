@@ -514,44 +514,19 @@ class BaseModel(LightningModule):
         optimizer = torch.optim.AdamW(lr=self.hparams.optim.lr,
                                       params=self.parameters())
         scheduler = None
-        self.hparams.lr_scheduler 
-        # optim_dict['optimizer'] = optimizer
-        scheduler = CosineAnnealingLRWarmup(optimizer, 
-                                            T_max=self.trainer.max_epochs, 
-                                            T_warmup=3)
-        # scheduler = get_cosine_with_hard_restarts_schedule_with_warmup(optimizer,
-        #                                                     num_warmup_steps=500,
-        #                                                     num_training_steps=self.num_training_steps,
-        #                                                     num_cycles=1,
-        #                                                     last_epoch=self.trainer.max_epochs)
-    # optimizer: Optimizer, num_warmup_steps: int, num_training_steps: int,
-    # num_cycles: int = 1, last_epoch: int = -1
+        if self.hparams.lr_scheduler is not None: 
+            # optim_dict['optimizer'] = optimizer
+            scheduler = CosineAnnealingLRWarmup(optimizer, 
+                                                T_max=self.trainer.max_epochs, 
+                                                T_warmup=3)
 
-        optim_dict = {"optimizer": optimizer,
-                      "lr_scheduler": scheduler}
-        # optim_dict['lr_scheduler'] = scheduler
-        # scheduler = torch.optim.lr_scheduler.LinearLR(optimizer,
-        #                                              start_factor=1.0, 
-        #                                              end_factor=0.1,
-        #                                              total_iters=1000,
-        #                                              verbose=True)
-        # # if self.hparams.NAME 
-        # if self.hparams.lr_scheduler == 'reduceonplateau':
-        #     optim_dict['lr_scheduler'] = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer,
-        #                                                                             threshold=1e-3)
-        #     optim_dict['monitor'] = 'losses/total/train'
-        # elif self.hparams.lr_scheduler == 'steplr':
-        #     optim_dict['lr_scheduler'] = torch.optim.lr_scheduler.StepLR(optimizer,
-        #                                                                  step_size=200)
-        # return {
-        #            "optimizer": optimizer,
-        #            "lr_scheduler": {
-        #                "scheduler": scheduler,
-        #            },
-        #        }
-        # return optimizer
-        return optim_dict
-    
+            optim_dict = {"optimizer": optimizer,
+                        "lr_scheduler": scheduler}
+            return optim_dict
+        else:
+            return optimizer
+
+
     def prepare_mot_masks(self, source_lens, target_lens, max_len=300):
         from src.data.tools.tensors import lengths_to_mask
         import torch.nn.functional as F

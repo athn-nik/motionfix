@@ -18,7 +18,7 @@ load_splits:
 
 proportion: 1.0
 # Machine
-batch_size: 32 # it's tiny
+batch_size: 64 # it's tiny
 num_workers: ${machine.num_workers}
 rot_repr: '6d'
 preproc:

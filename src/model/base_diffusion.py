@@ -288,25 +288,25 @@ class MD(BaseModel):
         #  both_rows, uncond_rows, text_rows1, motion_rows2
         if self.motion_condition == 'source' and motion_embeds is not None:
             max_motion_len = motion_embeds.shape[0] 
-            uncondition_mask = self.filter_conditions(
-                                        max_text_len=max_text_len,
-                                        max_motion_len=max_motion_len,
-                                        batch_size=bsz, 
-                                        perc_only_text=0.0,
-                                        perc_only_motion=0.0,
-                                        perc_text_n_motion=0.0,
-                                        perc_uncond=1.0, 
-                                        randomize=False)
+            # uncondition_mask = self.filter_conditions(
+            #                             max_text_len=max_text_len,
+            #                             max_motion_len=max_motion_len,
+            #                             batch_size=bsz, 
+            #                             perc_only_text=0.0,
+            #                             perc_only_motion=0.0,
+            #                             perc_text_n_motion=0.0,
+            #                             perc_uncond=1.0, 
+            #                             randomize=False)
 
-            condition_mask_text = self.filter_conditions(
-                                        max_text_len=max_text_len,
-                                        max_motion_len=max_motion_len,
-                                        batch_size=bsz, 
-                                        perc_only_text=1.0,
-                                        perc_only_motion=0.0,
-                                        perc_text_n_motion=0.0,
-                                        perc_uncond=0.0, 
-                                        randomize=False)
+            # condition_mask_text = self.filter_conditions(
+            #                             max_text_len=max_text_len,
+            #                             max_motion_len=max_motion_len,
+            #                             batch_size=bsz, 
+            #                             perc_only_text=1.0,
+            #                             perc_only_motion=0.0,
+            #                             perc_text_n_motion=0.0,
+            #                             perc_uncond=0.0, 
+            #                             randomize=False)
             if max_text_len > 1:
                 condition_mask_text[:, :max_text_len] *= text_masks
 
@@ -382,9 +382,7 @@ class MD(BaseModel):
                                 in_motion_mask=torch.cat([inp_motion_mask,
                                                         inp_motion_mask,
                                                         inp_motion_mask], 0),
-                                text_embeds=torch.cat([torch.zeros_like(text_embeds),
-                                                    torch.zeros_like(text_embeds),
-                                                    text_embeds], 0),
+                                text_embeds=text_embeds,
                                 condition_mask=torch.cat([uncondition_mask,
                                                         condition_mask_motion,
                                                         condition_mask_both], 0),
@@ -1083,6 +1081,9 @@ class MD(BaseModel):
         bsz, seqlen_tgt = mask_target.shape
         feat_sz = sum(self.input_feats_dims)
         if texts_cond is not None:
+            texts_cond = ['']*len(texts_cond) + texts_cond
+            if self.motion_condition == 'source':
+                texts_cond = ['']*len(texts_cond) + texts_cond
             text_emb, text_mask = self.text_encoder(texts_cond)
 
         cond_emb_motion = None
