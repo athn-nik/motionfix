@@ -245,7 +245,7 @@ def render_vids(newcfg: DictConfig) -> None:
 
     testloader = torch.utils.data.DataLoader(test_dataset_subset,
                                              shuffle=False,
-                                             num_workers=0,
+                                             num_workers=4,
                                              batch_size=batch_to_use,
                                              collate_fn=collate_fn)
     ds_iterator = testloader

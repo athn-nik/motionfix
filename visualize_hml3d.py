@@ -186,7 +186,8 @@ def render_vids(newcfg: DictConfig) -> None:
     aitrenderer = HeadlessRenderer()
     import wandb
     wandb.init(project="hml3d_visuals", job_type="evaluate",
-               name=log_name, dir=output_path)
+               name=log_name, dir=output_path,
+               settings=wandb.Settings(start_method='fork'))
 
     logger.info("Loading model")
     from src.model.base_diffusion import MD    
@@ -246,8 +247,8 @@ def render_vids(newcfg: DictConfig) -> None:
     # test_dataset_hml3d.data = filtered_list[:1]
     testloader_hml3d = torch.utils.data.DataLoader(test_subset_hml3d,
                                                    shuffle=False,
-                                                   num_workers=0,
-                                                   batch_size=batch_size_test,
+                                                   num_workers=4,
+                                                   batch_size=1,#batch_size_test,
                                                    collate_fn=collate_fn)
 
     ds_iterator_hml3d = testloader_hml3d 

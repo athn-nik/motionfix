@@ -410,14 +410,14 @@ class MD(BaseModel):
         # Sample images:
         samples = diff_process.p_sample_loop(self.denoiser.forward_with_guidance,
                                              z.shape, z, 
-                                             clip_denoised=False, 
+                                             clip_denoised=True, 
                                              model_kwargs=model_kwargs,
                                              progress=True,
                                              device=initial_latents.device,)
         if motion_embeds is not None:
             _, _, samples = samples.chunk(3, dim=0)  # Remove null class samples
         else:
-            _, samples = samples.chunk(2, dim=0)
+            samples, _ = samples.chunk(2, dim=0)
         # [batch_size, 1, latent_dim] -> [1, batch_size, latent_dim]
 
         final_diffout = samples.permute(1, 0, 2)
@@ -548,9 +548,7 @@ class MD(BaseModel):
 
         # Sample noise that we'll add to the latents
         # [batch_size, n_token, latent_dim]
-        # input_motion_feats = input_motion_feats.permute(1, 0, 2)
-        
-        noise = torch.randn_like(input_motion_feats)
+        input_motion_feats = input_motion_feats.permute(1, 0, 2)
         bsz = input_motion_feats.shape[0]
         # Sample a random timestep for each motion
         timesteps = self.sample_timesteps(samples=bsz,
@@ -692,37 +690,35 @@ class MD(BaseModel):
         #                                 |rows_txt_only|
         #                                 |rows_mot_only|
         #                                 ---------------
-        max_text_len = cond_emb_text.shape[1]
+        max_text_len = self.text_encoder.max_length
+        bs_cond = feats_for_denois.shape[1]
+        if cond_emb_motion is not None:
+            max_motion_len = cond_emb_motion.shape[0]
         # import ipdb;ipdb.set_trace()
         if self.motion_condition == 'source':
             # motion should be alwasys S, B
             # text should be B, S
             
-            max_motion_len = cond_emb_motion.shape[0]
-            bs_cond = cond_emb_motion.shape[1]
-            assert cond_emb_motion.shape[0] + cond_emb_text.shape[1] == aug_mask.shape[1]
+            # max_motion_len = cond_emb_motion.shape[0]
+            # bs_cond = cond_emb_motion.shape[1]
+            # assert cond_emb_motion.shape[0] + cond_emb_text.shape[1] == aug_mask.shape[1]
 
             mask = (torch.rand(bs_cond, 1, 1, device=cond_emb_motion.device) > perc_drop_motion).float()
             cond_emb_motion = cond_emb_motion.permute(1, 0, 2) * mask
             cond_emb_motion = cond_emb_motion.permute(1, 0, 2)
 
-            if max_text_len > 1:
-                aug_mask[:, :max_text_len] *= text_mask
             text_list = [
                 "" if np.random.rand(1) < perc_drop_text else i
                 for i in text_list
             ]
 
             mask_both = (torch.rand(bs_cond, 1, 1, device=cond_emb_motion.device) > (1-perc_keep_both)).float()
-            zeroed_rows_indices = torch.nonzero(mask_both.squeeze() == 0).squeeze().tolist()
+            zeroed_rows_indices = torch.nonzero(mask_both.squeeze() == 0).view(-1).tolist()
             for idx in zeroed_rows_indices:
                 text_list[idx] = ""
             cond_emb_motion = cond_emb_motion.permute(1, 0, 2) * mask_both
             cond_emb_motion = cond_emb_motion.permute(1, 0, 2)
-
             # aug_mask[:, max_text_len:] *= mask_source_motion
-
-
         else:
             text_list = [
                 "" if np.random.rand(1) < self.diff_params.prob_uncondp else i
@@ -742,11 +738,11 @@ class MD(BaseModel):
         #rand_perm = torch.randperm(batch_size)
         # random permutation along the batch dimension same for all
         if self.motion_condition == 'source':
-            mask_tensor = torch.ones(bs_cond,
-                                     max_text_len+max_motion_len 
-                                     ,dtype=torch.bool).to(self.device)
-            mask_tensor[:, max_text_len:] *= mask_source_motion
-            mask_tensor[:, :max_text_len] *= text_mask
+            aug_mask = torch.ones(bs_cond,
+                                  max_text_len+max_motion_len 
+                                  ,dtype=torch.bool).to(self.device)
+            aug_mask[:, max_text_len:] *= mask_source_motion
+            aug_mask[:, :max_text_len] *= text_mask
         else:
             aug_mask = text_mask
         # cond_emb_text = cond_emb_text[rand_perm]
