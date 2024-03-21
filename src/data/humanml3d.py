@@ -564,10 +564,11 @@ class HumanML3DDataModule(BASEDataModule):
         # setup collate function meta parameters
         # self.collate_fn = lambda b: collate_batch(b, self.cfg.load_feats)
         # create datasets
-        slice_to = int(proportion * len(hml3d_data_dict['train']))
-        lends_train = len(hml3d_data_dict['train'])
-        log.info(f'Using {100*round(slice_to/lends_train, 2)}% of the data.')
-        log.info(f'Using {slice_to}/{lends_train} of the data.')
+        if 'train' in hml3d_data_dict:
+            slice_to = int(proportion * len(hml3d_data_dict['train']))
+            lends_train = len(hml3d_data_dict['train'])
+            log.info(f'Using {100*round(slice_to/lends_train, 2)}% of the data.')
+            log.info(f'Using {slice_to}/{lends_train} of the data.')
 
         for spl in load_splits:
             if spl == 'train':
