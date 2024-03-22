@@ -128,25 +128,24 @@ class SincSynthDataset(Dataset):
                 rots_flat_tgt = v['motion_target']['rots'].flatten(-2).float()
                 dataset_dict_raw[k]['motion_target']['rots'] = rots_flat_tgt
 
-            #for mtype in ['motion_source', 'motion_target']:
+#            for mtype in ['motion_source', 'motion_target']:
             #
-            #    rots_can, trans_can = cls._canonica_facefront(v[mtype]['rots'],
-            #                                                   v[mtype]['trans']
-            #                                                   )
-            #    dataset_dict_raw[k][mtype]['rots'] = rots_can
-            #    dataset_dict_raw[k][mtype]['trans'] = trans_can
+               # rots_can, trans_can = cls._canonica_facefront(v[mtype]['rots'],
+#                                                              v[mtype]['trans'])
+               # dataset_dict_raw[k][mtype]['rots'] = rots_can
+               # dataset_dict_raw[k][mtype]['trans'] = trans_can
             #    seqlen, jts_no = rots_can.shape[:2]
                 
-            #    rots_can_rotm = transform_body_pose(rots_can,
+               # rots_can_rotm = transform_body_pose(rots_can,
                 #                                   'aa->rot')
                 # # self.body_model.batch_size = seqlen * jts_no
 
-            #    jts_can_ds = body_model.smpl_forward_fast(transl=trans_can,
-            #                                     body_pose=rots_can_rotm[:, 1:],
-            #                                 global_orient=rots_can_rotm[:, :1])
+                #jts_can_ds = body_model.smpl_forward_fast(transl=trans_can,
+#                                                 body_pose=rots_can_rotm[:, 1:],
+#                                             global_orient=rots_can_rotm[:, :1])
 
-            #    jts_can = jts_can_ds.joints[:, :22]
-            #    dataset_dict_raw[k][mtype]['joint_positions'] = jts_can
+                #jts_can = jts_can_ds.joints[:, :22]
+                #dataset_dict_raw[k][mtype]['joint_positions'] = jts_can
         #import ipdb;ipdb.set_trace()
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
 
@@ -534,9 +533,9 @@ class SincSynthDataModule(BASEDataModule):
 
             for mtype in ['motion_source', 'motion_target']:
             
-                rots_can, trans_can = self._canonica_facefront(v[mtype]['rots'],
-                                                               v[mtype]['trans']
-                                                               )
+                rots_can = v[mtype]['rots'] 
+                trans_can = v[mtype]['trans']
+
                 dataset_dict_raw[k][mtype]['rots'] = rots_can
                 dataset_dict_raw[k][mtype]['trans'] = trans_can
                 seqlen, jts_no = rots_can.shape[:2]
