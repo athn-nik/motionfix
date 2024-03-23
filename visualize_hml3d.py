@@ -87,44 +87,44 @@ def render_vids(newcfg: DictConfig) -> None:
     from pathlib import Path
     from src.data.humanml3d import HumanML3DDataModule
     data_conf = OmegaConf.load(Path(newcfg.path.code_dir) /'configs/data/hml3d.yaml')
+    # hml3d_dataset instantiate(cfg.data, )
+    # hml3d_dataset = HumanML3DDataModule(debug=False,
+    #                                 datapath='data/humanml3d_processed', # amass_bodilex.pth.tar
+    #                                 debug_datapath='data/amass_small.pth.tar',
+    #                                 annot_path='data/annotations/humanml3d/annotations.json',
+    #                                 # Amass
+    #                                 smplh_path='data/body_models',
+    #                                 smplh_path_dbg='minidata/body_models',
+    #                                 load_splits=['test'],
+    #                                 # Machine
+    #                                 batch_size=32,
+    #                                 num_workers=12,
+    #                                 rot_repr='6d',
+    #                                 preproc=OmegaConf.create(
+    #                                   {'stats_file':'deps/stats/statistics_hml3d.npy',  # full path for statistics
+    #                                   'split_seed':0,
+    #                                   'calculate_minmax':True,
+    #                                   'generate_joint_files':True,
+    #                                   'use_cuda':True,
+    #                                   'n_body_joints':22,
+    #                                   'norm_type':'std'}),
+    #                                 framerate=30
+    #                                 ,load_feats=["body_transl"
+    #                                 ,"body_transl_delta"
+    #                                 ,"body_transl_delta_pelv"
+    #                                 ,"body_transl_delta_pelv_xy"
+    #                                 ,"body_transl_z"
+    #                                 ,"body_orient"
+    #                                 ,"body_pose"
+    #                                 ,"body_orient_delta"
+    #                                 ,"body_pose_delta"
+    #                                 ,"body_orient_xy",
+    #                                 'z_orient_delta', 
+    #                                 'body_joints_local_wo_z_rot'
+    #                                 ,"body_joints"],
+    #                                 progress_bar=True
+    #                     )
 
-    hml3d_dataset = HumanML3DDataModule(debug=False,
-                                    datapath='data/humanml3d_processed', # amass_bodilex.pth.tar
-                                    debug_datapath='data/amass_small.pth.tar',
-                                    annot_path='data/annotations/humanml3d/annotations.json',
-                                    # Amass
-                                    smplh_path='data/body_models',
-                                    smplh_path_dbg='minidata/body_models',
-                                    load_splits=['test'],
-                                    # Machine
-                                    batch_size=32,
-                                    num_workers=12,
-                                    rot_repr='6d',
-                                    preproc=OmegaConf.create(
-                                      {'stats_file':'deps/stats/statistics_hml3d.npy',  # full path for statistics
-                                      'split_seed':0,
-                                      'calculate_minmax':True,
-                                      'generate_joint_files':True,
-                                      'use_cuda':True,
-                                      'n_body_joints':22,
-                                      'norm_type':'std'}),
-                                    framerate=30
-                                    ,load_feats=["body_transl"
-                                    ,"body_transl_delta"
-                                    ,"body_transl_delta_pelv"
-                                    ,"body_transl_delta_pelv_xy"
-                                    ,"body_transl_z"
-                                    ,"body_orient"
-                                    ,"body_pose"
-                                    ,"body_orient_delta"
-                                    ,"body_pose_delta"
-                                    ,"body_orient_xy",
-                                    'z_orient_delta', 
-                                    'body_joints_local_wo_z_rot'
-                                    ,"body_joints"],
-                                    progress_bar=True
-                        )
-    
     OmegaConf.merge(data_conf, newcfg.data)
     
     exp_folder = Path(hydra.utils.to_absolute_path(newcfg.folder))
@@ -197,7 +197,10 @@ def render_vids(newcfg: DictConfig) -> None:
                                     #    infer_scheduler=cfg.model.infer_scheduler,
                                     #    diff_params=cfg.model.diff_params,
                                        strict=False)
+    model.eval()
     model.freeze()
+    hml3d_dataset = instantiate(cfg.data, load_splits=['test'])
+
     logger.info("Model weights restored")
     logger.info("Trainer initialized")
     # logger.info('------Generating using Scheduler------\n\n'\
@@ -218,34 +221,36 @@ def render_vids(newcfg: DictConfig) -> None:
     features_to_load = test_dataset_hml3d.load_feats
     collate_fn = lambda b: collate_batch_last_padding(b, features_to_load)
     from src.utils.art_utils import color_map
-    subset_hml = []
+    # subset_hml = []
     
-    cnt_sit = 0
-    cnt_walk = 0
-    tot_cnt = 0
-    for elem in test_dataset_hml3d.data:
-        if 'sit' in elem['text'][0]:
-            cnt_sit += 1
-            subset_hml.append(elem)
+    # cnt_sit = 0
+    # cnt_walk = 0
+    # tot_cnt = 0
+    # for elem in test_dataset_hml3d.data:
+    #     if 'sit' in elem['text'][0]:
+    #         cnt_sit += 1
+    #         subset_hml.append(elem)
 
-        elif 'walk' in elem['text'][0]:
-            cnt_walk += 1
-            subset_hml.append(elem)
-        elif tot_cnt < 30:
-            subset_hml.append(elem)
-            tot_cnt += 1
+    #     elif 'walk' in elem['text'][0]:
+    #         cnt_walk += 1
+    #         subset_hml.append(elem)
+    #     elif tot_cnt < 30:
+    #         subset_hml.append(elem)
+    #         tot_cnt += 1
 
-        if cnt_sit > 10 and cnt_walk > 10 and tot_cnt >= 30:
-            break
-    from src.utils.motionfix_utils import test_subset_hml3d
+    #     if cnt_sit > 10 and cnt_walk > 10 and tot_cnt >= 30:
+    #         break
+    # from src.utils.motionfix_utils import test_subset_hml3d
 
-    batch_size_test = 16
-    test_subset_hml3d = [elem for elem in test_dataset_hml3d
-                         if elem['id'] in test_subset_hml3d]
+    # batch_size_test = 16
+    # test_subset_hml3d = [elem for elem in test_dataset_hml3d
+    #                      if elem['id'] in test_subset_hml3d]
+
     # idss = [0,1,2,3,8]
     # filtered_list = [subset_hml[index] for index in idss]
     # test_dataset_hml3d.data = filtered_list[:1]
-    testloader_hml3d = torch.utils.data.DataLoader(test_subset_hml3d,
+    batch_size_test = 1
+    testloader_hml3d = torch.utils.data.DataLoader(test_dataset_hml3d,
                                                    shuffle=False,
                                                    num_workers=4,
                                                    batch_size=batch_size_test,
@@ -311,6 +316,10 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 num_diff_steps=num_infer_steps,
                                                 )
                 gen_mo = model.diffout2motion(diffout)
+                gen_mot0 = gen_mo.detach().cpu()
+                dtr = pack_to_render(rots=gen_mot0[0, :, 3:], trans=gen_mot0[0, :, :3])
+                ptsavem='/home/nathanasiou/Desktop/conditional_action_gen/modilex'
+                render_motion(aitrenderer, dtr, ptsavem+'/gendiff',pose_repr='aa',smpl_layer=smpl_layer)
 
                 src_mot_cond, tgt_mot = model.batch2motion(in_batch,
                                                 pack_to_dict=False)

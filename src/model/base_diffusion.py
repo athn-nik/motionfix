@@ -292,10 +292,28 @@ class MD(BaseModel):
             aug_mask[:, max_text_len:] *= cond_motion_masks
             aug_mask = torch.cat([aug_mask, aug_mask, aug_mask],
                                  dim=0)
-            aug_mask[:, :max_text_len] *= text_masks
+            # aug_mask[:, :max_text_len] *= text_masks
+            # if max_text_len > 1:
+            #     # aug_mask = text_mask
+            #     text_mask_aux = torch.ones(bsz, max_text_len, 
+            #                 dtype=torch.bool).to(self.device)
+            #     aug_mask[:, :max_text_len] *= text_mask_aux
+
+            # else:
+            #     aug_mask = torch.ones(bsz, max_text_len, 
+            #                 dtype=torch.bool).to(self.device)
 
         else:
-            aug_mask = text_masks
+            if max_text_len > 1:
+                # aug_mask = text_mask
+                text_mask_aux = torch.ones(bsz, max_text_len, 
+                            dtype=torch.bool).to(self.device)
+                aug_mask = text_mask_aux
+            else:
+                aug_mask = torch.ones(bsz, max_text_len, 
+                            dtype=torch.bool).to(self.device)
+
+            # aug_mask = text_masks
 
             # # expand the latents if we are doing classifier free guidance
             # latent_model_input = torch.cat(
@@ -349,7 +367,8 @@ class MD(BaseModel):
         if motion_embeds is not None:
             _, _, samples = samples.chunk(3, dim=0)  # Remove null class samples
         else:
-            samples, _ = samples.chunk(2, dim=0)
+            print('YAO TEXT CONDITIONS>>>>>>')
+            # samples, _ = samples.chunk(2, dim=0)
         # [batch_size, 1, latent_dim] -> [1, batch_size, latent_dim]
 
         final_diffout = samples.permute(1, 0, 2)
@@ -622,7 +641,6 @@ class MD(BaseModel):
         #                                 |rows_txt_only|
         #                                 |rows_mot_only|
         #                                 ---------------
-        max_text_len = self.text_encoder.max_length
         bs_cond = feats_for_denois.shape[1]
         if cond_emb_motion is not None:
             max_motion_len = cond_emb_motion.shape[0]
@@ -667,6 +685,8 @@ class MD(BaseModel):
             #if max_text_len > 1:
             #    aug_mask *= text_mask
         cond_emb_text, text_mask = self.text_encoder(text_list)
+        max_text_len = cond_emb_text.shape[1]
+
         #rand_perm = torch.randperm(batch_size)
         # random permutation along the batch dimension same for all
         if self.motion_condition == 'source':
@@ -674,9 +694,24 @@ class MD(BaseModel):
                                   max_text_len+max_motion_len 
                                   ,dtype=torch.bool).to(self.device)
             aug_mask[:, max_text_len:] *= mask_source_motion
-            aug_mask[:, :max_text_len] *= text_mask
+            # if max_text_len > 1:
+            #     # aug_mask = text_mask
+            #     text_mask_aux = torch.ones(bs_cond, max_text_len, 
+            #                 dtype=torch.bool).to(self.device)
+            #     aug_mask[:, :max_text_len] *= text_mask_aux
+
+            # else:
+            #     aug_mask = torch.ones(bs_cond, max_text_len, 
+            #                 dtype=torch.bool).to(self.device)
         else:
-            aug_mask = text_mask
+            if max_text_len > 1:
+                # aug_mask = text_mask
+                text_mask_aux = torch.ones(bs_cond, max_text_len, 
+                            dtype=torch.bool).to(self.device)
+                aug_mask = text_mask_aux
+            else:
+                aug_mask = torch.ones(bs_cond, max_text_len, 
+                            dtype=torch.bool).to(self.device)
         # cond_emb_text = cond_emb_text[rand_perm]
         # mask_target_motion = mask_target_motion[rand_perm]
         # feats_for_denois = feats_for_denois[:, rand_perm]
@@ -889,33 +924,7 @@ class MD(BaseModel):
                     tot_feat_loss = cur_feat_loss.sum() / pad_mask.sum()
                     all_losses_dict.update({self.input_feats[i]: tot_feat_loss})
                 tot_loss += tot_feat_loss
-            # trans_loss = full_feature_loss[..., :lparts[0]].mean(-1)*pad_mask
-            # trans_loss = trans_loss.sum() / pad_mask.sum()
 
-            # orient_loss = full_feature_loss[..., 
-            #                           lparts[0]:lparts[1]].mean(-1)*pad_mask
-            # orient_loss = orient_loss.sum() / pad_mask.sum()
-
-            # pose_loss = full_feature_loss[...,
-            #                         lparts[1]:lparts[2]].mean(-1)*pad_mask
-            # pose_loss = pose_loss.sum() / pad_mask.sum()            
-
-            # total_loss = pose_loss + trans_loss + orient_loss + first_pose_loss
-
-            # total_loss = first_pose_loss
-        if self.loss_on_verts or self.loss_on_positions:
-            loss_verts, loss_jts = self.compute_verts_loss(out_dict, 
-                                                    pad_mask_jts_pos)
-            all_losses_dict['total_loss'] += loss_verts
-            all_losses_dict['total_loss'] += loss_jts
-
-            if loss_verts != 0.0:
-                all_losses_dict['loss_verts'] = loss_verts
-            if loss_jts != 0.0:
-                all_losses_dict['loss_jts'] = loss_jts
-
-            tot_loss = tot_loss + loss_verts + loss_jts
-        tot_div = len(self.input_feats) + 1 if self.loss_on_positions else len(self.input_feats)
         tot_loss /= len(self.input_feats)
         all_losses_dict['total_loss'] = tot_loss
 
