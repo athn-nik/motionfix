@@ -81,7 +81,8 @@ class ClipTextEncoder(pl.LightningModule):
         elif self.variant == "clip_hidden":
             # (batch_Size, seq_length , text_encoded_dim)
             text_embeddings = self.text_model.text_model(text_input_ids,
-                            attention_mask=txt_att_mask).last_hidden_state
+                            # attention_mask=txt_att_mask
+                            ).last_hidden_state
         elif self.variant == "bert":
             # (batch_Size, seq_length , text_encoded_dim)
             text_embeddings = self.text_model(
