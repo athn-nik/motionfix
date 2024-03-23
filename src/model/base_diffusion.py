@@ -306,11 +306,11 @@ class MD(BaseModel):
         else:
             if max_text_len > 1:
                 # aug_mask = text_mask
-                text_mask_aux = torch.ones(bsz, max_text_len, 
+                text_mask_aux = torch.ones(2*bsz, max_text_len , 
                             dtype=torch.bool).to(self.device)
                 aug_mask = text_mask_aux
             else:
-                aug_mask = torch.ones(bsz, max_text_len, 
+                aug_mask = torch.ones(2*bsz, max_text_len, 
                             dtype=torch.bool).to(self.device)
 
             # aug_mask = text_masks
@@ -367,8 +367,8 @@ class MD(BaseModel):
         if motion_embeds is not None:
             _, _, samples = samples.chunk(3, dim=0)  # Remove null class samples
         else:
-            print('YAO TEXT CONDITIONS>>>>>>')
-            # samples, _ = samples.chunk(2, dim=0)
+            # print('YAO TEXT CONDITIONS>>>>>>')
+            _, samples = samples.chunk(2, dim=0)
         # [batch_size, 1, latent_dim] -> [1, batch_size, latent_dim]
 
         final_diffout = samples.permute(1, 0, 2)

@@ -198,7 +198,6 @@ def render_vids(newcfg: DictConfig) -> None:
                                     #    diff_params=cfg.model.diff_params,
                                        strict=False)
     model.eval()
-    model.freeze()
     hml3d_dataset = instantiate(cfg.data, load_splits=['test'])
 
     logger.info("Model weights restored")
@@ -249,7 +248,7 @@ def render_vids(newcfg: DictConfig) -> None:
     # idss = [0,1,2,3,8]
     # filtered_list = [subset_hml[index] for index in idss]
     # test_dataset_hml3d.data = filtered_list[:1]
-    batch_size_test = 1
+    batch_size_test = 32
     testloader_hml3d = torch.utils.data.DataLoader(test_dataset_hml3d,
                                                    shuffle=False,
                                                    num_workers=4,
@@ -275,8 +274,12 @@ def render_vids(newcfg: DictConfig) -> None:
             cur_guid_comb = f'ld_txt-{g_text}'
             cur_output_path = output_path / cur_guid_comb
             cur_output_path.mkdir(exist_ok=True, parents=True)
-
+            batch_to_rend = 1
             for batch in tqdm(ds_iterator_hml3d):
+                
+                if not batch_to_rend:
+                    continue
+
                 text_diff = batch['text']
                 target_lens = batch['length_target']
                 keyids = batch['id']
@@ -316,10 +319,10 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 num_diff_steps=num_infer_steps,
                                                 )
                 gen_mo = model.diffout2motion(diffout)
-                gen_mot0 = gen_mo.detach().cpu()
-                dtr = pack_to_render(rots=gen_mot0[0, :, 3:], trans=gen_mot0[0, :, :3])
-                ptsavem='/home/nathanasiou/Desktop/conditional_action_gen/modilex'
-                render_motion(aitrenderer, dtr, ptsavem+'/gendiff',pose_repr='aa',smpl_layer=smpl_layer)
+                #gen_mot0 = gen_mo.detach().cpu()
+                #dtr = pack_to_render(rots=gen_mot0[0, :, 3:], trans=gen_mot0[0, :, :3])
+                #ptsavem='/home/nathanasiou/Desktop/conditional_action_gen/modilex'
+                #render_motion(aitrenderer, dtr, ptsavem+'/gendiff',pose_repr='aa',smpl_layer=smpl_layer)
 
                 src_mot_cond, tgt_mot = model.batch2motion(in_batch,
                                                 pack_to_dict=False)
@@ -377,7 +380,7 @@ def render_vids(newcfg: DictConfig) -> None:
                     wandb.log({f"{cur_guid_comb}/{video_key}": wandb.Video(fnal_fl,
                                                                 fps=30,
                                                                 format="mp4")})
-
+                batch_to_rend -= 1
 
     from src.utils.file_io import write_json   
     write_json(tot_pkls, output_path / 'tot_vids_to_render.json')
