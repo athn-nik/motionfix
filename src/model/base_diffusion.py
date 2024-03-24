@@ -290,7 +290,9 @@ class MD(BaseModel):
                                   max_text_len+max_motion_len 
                                   ,dtype=torch.bool).to(self.device)
             aug_mask[:, max_text_len:] *= cond_motion_masks
-            aug_mask = torch.cat([aug_mask, aug_mask, aug_mask],
+            aug_mask = torch.cat([aug_mask*text_masks[:bsz],
+                                  aug_mask*text_masks[bsz:2*bsz],
+                                  aug_mask*text_masks[2*bsz:3*bsz]],
                                  dim=0)
             # aug_mask[:, :max_text_len] *= text_masks
             # if max_text_len > 1:
@@ -306,9 +308,9 @@ class MD(BaseModel):
         else:
             if max_text_len > 1:
                 # aug_mask = text_mask
-                text_mask_aux = torch.ones(2*bsz, max_text_len , 
-                            dtype=torch.bool).to(self.device)
-                aug_mask = text_mask_aux
+                # text_mask_aux = torch.ones(2*bsz, max_text_len, 
+                #             dtype=torch.bool).to(self.device)
+                aug_mask *= text_masks
             else:
                 aug_mask = torch.ones(2*bsz, max_text_len, 
                             dtype=torch.bool).to(self.device)
@@ -402,84 +404,6 @@ class MD(BaseModel):
                                         (samples, ),
                                         device=self.device)
         return timesteps_sampled
-
-    @torch.no_grad()
-    def denoise_motions(self, dif_out, target_lens, keyids,
-                            texts_diff, curepoch, return_fnames=False):       
-        ##### DEBUG THE MODEL #####
-        import os
-        cur_epoch = curepoch
-        # if not self.training
-        input_motion_feats = dif_out['input_motion_feats']
-        timesteps = dif_out['timesteps']
-        noisy_motion = dif_out['noised_motion_feats']
-        diffusion_fw_out = dif_out['pred_motion_feats']
-
-        mot_from_deltas = self.diffout2motion(input_motion_feats.detach())
-        noisy_mot_from_deltas = self.diffout2motion(noisy_motion.detach())
-        denois_mot_deltas = self.diffout2motion(diffusion_fw_out.detach())
-
-        log_render_dic_debug = {}
-        filenames_lst = []
-        for idx in range(2):
-            keyid_ts_str = f'{keyids[idx]}_ts_{str(timesteps[idx].item())}'
-            tstep = f'timestep: {str(timesteps[idx].item())}'
-            from src.render.mesh_viz import render_motion
-            from src.render.video import stack_vids
-            text_vid = f'{texts_diff[idx]}'
-
-            one_mot_from_deltas = mot_from_deltas[idx, :target_lens[idx]]
-            if self.using_deltas:
-                one_mot_from_deltas = one_mot_from_deltas[...,
-                                                          tot_dim_deltas:]
-
-            uno_vid = pack_to_render(rots=one_mot_from_deltas[...,
-                                                        3:].detach().cpu(),
-                                        trans=one_mot_from_deltas[...,
-                                                    :3].detach().cpu())
-            in_fl = render_motion(self.renderer, uno_vid, 
-                                  f'{curdir}/input_{keyid_ts_str}', 
-                                  text_for_vid=text_vid, 
-                                  pose_repr='aa',
-                                  color=color_map['input'],
-                                  )
-
-
-            one_noisy_mot_from_deltas = noisy_mot_from_deltas[idx,
-                                                               :target_lens[idx]]
-            if self.using_deltas:
-                one_noisy_mot_from_deltas = one_noisy_mot_from_deltas[...,
-                                                          tot_dim_deltas:]
-            no_vid = pack_to_render(rots=one_noisy_mot_from_deltas[...,
-                                                        3:].detach().cpu(),
-                                        trans=one_noisy_mot_from_deltas[...,
-                                                    :3].detach().cpu())
-            noised_fl = render_motion(self.renderer, no_vid,
-                                      f'{curdir}/noised_{keyid_ts_str}',
-                                      text_for_vid=text_vid,
-                                      pose_repr='aa',
-                                      color=color_map['noised'])
-
-
-            one_denois_mot_deltas = denois_mot_deltas[idx, :target_lens[idx]]
-            if self.using_deltas:
-                one_denois_mot_deltas = one_denois_mot_deltas[...,
-                                                          tot_dim_deltas:]
-            deno_vid = pack_to_render(rots=one_denois_mot_deltas[...,
-                                                        3:].detach().cpu(),
-                                        trans=one_denois_mot_deltas[...,
-                                                    :3].detach().cpu())
-            denoised_fl = render_motion(self.renderer, deno_vid, 
-                                        f'{curdir}/denoised_{keyid_ts_str}',
-                                        text_for_vid=text_vid,
-                                        pose_repr='aa',
-                                        color=color_map['denoised'])
-
-
-            fname_for_stack = f'{curdir}/stak_{keyid_ts_str}_{idx}.mp4'
-            stacked_name = stack_vids([in_fl, noised_fl, denoised_fl],
-                                      fname=fname_for_stack,
-                                      orient='h')
 
     def _diffusion_process(self, input_motion_feats,
                            mask_in_mot,
@@ -694,21 +618,17 @@ class MD(BaseModel):
                                   max_text_len+max_motion_len 
                                   ,dtype=torch.bool).to(self.device)
             aug_mask[:, max_text_len:] *= mask_source_motion
-            # if max_text_len > 1:
-            #     # aug_mask = text_mask
-            #     text_mask_aux = torch.ones(bs_cond, max_text_len, 
-            #                 dtype=torch.bool).to(self.device)
-            #     aug_mask[:, :max_text_len] *= text_mask_aux
-
-            # else:
-            #     aug_mask = torch.ones(bs_cond, max_text_len, 
-            #                 dtype=torch.bool).to(self.device)
-        else:
             if max_text_len > 1:
                 # aug_mask = text_mask
-                text_mask_aux = torch.ones(bs_cond, max_text_len, 
-                            dtype=torch.bool).to(self.device)
-                aug_mask = text_mask_aux
+                # text_mask_aux = torch.ones(bs_cond, max_text_len, 
+                #             dtype=torch.bool).to(self.device)
+                aug_mask[:, :max_text_len] *= text_mask
+        else:
+            if max_text_len > 1:
+                aug_mask = text_mask
+                # text_mask_aux = torch.ones(bs_cond, max_text_len, 
+                #             dtype=torch.bool).to(self.device)
+                # aug_mask = text_mask_aux
             else:
                 aug_mask = torch.ones(bs_cond, max_text_len, 
                             dtype=torch.bool).to(self.device)
@@ -1333,120 +1253,6 @@ class MD(BaseModel):
             
 
         return full_motion_unnorm
-    
-    
-    def visualize_diffusion(self, dif_out, target_lens, keyids, texts_diff,
-                            curepoch, return_fnames=False):       
-        ##### DEBUG THE MODEL #####
-        import os
-        cur_epoch = curepoch
-        # if not self.training
-        curdir = f'debug/epoch-{cur_epoch}'
-        os.makedirs(curdir, exist_ok=True)
-        input_motion_feats = dif_out['input_motion_feats']
-        timesteps = dif_out['timesteps']
-        noisy_motion = dif_out['noised_motion_feats']
-        diffusion_fw_out = dif_out['pred_motion_feats']
-        if self.using_deltas:
-            tot_dim_deltas = 0
-            for idx_feat, in_feat in enumerate(self.input_feats):
-                if 'delta' in in_feat:
-                    tot_dim_deltas += self.input_feats_dims[idx_feat]
-
-        if self.input_deltas:
-            # integrate all motions
-            mot_from_deltas = self.diffout2motion(input_motion_feats.detach(), 
-                                                  full_deltas=True)
-            noisy_mot_from_deltas = self.diffout2motion(noisy_motion.detach(), 
-                                                  full_deltas=True)
-            denois_mot_deltas = self.diffout2motion(diffusion_fw_out.detach(), 
-                                                  full_deltas=True)
-            mot_from_deltas = mot_from_deltas.permute(1, 0, 2)
-            noisy_mot_from_deltas = noisy_mot_from_deltas.permute(1, 0, 2)
-            denois_mot_deltas = denois_mot_deltas.permute(1, 0, 2)
-        elif self.using_deltas_transl:
-            mot_from_deltas = self.diffout2motion(input_motion_feats.detach())
-            noisy_mot_from_deltas = self.diffout2motion(noisy_motion.detach())
-            denois_mot_deltas = self.diffout2motion(diffusion_fw_out.detach())
-            # mot_from_deltas = mot_from_deltas.permute(1, 0, 2)
-            # noisy_mot_from_deltas = noisy_mot_from_deltas.permute(1, 0, 2)
-            # denois_mot_deltas = denois_mot_deltas.permute(1, 0, 2)
-        else:
-            # integrate all motions
-            mot_from_deltas = self.unnorm_delta(input_motion_feats.detach())
-            noisy_mot_from_deltas = self.unnorm_delta(noisy_motion.detach())
-            denois_mot_deltas = self.unnorm_delta(diffusion_fw_out.detach())
-
-        log_render_dic_debug = {}
-        filenames_lst = []
-        for idx in range(2):
-            keyid_ts_str = f'{keyids[idx]}_ts_{str(timesteps[idx].item())}'
-            tstep = f'timestep: {str(timesteps[idx].item())}'
-            from src.render.mesh_viz import render_motion
-            from src.render.video import stack_vids
-            text_vid = f'{texts_diff[idx]}'
-
-            one_mot_from_deltas = mot_from_deltas[idx, :target_lens[idx]]
-            if self.using_deltas:
-                one_mot_from_deltas = one_mot_from_deltas[...,
-                                                          tot_dim_deltas:]
-
-            uno_vid = pack_to_render(rots=one_mot_from_deltas[...,
-                                                        3:].detach().cpu(),
-                                        trans=one_mot_from_deltas[...,
-                                                    :3].detach().cpu())
-            in_fl = render_motion(self.renderer, uno_vid, 
-                                  f'{curdir}/input_{keyid_ts_str}', 
-                                  text_for_vid=text_vid, 
-                                  pose_repr='aa',
-                                  color=color_map['input'])
-
-
-            one_noisy_mot_from_deltas = noisy_mot_from_deltas[idx,
-                                                               :target_lens[idx]]
-            if self.using_deltas:
-                one_noisy_mot_from_deltas = one_noisy_mot_from_deltas[...,
-                                                          tot_dim_deltas:]
-            no_vid = pack_to_render(rots=one_noisy_mot_from_deltas[...,
-                                                        3:].detach().cpu(),
-                                        trans=one_noisy_mot_from_deltas[...,
-                                                    :3].detach().cpu())
-            noised_fl = render_motion(self.renderer, no_vid,
-                                      f'{curdir}/noised_{keyid_ts_str}',
-                                      text_for_vid=text_vid,
-                                      pose_repr='aa',
-                                      color=color_map['noised'])
-
-
-            one_denois_mot_deltas = denois_mot_deltas[idx, :target_lens[idx]]
-            if self.using_deltas:
-                one_denois_mot_deltas = one_denois_mot_deltas[...,
-                                                          tot_dim_deltas:]
-            deno_vid = pack_to_render(rots=one_denois_mot_deltas[...,
-                                                        3:].detach().cpu(),
-                                        trans=one_denois_mot_deltas[...,
-                                                    :3].detach().cpu())
-            denoised_fl = render_motion(self.renderer, deno_vid, 
-                                        f'{curdir}/denoised_{keyid_ts_str}',
-                                        text_for_vid=text_vid,
-                                        pose_repr='aa',
-                                        color=color_map['denoised'])
-
-
-            fname_for_stack = f'{curdir}/stak_{keyid_ts_str}_{idx}.mp4'
-            stacked_name = stack_vids([in_fl, noised_fl, denoised_fl],
-                                      fname=fname_for_stack,
-                                      orient='h')
-            logname = f'debug_renders/' + f'ep-{cur_epoch}_{keyids[idx]}_{idx}'
-            log_render_dic_debug[logname] = wandb.Video(stacked_name, fps=30,
-                                                        format='mp4',
-                                                        caption=tstep) 
-        if return_fnames:
-            return filenames_lst
-        else:
-            self.logger.experiment.log(log_render_dic_debug)
-
-        ##### DEBUG THE MODEL #####
 
     def allsplit_step(self, split: str, batch, batch_idx):
         from src.data.tools.tensors import lengths_to_mask

@@ -519,6 +519,8 @@ class SincSynthDataModule(BASEDataModule):
         # pass this or split for dataloading into sets
         log.info(f'Loading data from {ds_db_path}....')
         dataset_dict_raw = joblib.load(ds_db_path)
+        dataset_jts = joblib.load(str(ds_db_path).replace('.pth.tar',
+                                                          '_jts.pth.tar'))
         log.info(f'Loaded data from {ds_db_path}.')
 
         dataset_dict_raw = cast_dict_to_tensors(dataset_dict_raw)
@@ -538,18 +540,18 @@ class SincSynthDataModule(BASEDataModule):
 
                 dataset_dict_raw[k][mtype]['rots'] = rots_can
                 dataset_dict_raw[k][mtype]['trans'] = trans_can
-                seqlen, jts_no = rots_can.shape[:2]
+                # seqlen, jts_no = rots_can.shape[:2]
                 
-                rots_can_rotm = transform_body_pose(rots_can,
-                                                  'aa->rot')
+                # rots_can_rotm = transform_body_pose(rots_can,
+                #                                   'aa->rot')
                 # # self.body_model.batch_size = seqlen * jts_no
 
-                jts_can_ds = self.body_model.smpl_forward_fast(transl=trans_can,
-                                                 body_pose=rots_can_rotm[:, 1:],
-                                             global_orient=rots_can_rotm[:, :1])
+                # jts_can_ds = self.body_model.smpl_forward_fast(transl=trans_can,
+                #                                  body_pose=rots_can_rotm[:, 1:],
+                #                              global_orient=rots_can_rotm[:, :1])
 
-                jts_can = jts_can_ds.joints[:, :22]
-                dataset_dict_raw[k][mtype]['joint_positions'] = jts_can
+                # jts_can = jts_can_ds.joints[:, :22]
+                dataset_dict_raw[k][mtype]['joint_positions'] = dataset_jts[k][mtype]
                 # from src.tools.interpolation import flip_motion
                 # from src.render.mesh_viz import render_skeleton, render_motion
                 # from src.model.utils.tools import remove_padding, pack_to_render
@@ -563,9 +565,9 @@ class SincSynthDataModule(BASEDataModule):
                 #                 positions=jts_can.detach().numpy(),
                 #                 filename='/home/nathanasiou/Desktop/conditional_action_gen/modilex/jts.mp4')
 
-        import ipdb;ipdb.set_trace()
-        pts = '/home/nathanasiou/Desktop/conditional_action_gen/modilex/data/sinc_synth/sinc_synth_edits_v4_with_jts.pth.tar'
-        joblib.dump( dataset_dict_raw, pts)
+        # import ipdb;ipdb.set_trace()
+        # pts = '/home/nathanasiou/Desktop/conditional_action_gen/modilex/data/sinc_synth/sinc_synth_edits_v4_with_jts.pth.tar'
+        # joblib.dump( dataset_dict_raw, pts)
         # debug overfitting
         # less frames less motions
         # subkeys = list(dataset_dict_raw.keys())[:20]
@@ -581,7 +583,7 @@ class SincSynthDataModule(BASEDataModule):
         #     dataset_dict_raw[k]['motion_target']['joint_positions'] = dataset_dict_raw[k]['motion_target']['joint_positions'][:60] 
 
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         # joblib.dump(data_dict, str(ds_db_path).replace('sinc_synth_edits_v1.pth.tar',
         #                                                'sinc_synth_edits_v2.pth.tar')
         #             )
@@ -632,7 +634,7 @@ class SincSynthDataModule(BASEDataModule):
                                                       self.rot_repr,
                                                       self.load_feats,
                                                       do_augmentations=False))
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         slice_to = int(proportion * len(data_dict.items()))
 
         # setup collate function meta parameters
