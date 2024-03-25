@@ -208,7 +208,7 @@ class MD(BaseModel):
         return z
 
     def _diffusion_reverse(self,
-                           text_embeds, text_masks, 
+                           text_embeds, text_masks_from_enc, 
                            motion_embeds, cond_motion_masks,
                            inp_motion_mask, diff_process,
                            init_vec=None,
@@ -274,14 +274,24 @@ class MD(BaseModel):
             max_text_len = 0
         if self.motion_condition == 'source' and motion_embeds is not None:
             max_motion_len = cond_motion_masks.shape[1]
-            aug_mask = torch.ones(bsz,
-                                  max_text_len+max_motion_len 
+            full_mask = torch.ones(bsz,
+                                  max_text_len
                                   ,dtype=torch.bool).to(self.device)
-            aug_mask[:, max_text_len:] *= cond_motion_masks
-            aug_mask = torch.cat([aug_mask*text_masks[:bsz],
-                                  aug_mask*text_masks[bsz:2*bsz],
-                                  aug_mask*text_masks[2*bsz:3*bsz]],
-                                 dim=0)
+            notext_mask1 = full_mask * text_masks_from_enc[:bsz]
+            notext_mask2 = full_mask * text_masks_from_enc[bsz:2*bsz]
+            use_text_mask = full_mask * text_masks_from_enc[2*bsz:3*bsz]
+            text_masks = torch.cat([notext_mask1, 
+                                    notext_mask2, 
+                                    use_text_mask],
+                                    dim=0)
+            nomotion_mask = torch.zeros(bsz, max_motion_len, 
+                            dtype=torch.bool).to(self.device)
+            motion_masks = torch.cat([nomotion_mask, 
+                                    cond_motion_masks, 
+                                    cond_motion_masks],
+                                    dim=0)
+            aug_mask = torch.cat([motion_masks, text_masks],
+                                 dim=1)
             # aug_mask[:, :max_text_len] *= text_masks
             # if max_text_len > 1:
             #     # aug_mask = text_mask
@@ -298,7 +308,7 @@ class MD(BaseModel):
                 # aug_mask = text_mask
                 # text_mask_aux = torch.ones(2*bsz, max_text_len, 
                 #             dtype=torch.bool).to(self.device)
-                aug_mask *= text_masks
+                aug_mask *= text_masks_from_enc
             else:
                 aug_mask = torch.ones(2*bsz, max_text_len, 
                             dtype=torch.bool).to(self.device)
