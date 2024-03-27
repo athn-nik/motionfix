@@ -224,11 +224,13 @@ def render_vids(newcfg: DictConfig) -> None:
     # #     batch_size_test = 8
     # #     test_dataset.data = test_dataset.data[:batch_size_test*4]
     if cfg.data.dataname == 'sinc_synth':
+        # from src.utils.motionfix_utils import test_subset_sinc_synth
+        # test_dataset_subset = test_dataset[:128]
+        # batch_to_use = 128
         from src.utils.motionfix_utils import test_subset_sinc_synth
         test_dataset_subset = [elem for elem in test_dataset
                             if elem['id'] in test_subset_sinc_synth]
         batch_to_use = len(test_subset_sinc_synth)
-
     elif cfg.data.dataname == 'bodilex':
         counter_short = 24
         from src.utils.motionfix_utils import test_subset_amt
@@ -256,8 +258,8 @@ def render_vids(newcfg: DictConfig) -> None:
     else:
         mode_cond = 'full_cond'
     tot_pkls = []
-    gd_text = [2.5, 5.0]
-    gd_motion = [2.5, 5.0]
+    gd_text = [1.0, 2.5, 5.0]
+    gd_motion = [1.0, 2.5, 5.0]
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
     from aitviewer.models.smpl import SMPLLayer
     smpl_layer = SMPLLayer(model_type='smplh', ext='npz', gender='neutral')

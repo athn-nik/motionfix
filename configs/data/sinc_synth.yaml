@@ -17,7 +17,7 @@ load_splits:
 - "test"
 
 # Machine
-batch_size: 256 # ${machine.batch_size}
+batch_size: 128 # ${machine.batch_size}
 num_workers: ${machine.num_workers}
 rot_repr: '6d'
 proportion: 1.0

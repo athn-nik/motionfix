@@ -148,7 +148,7 @@ def render_vids(newcfg: DictConfig) -> None:
         model.using_deltas_transl = True
     # load the test set and collate it properly
     features_to_load = data_module.dataset['test'].load_feats
-    test_dataset = data_module.dataset['test'] + data_module.dataset['val']
+    test_dataset = data_module.dataset['test'] # + data_module.dataset['val']
     
     from src.data.tools.collate import collate_batch_last_padding
     collate_fn = lambda b: collate_batch_last_padding(b, features_to_load)
@@ -156,7 +156,7 @@ def render_vids(newcfg: DictConfig) -> None:
     subset = []
     testloader = torch.utils.data.DataLoader(test_dataset,
                                              shuffle=False,
-                                             num_workers=0,
+                                             num_workers=8,
                                              batch_size=128,
                                              collate_fn=collate_fn)
     ds_iterator = testloader 
