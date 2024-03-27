@@ -227,10 +227,20 @@ def render_vids(newcfg: DictConfig) -> None:
         # from src.utils.motionfix_utils import test_subset_sinc_synth
         # test_dataset_subset = test_dataset[:128]
         # batch_to_use = 128
-        from src.utils.motionfix_utils import test_subset_sinc_synth
+        def keep_N(dics, N=64):
+           keys = set()
+           for elem in dics:
+               if not elem['id'].endswith(('_0', '_1', '_2', '_3')):
+                   continue
+               if len(keys) < N:
+                   keys.add(elem['id'])
+               else:
+                   break
+           return list(keys)
+        ktokeep = keep_N(test_dataset)
         test_dataset_subset = [elem for elem in test_dataset
-                            if elem['id'] in test_subset_sinc_synth]
-        batch_to_use = len(test_subset_sinc_synth)
+                            if elem['id'] in ktokeep]
+        batch_to_use = len(ktokeep)
     elif cfg.data.dataname == 'bodilex':
         counter_short = 24
         from src.utils.motionfix_utils import test_subset_amt
