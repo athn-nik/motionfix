@@ -382,7 +382,6 @@ def render_vids(newcfg: DictConfig) -> None:
                                        fname=stacked_vid, 
                                        outf=f'{output_path}/{curid}_text.mp4',
                                        position='top_center')
-
                     cleanup_files(cur_group_of_vids+[stacked_vid])
                     video_key = fnal_fl.split('/')[-1].replace('.mp4','')
                     if len(text_diff[elem_id].split()) <= 5:
