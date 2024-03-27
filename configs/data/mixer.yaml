@@ -8,7 +8,7 @@ dataset_names:
 dataname: ${concat_string_list:${.dataset_names}}
 datapaths:
   "bodilex": ${path.data}/bodilex/amass_bodilex_v11.pth.tar
-  "sinc_synth": ${path.data}/sinc_synth/sinc_synth_edits_v1.pth.tar
+  "sinc_synth": ${path.data}/sinc_synth/sinc_synth_edits_v4.pth.tar
   "hml3d": ${path.data}/humanml3d_processed
 
 batch_size: ${machine.batch_size}

@@ -117,6 +117,9 @@ class SincSynthDataset(Dataset):
         ds_db_path = Path(datapath)
         log.info(f'Loading data from {ds_db_path}....')
         dataset_dict_raw = joblib.load(ds_db_path)
+        dataset_jts = joblib.load(str(ds_db_path).replace('.pth.tar',
+                                                          '_jts.pth.tar'))
+        log.info(f'Loaded data from {ds_db_path}.')
 
         dataset_dict_raw = cast_dict_to_tensors(dataset_dict_raw)
         for k, v in dataset_dict_raw.items():
@@ -127,6 +130,14 @@ class SincSynthDataset(Dataset):
             if len(v['motion_target']['rots'].shape) > 2:
                 rots_flat_tgt = v['motion_target']['rots'].flatten(-2).float()
                 dataset_dict_raw[k]['motion_target']['rots'] = rots_flat_tgt
+            for mtype in ['motion_source', 'motion_target']:
+            
+                rots_can = v[mtype]['rots'] 
+                trans_can = v[mtype]['trans']
+
+                dataset_dict_raw[k][mtype]['rots'] = rots_can
+                dataset_dict_raw[k][mtype]['trans'] = trans_can
+                dataset_dict_raw[k][mtype]['joint_positions'] = dataset_jts[k][mtype]
 
 #            for mtype in ['motion_source', 'motion_target']:
             #
