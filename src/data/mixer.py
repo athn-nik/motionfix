@@ -81,6 +81,7 @@ class MixerDataModule(BASEDataModule):
                          load_feats=load_feats, 
                          batch_sampler=batch_sampler,
                          dataset_percentages=dataset_percentages)
+        dataset_names = [dname for dname in dataset_names if dataset_percentages[dname] > 0]
         self.datapaths = [datapaths[name] for name in dataset_names]
         # concatenate the sorted datapaths
         self.dataname = dataname
