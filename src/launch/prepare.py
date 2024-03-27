@@ -25,12 +25,14 @@ ID = generate_id()
 def generate_id():
     return ID
 
-def concat_string_list(l):
+def concat_string_list(l, d1, d2, d3):
     """
     Concatenate the strings of a list in a sorted order
     """
+    if d1 == 0: l.remove('hml3d')
+    if d2 == 0: l.remove('bodilex')
+    if d3 == 0: l.remove('sinc_synth')
     return '_'.join(sorted(l))
-    
 
 def get_last_checkpoint(path, ckpt_name="last"):
     if path is None:
