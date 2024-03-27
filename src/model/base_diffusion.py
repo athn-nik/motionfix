@@ -247,14 +247,15 @@ class MD(BaseModel):
             gd_scale_motion = gd_motion
 
         # set timesteps
-        if steps_num is not None:
-            rev_steps = steps_num
-            log.info(f'Inference of: {rev_steps}') 
-        elif init_from == 'source':
+        
+        if init_from == 'source':
             rev_steps = diff_process.num_timesteps // 5
             log.info(f'Inference of: {rev_steps}')
         else:
-            log.info(f'Inference of: 1000')
+            if steps_num is not None:
+                rev_steps = steps_num
+                log.info(f'Inference of: {rev_steps}') 
+
         # timesteps = self.infer_scheduler.timesteps.to(inp_motion_mask.device)
         # prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
         # eta (η) is only used with the DDIMScheduler, and between [0, 1]
@@ -308,7 +309,7 @@ class MD(BaseModel):
                 # aug_mask = text_mask
                 # text_mask_aux = torch.ones(2*bsz, max_text_len, 
                 #             dtype=torch.bool).to(self.device)
-                aug_mask *= text_masks_from_enc
+                aug_mask = text_masks_from_enc
             else:
                 aug_mask = torch.ones(2*bsz, max_text_len, 
                             dtype=torch.bool).to(self.device)
