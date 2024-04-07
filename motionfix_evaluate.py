@@ -176,19 +176,23 @@ def render_vids(newcfg: DictConfig) -> None:
         mode_cond = cfg.condition_mode
 
     tot_pkls = []
-    if cfg.guidance_scale_text is None:
+    if cfg.guidance_scale_text_n_motion is None:
         gd_text = [2.5]
     else:
-        gd_text = [cfg.guidance_scale_text] # [1.0, 2.5, 5.0]
+        gd_text = [cfg.guidance_scale_text_n_motion] # [1.0, 2.5, 5.0]
     if cfg.guidance_scale_motion is None:
         gd_motion = [2.5, 5.0, 7.5]
     else:
         gd_motion = [cfg.guidance_scale_motion] #[1.0, 2.5, 5.0]
+    
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
+    
     if cfg.model.motion_condition is None:
         mode_cond = 'text_cond'
     else:
         mode_cond = 'full_cond'
+
+
     logger.info(f'Evaluation Set length:{len(test_dataset)}')
     with torch.no_grad():
         for guid_text, guid_motion in guidances_mix:

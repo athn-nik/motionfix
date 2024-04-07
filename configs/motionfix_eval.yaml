@@ -20,8 +20,10 @@ render_vids: true
 subset: null
 
 num_sampling_steps: 1000
-guidance_scale_text: null
+
+guidance_scale_text_n_motion: null
 guidance_scale_motion: null
+
 init_from: 'noise' # noise
 condition_mode: 'full_cond' # 'mot_cond' 'text_cond'
 inpaint: false

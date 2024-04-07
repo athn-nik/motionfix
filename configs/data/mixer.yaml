@@ -47,7 +47,7 @@ framerate: 30
 sampler: ${sampler}
 
 load_feats:
-# - "body_transl_delta"
+# - "body_transl"
 # - "body_transl_delta_pelv"
 - "body_transl_delta_pelv"
 - "body_orient_xy"

@@ -130,7 +130,7 @@ def render_vids(newcfg: DictConfig) -> None:
         from src.utils.file_io import read_json
         annots_sinc = read_json('data/sinc_synth/for_website_v4.json')
 
-    # fd_name = get_folder_name(cfg)
+
     fd_name = f'steps_{cfg.num_sampling_steps}'
     if cfg.inpaint:
         log_name = f'steps-{num_infer_steps}_{cfg.init_from}_{cfg.ckpt_name}_inpaint_bsl'
@@ -240,10 +240,10 @@ def render_vids(newcfg: DictConfig) -> None:
     else:
         mode_cond = 'full_cond'
     tot_pkls = []
-    if cfg.guidance_scale_text is None:
+    if cfg.guidance_scale_text_n_motion is None:
         gd_text = [1.0, 2.5, 5.0]
     else:
-        gd_text = [cfg.guidance_scale_text] # [1.0, 2.5, 5.0]
+        gd_text = [cfg.guidance_scale_text_n_motion] # [1.0, 2.5, 5.0]
     if cfg.guidance_scale_motion is None:
         gd_motion = [1.0, 2.5, 5.0]
     else:
@@ -392,7 +392,6 @@ def render_vids(newcfg: DictConfig) -> None:
                                        fname=stacked_vid, 
                                        outf=f'{output_path}/{curid}_text.mp4',
                                        position='top_center')
-
                     cleanup_files(cur_group_of_vids+[stacked_vid])
                     video_key = fnal_fl.split('/')[-1].replace('.mp4','')
                     if len(text_diff[elem_id].split()) <= 5:

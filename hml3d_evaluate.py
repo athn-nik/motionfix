@@ -204,7 +204,7 @@ def hml3d_sample(newcfg: DictConfig) -> None:
 
     tot_pkls = []
     if cfg.guidance_scale_text is None:
-        gd_text = [2.5]
+        gd_text = [2.5, 3.0]
     else:
         gd_text = [cfg.guidance_scale_text] # [1.0, 2.5, 5.0]
     if cfg.model.motion_condition is None:
@@ -249,7 +249,7 @@ def hml3d_sample(newcfg: DictConfig) -> None:
                                                     feat_dim=sum(model.input_feats_dims)) 
                     ##################################################
                     inpaint_dict = {'mask': mask_features,
-                                    'start_motion': in_batch['source_motion'].clone() }
+                                    'start_motion': input_batch['source_motion'].clone() }
                 else:
                     inpaint_dict = None
                 if model.motion_condition == 'source' or init_diff_from == 'source':
