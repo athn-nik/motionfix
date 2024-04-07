@@ -141,7 +141,7 @@ def hml3d_sample(newcfg: DictConfig) -> None:
     log_name = '__'.join(str(exp_folder).split('/')[-2:])
     log_name = f'samples_{log_name}_steps-{cfg.num_sampling_steps}_{cfg.init_from}_{cfg.ckpt_name}'
 
-    output_path = exp_folder / f'{fd_name}_hml3d_{cfg.init_from}_{cfg.ckpt_name}'
+    output_path = exp_folder / f't2m_{fd_name}_hml3d_{cfg.init_from}_{cfg.ckpt_name}'
     output_path.mkdir(exist_ok=True, parents=True)
     logger.info(f"-------Output path:{output_path}------")
     import pytorch_lightning as pl
@@ -197,7 +197,7 @@ def hml3d_sample(newcfg: DictConfig) -> None:
 
     tot_pkls = []
     if cfg.guidance_scale_text is None:
-        gd_text = [2.5]
+        gd_text = [2.5, 3.0]
     else:
         gd_text = [cfg.guidance_scale_text] # [1.0, 2.5, 5.0]
     if cfg.model.motion_condition is None:

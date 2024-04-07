@@ -271,6 +271,9 @@ def render_vids(newcfg: DictConfig) -> None:
     gd_text = [1.0, 2.5, 5.0]
     gd_motion = [1.0, 2.5, 5.0]
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
+    guidances_mix = [(1.0, 2.0), (1.0, 1.5),
+                     (1.0, 2.0), (1.5, 1.0),
+                     (1.5, 1.5), (1.5, 2.0)]
     from aitviewer.models.smpl import SMPLLayer
     smpl_layer = SMPLLayer(model_type='smplh', ext='npz', gender='neutral')
 
