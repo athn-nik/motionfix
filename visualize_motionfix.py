@@ -125,13 +125,18 @@ def render_vids(newcfg: DictConfig) -> None:
     # cfg.model.diff_params.guidance_scale_motion = newcfg.guidance_scale_motion
     # cfg.model.diff_params.guidance_scale_text = newcfg.guidance_scale_text
     init_diff_from = cfg.init_from
+    if cfg.inpaint:
+        assert cfg.data.dataname == 'sinc_synth'
+        from src.utils.file_io import read_json
+        annots_sinc = read_json('data/sinc_synth/for_website_v4.json')
 
     # fd_name = get_folder_name(cfg)
     fd_name = f'steps_{cfg.num_sampling_steps}'
-    log_name = '_'.join(str(exp_folder).split('/')[-2:])
-    log_name = f'{log_name}_steps-{num_infer_steps}_{cfg.init_from}_{cfg.ckpt_name}'
-
-    output_path = exp_folder / fd_name
+    if cfg.inpaint:
+        log_name = f'steps-{num_infer_steps}_{cfg.init_from}_{cfg.ckpt_name}_inpaint_bsl'
+    else:
+        log_name = f'steps-{num_infer_steps}_{cfg.init_from}_{cfg.ckpt_name}'
+    output_path = exp_folder / log_name
     output_path.mkdir(exist_ok=True, parents=True)
 
     logger.info(f"Sample script. The outputs will be stored in:{output_path}")
@@ -190,39 +195,6 @@ def render_vids(newcfg: DictConfig) -> None:
     features_to_load = test_dataset.load_feats
     from src.data.tools.collate import collate_batch_last_padding
     collate_fn = lambda b: collate_batch_last_padding(b, features_to_load)
-    # if cfg.data.dataname =='sinc_synth':
-    #     cfg.subset = None
-        
-    # if cfg.subset == 'cherries':
-    #     from src.utils.eval_utils import test_keyds
-
-    #     subset = []
-    #     for elem in test_dataset.data:
-    #         if elem['id'] in test_keyds:
-    #             subset.append(elem)
-    #     batch_size_test = len(subset)
-    #     test_dataset.data = subset
-    # elif cfg.subset == 'cherries2':
-    #     from src.utils.eval_utils import keyids_for_testing
-        
-    #     subset = []
-    #     for elem in test_dataset.data:
-    #         if elem['id'] in keyids_for_testing:
-    #             subset.append(elem)
-    #     batch_size_test = min(len(subset), 20)
-    #     test_dataset.data = subset
-
-    #     # elif cfg.subset == 'test_cherries':
-    #     #     from src.utils.cherrypick import test_keyds_cherries
-    #     #     subset = []
-    #     #     for elem in test_dataset.data:
-    #     #         if elem['id'] in test_keyds_cherries:
-    #     #             subset.append(elem)
-    #     #     batch_size_test = min(len(subset), 12) 
-    #     #     test_dataset.data = subset
-    # # else:
-    # #     batch_size_test = 8
-    # #     test_dataset.data = test_dataset.data[:batch_size_test*4]
     if cfg.data.dataname == 'sinc_synth':
         # from src.utils.motionfix_utils import test_subset_sinc_synth
         # test_dataset_subset = test_dataset[:128]
@@ -268,8 +240,15 @@ def render_vids(newcfg: DictConfig) -> None:
     else:
         mode_cond = 'full_cond'
     tot_pkls = []
-    gd_text = [1.0, 2.5, 5.0]
-    gd_motion = [1.0, 2.5, 5.0]
+    if cfg.guidance_scale_text is None:
+        gd_text = [1.0, 2.5, 5.0]
+    else:
+        gd_text = [cfg.guidance_scale_text] # [1.0, 2.5, 5.0]
+    if cfg.guidance_scale_motion is None:
+        gd_motion = [1.0, 2.5, 5.0]
+    else:
+        gd_motion = [cfg.guidance_scale_motion] #[1.0, 2.5, 5.0]
+
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
     from aitviewer.models.smpl import SMPLLayer
     smpl_layer = SMPLLayer(model_type='smplh', ext='npz', gender='neutral')
@@ -285,6 +264,26 @@ def render_vids(newcfg: DictConfig) -> None:
                 keyids = batch['id']
                 no_of_motions = len(keyids)
                 input_batch = prepare_test_batch(model, batch)
+                if cfg.inpaint:
+                    ############### BODY PART BASELINE ###############
+                    from src.model.utils.body_parts import get_mask_from_texts, get_mask_from_bps
+                    # jts idxs #Texts x [jts ids] list of lists
+
+                    parts_to_keep = [annots_sinc[kd]['source_annot'] 
+                                     if kd.endswith(('_0', '_1'))
+                                     else annots_sinc[kd]['target_annot']
+                                     for kd in keyids]
+                    jts_ids = get_mask_from_texts(parts_to_keep)
+                    # True for involved body_parts aka joint groups
+                    # Tensor #Texts x features [207]
+                    mask_features = get_mask_from_bps(jts_ids, device=model.device, 
+                                                    feat_dim=sum(model.input_feats_dims)) 
+                    ##################################################
+                    inpaint_dict = {'mask': mask_features,
+                                    'start_motion': input_batch['source_motion'].clone() }
+                else:
+                    inpaint_dict = None
+
                 if model.pad_inputs:
                     source_mot_pad = torch.nn.functional.pad(input_batch['source_motion'],
                                                             (0, 0, 0, 0, 0,
@@ -324,7 +323,8 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 condition_mode=mode_cond,
                                                 gd_motion=guid_motion,
                                                 gd_text=guid_text,
-                                                num_diff_steps=num_infer_steps)
+                                                num_diff_steps=num_infer_steps,
+                                                inpaint_dict=inpaint_dict)
                 gen_mo = model.diffout2motion(diffout)
                 
                 src_mot_cond, tgt_mot = model.batch2motion(input_batch,

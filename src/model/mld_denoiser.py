@@ -209,6 +209,7 @@ class MldDenoiser(nn.Module):
                               guidance_text_n_motion, 
                               motion_embeds=None,
                               lengths=None,
+                              inpaint_dict=None,
                               **kwargs):
         # if motion embeds is None
         # TODO put here that you have tow
@@ -224,13 +225,20 @@ class MldDenoiser(nn.Module):
                                     condition_mask=condition_mask, 
                                     motion_embeds=motion_embeds,
                                     lengths=lengths)
-            # For exact reproducibility reasons, we apply classifier-free guidance on only
-            # three channels by defau2lt. The standard approach to cfg applies it to all channels.
-            # This can be done by uncommenting the following line and commenting-out the line following that.
-            # eps, rest = model_out[:, :self.in_channels], model_out[:, self.in_channels:]
-            # eps, rest = model_out[:, :3], model_out[:, 3:]
             uncond_eps, cond_eps_text = torch.split(model_out, len(model_out) // 2,
                                                      dim=0)
+            # make it BxSxfeatures
+            source_mot = inpaint_dict['start_motion'].permute(1, 0, 2)
+            mot_len = source_mot.shape[1]
+            # concat mask for all the frames
+            mask_src_parts = inpaint_dict['mask'].unsqueeze(1).repeat(1,
+                                                                      mot_len,
+                                                                      1)
+
+            if inpaint_dict is not None:
+                uncond_eps = uncond_eps*(~mask_src_parts) + source_mot*mask_src_parts
+                cond_eps_text = cond_eps_text*(~mask_src_parts) + source_mot*mask_src_parts
+
             half_eps = uncond_eps + guidance_text_n_motion * (cond_eps_text - uncond_eps) 
             eps = torch.cat([half_eps, half_eps], dim=0)
         else:

@@ -21,6 +21,7 @@ guidance_scale_text: 2.5 #
 guidance_scale_motion: 1.5
 
 init_from: 'noise' # noise
+inpaint: false
 
 defaults:
   - _self_

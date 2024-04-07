@@ -160,7 +160,10 @@ def render_vids(newcfg: DictConfig) -> None:
     fd_name = get_folder_name(cfg)
 
     log_name = '__'.join(str(exp_folder).split('/')[-2:])
-    log_name = f'{log_name}_{init_diff_from}_{cfg.ckpt_name}'
+    if cfg.inpaint:
+        log_name = f'{log_name}_{init_diff_from}_{cfg.ckpt_name}_inpaint_bsl'
+    else:
+        log_name = f'{log_name}_{init_diff_from}_{cfg.ckpt_name}'
 
     output_path = exp_folder / 'renders' / fd_name
     output_path.mkdir(exist_ok=True, parents=True)
@@ -199,7 +202,7 @@ def render_vids(newcfg: DictConfig) -> None:
                                        strict=False)
     model.eval()
     hml3d_dataset = instantiate(cfg.data, load_splits=['test'])
-
+    
     logger.info("Model weights restored")
     logger.info("Trainer initialized")
     # logger.info('------Generating using Scheduler------\n\n'\
@@ -267,6 +270,10 @@ def render_vids(newcfg: DictConfig) -> None:
     smpl_layer = SMPLLayer(model_type='smplh', 
                             ext='npz',
                             gender='neutral')
+    if cfg.inpaint:
+        assert cfg.data.dataname == 'sinc_synth'
+        from src.utils.file_io import read_json
+        annots_sinc = read_json('data/sinc_synth/for_website_v4.json')
 
     with torch.no_grad():
         output_path.mkdir(exist_ok=True, parents=True)
@@ -285,30 +292,53 @@ def render_vids(newcfg: DictConfig) -> None:
                 keyids = batch['id']
                 no_of_motions = len(keyids)
                 in_batch = prepare_test_batch(model, batch)
+                if cfg.inpaint:
+                    ############### BODY PART BASELINE ###############
+                    from src.model.utils.body_parts import get_mask_from_texts, get_mask_from_bps
+                    # jts idxs #Texts x [jts ids] list of lists
+
+                    parts_to_keep = [annots_sinc[kd]['source_annot'] 
+                                     if kd.endswith(('_0', '_1'))
+                                     else annots_sinc[kd]['target_annot']
+                                     for kd in keyids]
+                    jts_ids = get_mask_from_texts(parts_to_keep)
+                    # True for involved body_parts aka joint groups
+                    # Tensor #Texts x features [207]
+                    mask_features = get_mask_from_bps(jts_ids, device=model.device, 
+                                                    feat_dim=sum(model.input_feats_dims)) 
+                    ##################################################
+                    inpaint_dict = {'mask': mask_features,
+                                    'start_motion': in_batch['source_motion'].clone() }
+                else:
+                    inpaint_dict = None
                 if model.motion_condition == 'source' or init_diff_from == 'source':
-                    source_mot_pad = F.pad(in_batch['source_motion'],
-                                           (0, 0, 0, 0, 0, 300 - 
-                                            in_batch['source_motion'].size(0)),
-                                            value=0)
-                    source_lens = batch['length_target']
-                    mask_source, mask_target = model.prepare_mot_masks(source_lens,
-                                                                       target_lens)
+                    source_lens = batch['length_source']
+                    if model.pad_inputs:
+                        mask_source, mask_target = model.prepare_mot_masks(source_lens,
+                                                                        target_lens,
+                                                                        max_len=300)
+                        source_mot_pad = torch.nn.functional.pad(in_batch['source_motion'],
+                                                                (0, 0, 0, 0, 0,
+                                                    300 - in_batch['source_motion'].size(0)),
+                                                                value=0)
+                    else:
+                        mask_source, mask_target = model.prepare_mot_masks(source_lens,
+                                                                        target_lens,
+                                                                        max_len=None)
+                        source_mot_pad = in_batch['source_motion'].clone()
                 else:
                     from src.data.tools.tensors import lengths_to_mask
                     mask_target = lengths_to_mask(target_lens,
                                                 model.device)
-                    if model.pad_inputs:
-                        mask_target = F.pad(mask_target, 
-                                            (0, 300 - mask_target.size(1)),
-                                            value=0)
-                    in_batch['source_motion'] = None
+                    batch['source_motion'] = None
                     mask_source = None
+
                 if init_diff_from == 'source':
                     source_init = source_mot_pad
                 else:
                     source_init = None
                 diffout = model.generate_motion(text_diff, # text
-                                                None, # source
+                                                source_init, # source
                                                 mask_source,
                                                 mask_target,
                                                 diffusion_process,
@@ -317,6 +347,7 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 init_vec_method=init_diff_from,
                                                 condition_mode=mode_cond,
                                                 num_diff_steps=num_infer_steps,
+                                                inpaint_dict=inpaint_dict,
                                                 )
                 gen_mo = model.diffout2motion(diffout)
                 #gen_mot0 = gen_mo.detach().cpu()

@@ -216,7 +216,8 @@ class MD(BaseModel):
                            gd_text=None, gd_motion=None, 
                            mode='full_cond',
                            return_init_noise=False,
-                           steps_num=None):
+                           steps_num=None,
+                           inpaint_dict=None):
         # guidance_scale_text: 7.5 #
         #  guidance_scale_motion: 1.5
         # init latents
@@ -345,7 +346,8 @@ class MD(BaseModel):
                                                         motion_embeds,
                                                         motion_embeds], 1),
                                 guidance_motion=gd_motion,
-                                guidance_text_n_motion=gd_text)
+                                guidance_text_n_motion=gd_text,
+                                inpaint_dict=inpaint_dict)
         else:
             model_kwargs = dict(# noised_motion=latent_model_input,
                     # timestep=t,
@@ -355,7 +357,8 @@ class MD(BaseModel):
                     condition_mask=aug_mask,
                     motion_embeds=None,
                     guidance_motion=gd_motion,
-                    guidance_text_n_motion=gd_text)
+                    guidance_text_n_motion=gd_text,
+                    inpaint_dict=inpaint_dict)
 
         # model_kwargs = dict(y=y, cfg_scale=args.cfg_scale)
         # Sample images:
@@ -934,6 +937,7 @@ class MD(BaseModel):
                         return_init_noise=False, 
                         condition_mode='full_cond',
                         num_diff_steps=None, 
+                        inpaint_dict=None
                         ):
         # uncond_tokens = [""] * len(texts_cond)
         # if self.condition == 'text':
@@ -1014,7 +1018,8 @@ class MD(BaseModel):
                                                 gd_motion=gd_motion,
                                                 return_init_noise=return_init_noise,
                                                 mode=condition_mode,
-                                                steps_num=num_diff_steps)
+                                                steps_num=num_diff_steps,
+                                                inpaint_dict=inpaint_dict)
                 return init_noise, diff_out.permute(1, 0, 2)
 
             else:
@@ -1030,7 +1035,8 @@ class MD(BaseModel):
                                                 gd_motion=gd_motion,
                                                 return_init_noise=return_init_noise,
                                                 mode=condition_mode,
-                                                steps_num=num_diff_steps)
+                                                steps_num=num_diff_steps,
+                                                inpaint_dict=inpaint_dict)
 
             return diff_out.permute(1, 0, 2)
 

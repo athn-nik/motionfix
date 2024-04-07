@@ -16,8 +16,9 @@ last_ckpt_path: ${get_last_checkpoint:${folder},${ckpt_name}}
 logger_level: INFO
 
 num_sampling_steps: 1000
-guidance_scale_text: 2.5 #
-guidance_scale_motion: 1.5
+guidance_scale_text: null #
+guidance_scale_motion: null
+inpaint: false
 
 subset: cherries2
 init_from: 'noise' # source
