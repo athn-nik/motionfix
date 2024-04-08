@@ -151,50 +151,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
             cmd = ['condor_submit_bid', f'{bid_amount}', str(submission_path)]
             logger.info('Executing ' + ' '.join(cmd))
             subprocess.run(cmd)
-    elif mode in ["sample"]:
-        for experiment in configs: 
-            extra_args = experiment["args"]
-            no_gpus = experiment["gpus"]
-            folder = experiment["folder"]
-            run_id = folder.split('/')[-2:]
-            run_id = '__'.join(run_id)
-            sub_file = SUBMISSION_TEMPLATE
-            sub_file = sub_file.replace('EXPMODE', mode)
-            sub_file = sub_file.replace('DESCRIPTION', f'SAMPLE_{run_id}')
-            bash = 'export HYDRA_FULL_ERROR=1 export PYTHONFAULTHANDLER=1\nexport PYTHONUNBUFFERED=1\nexport PATH=$PATH\n' \
-                   'export PATH=/home/nathanasiou/apps/imagemagick/bin:$PATH\n' \
-                   'export LD_LIBRARY_PATH=/home/nathanasiou/apps/imagemagick/lib:$LD_LIBRARY_PATH\n' \
-                   f'exec {sys.executable} demo.py ' \
-                   f'folder={folder} {extra_args}'
-            shell_dir.mkdir(parents=True, exist_ok=True)
-            run_cmd_path = shell_dir / (run_id + '_' + mode + ID_EXP +".sh")
-
-            with open(run_cmd_path, 'w') as f:
-                f.write(bash)
-            os.chmod(run_cmd_path, stat.S_IRWXU)
-
-            log = f'{mode}/{run_id}'
-            for x, y in [("NO_GPUS", str(no_gpus)), ("GPUS_REQS", gpus_requirements),
-                         ("CNR_LOG_ID", f'{CONDOR_FD}/{log}/logs'),
-                         ("CPUS", str(cpus)),
-                         ("RUN_SCRIPT", os.fspath(run_cmd_path))]:
-                sub_file = sub_file.replace(x, y)
-
-            submission_path = condor_dir / log / (run_id + ID_EXP + ".sub")
-            logdir_condor = condor_dir / log / 'logs'
-            logdir_condor.mkdir(parents=True, exist_ok=True)
-
-            with open(submission_path, 'w') as f:
-                f.write(sub_file)
-
-            logger.info('The cluster logs for this experiments can be found under:'\
-                        f'{str(logdir_condor)}')
-            
-            cmd = ['condor_submit_bid', f'{bid_amount}', str(submission_path)]
-            logger.info('Executing ' + ' '.join(cmd))
-            subprocess.run(cmd)
-
-    elif mode in ["evaluate", 'eval']:
+    elif mode in ["evaluate", 'eval', 'sample']:
         for experiment in configs: 
             extra_args = experiment["args"]
             no_gpus = experiment["gpus"]
