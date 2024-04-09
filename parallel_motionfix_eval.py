@@ -6,7 +6,7 @@ import re
 import argparse
 
 def run(cmd):
-    print(f"Executing: {cmd}")
+    print(f"Executing: {' '.join(cmd)}")
     x = subprocess.run(cmd)
 
 def get_guidances(s=1, e=3, no=3, t2m=False):

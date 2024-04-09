@@ -140,14 +140,7 @@ def hml3d_sample(newcfg: DictConfig) -> None:
     fd_name = f'steps_{cfg.num_sampling_steps}'
     log_name = '__'.join(str(exp_folder).split('/')[-2:])
     log_name = f'samples_{log_name}_steps-{cfg.num_sampling_steps}_{cfg.init_from}_{cfg.ckpt_name}'
-    if cfg.inpaint:
-        log_name = f'{log_name}_inpaint_bsl'
-
-    if cfg.inpaint:
-        output_path = exp_folder / f'{fd_name}_hml3d_{cfg.init_from}_{cfg.ckpt_name}_bsl_inpaint'
-
-    else:
-        output_path = exp_folder / f'{fd_name}_hml3d_{cfg.init_from}_{cfg.ckpt_name}'
+    output_path = exp_folder / f'{fd_name}_hml3d_{cfg.init_from}_{cfg.ckpt_name}'
 
     output_path.mkdir(exist_ok=True, parents=True)
     logger.info(f"-------Output path:{output_path}------")
@@ -213,11 +206,6 @@ def hml3d_sample(newcfg: DictConfig) -> None:
         mode_cond = 'full_cond'
     logger.info(f'Evaluation Set length:{len(test_dataset_hml3d)}')
 
-    if cfg.inpaint:
-        assert cfg.data.dataname == 'sinc_synth'
-        from src.utils.file_io import read_json
-        annots_sinc = read_json('data/sinc_synth/for_website_v4.json')
-
     with torch.no_grad():
         for guid_text in gd_text:
             cur_guid_comb = f'ld_txt-{guid_text}'
@@ -233,25 +221,6 @@ def hml3d_sample(newcfg: DictConfig) -> None:
                 no_of_motions = len(keyids)
 
                 input_batch = prepare_test_batch(model, batch)
-                if cfg.inpaint:
-                    ############### BODY PART BASELINE ###############
-                    from src.model.utils.body_parts import get_mask_from_texts, get_mask_from_bps
-                    # jts idxs #Texts x [jts ids] list of lists
-
-                    parts_to_keep = [annots_sinc[kd]['source_annot'] 
-                                     if kd.endswith(('_0', '_1'))
-                                     else annots_sinc[kd]['target_annot']
-                                     for kd in keyids]
-                    jts_ids = get_mask_from_texts(parts_to_keep)
-                    # True for involved body_parts aka joint groups
-                    # Tensor #Texts x features [207]
-                    mask_features = get_mask_from_bps(jts_ids, device=model.device, 
-                                                    feat_dim=sum(model.input_feats_dims)) 
-                    ##################################################
-                    inpaint_dict = {'mask': mask_features,
-                                    'start_motion': input_batch['source_motion'].clone() }
-                else:
-                    inpaint_dict = None
                 if model.motion_condition == 'source' or init_diff_from == 'source':
                     source_lens = batch['length_source']
                     if model.pad_inputs:
@@ -289,8 +258,7 @@ def hml3d_sample(newcfg: DictConfig) -> None:
                                                 condition_mode=mode_cond,
                                                 gd_motion=None,
                                                 gd_text=guid_text,
-                                                num_diff_steps=num_infer_steps,
-                                                inpaint_dict=inpaint_dict)
+                                                num_diff_steps=num_infer_steps)
                 gen_mo = model.diffout2motion(diffout)
                 from src.tools.transforms3d import transform_body_pose
                 for i in range(gen_mo.shape[0]):

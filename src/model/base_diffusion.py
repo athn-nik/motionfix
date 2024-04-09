@@ -247,15 +247,7 @@ class MD(BaseModel):
         else:
             gd_scale_motion = gd_motion
 
-        # set timesteps
-        
-        if init_from == 'source':
-            rev_steps = diff_process.num_timesteps // 5
-            log.info(f'Inference of: {rev_steps}')
-        else:
-            if steps_num is not None:
-                rev_steps = steps_num
-                log.info(f'Inference of: {rev_steps}') 
+        # set timesteps 
 
         # timesteps = self.infer_scheduler.timesteps.to(inp_motion_mask.device)
         # prepare extra kwargs for the scheduler step, since not all schedulers have the same signature

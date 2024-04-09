@@ -85,6 +85,9 @@ def render_vids(newcfg: DictConfig) -> None:
             logger.info(f'Number of steps: {num_infer_steps}')
     else:
         num_infer_steps = cfg.model.diff_params.num_train_timesteps
+    init_diff_from = cfg.init_from
+    if init_diff_from == 'source':
+        num_infer_steps //= 5
 
     diffusion_process = create_diffusion(timestep_respacing=None,
                                     learn_sigma=False,
@@ -92,12 +95,10 @@ def render_vids(newcfg: DictConfig) -> None:
                                     diffusion_steps=num_infer_steps,
                                     noise_schedule=cfg.model.diff_params.noise_schedule,
                                     predict_xstart=False if cfg.model.diff_params.predict_type == 'noise' else True) # noise vs sample
-
     # cfg.model.infer_scheduler = newcfg.model.infer_scheduler
     # cfg.model.diff_params.num_inference_timesteps = newcfg.steps
     # cfg.model.diff_params.guidance_scale_motion = newcfg.guidance_scale_motion
     # cfg.model.diff_params.guidance_scale_text = newcfg.guidance_scale_text
-    init_diff_from = cfg.init_from
     if cfg.inpaint:
         assert cfg.data.dataname == 'sinc_synth'
         from src.utils.file_io import read_json
