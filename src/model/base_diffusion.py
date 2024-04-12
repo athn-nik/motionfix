@@ -625,7 +625,7 @@ class MD(BaseModel):
                 # aug_mask = text_mask_aux
             else:
                 aug_mask = torch.ones(bs_cond, max_text_len, 
-                            dtype=torch.bool).to(self.device)
+                                      dtype=torch.bool).to(self.device)
         # cond_emb_text = cond_emb_text[rand_perm]
         # mask_target_motion = mask_target_motion[rand_perm]
         # feats_for_denois = feats_for_denois[:, rand_perm]
@@ -1305,7 +1305,6 @@ class MD(BaseModel):
         gt_texts = batch['text']
         gt_keyids = batch['id']
         self.batch_size = len(gt_texts)
-        # import ipdb;ipdb.set_trace()
         dif_dict = self.train_diffusion_forward(batch,
                                                 mask_source,
                                                 mask_target)

@@ -20,7 +20,7 @@ norm_type: standardize # min_max standardize
 diff_params:
   num_inference_timesteps: 200
   num_train_timesteps: 1000
-  prob_uncondp: 0.1 # 0.1 0.25
+  prob_uncondp: 0.05 # 0.1 0.25
   prob_drop_text: 0.05 # 0.1 0.25
   prob_drop_motion: 0.05
   guidance_scale_text: 2.5 #
