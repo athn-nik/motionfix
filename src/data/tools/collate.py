@@ -29,7 +29,7 @@ def collate_batch_last_padding(batch, feats):
                         if k == 'length_target':
                             b[k.replace('target', 'source')] = 0
                         else:
-                            b[k.replace('target', 'source')] = b[k]
+                            b[k.replace('target', 'source')] = torch.zeros_like(b[k])
 
     batch = pad_batch(batch, tot_feats, t2m=t2m)
     batch =  {k: torch.stack([b[k] for b in batch])\
