@@ -87,7 +87,7 @@ def render_vids(newcfg: DictConfig) -> None:
         num_infer_steps = cfg.model.diff_params.num_train_timesteps
     init_diff_from = cfg.init_from
     if init_diff_from == 'source':
-        num_infer_steps //= 5
+        num_infer_steps //= 3
 
     diffusion_process = create_diffusion(timestep_respacing=None,
                                     learn_sigma=False,

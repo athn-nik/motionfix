@@ -14,6 +14,8 @@ number_of_samples: 1
 ckpt_name: 'last'
 last_ckpt_path: ${get_last_checkpoint:${folder},${ckpt_name}}
 logger_level: INFO
+inpaint: false
+
 
 num_sampling_steps: 1000
 

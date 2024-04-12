@@ -9,7 +9,7 @@ def run(cmd):
     print(f"Executing: {' '.join(cmd)}")
     x = subprocess.run(cmd)
 
-def get_guidances(s=1, e=3, no=3, t2m=False):
+def get_guidances(s=1, e=3, no=5, t2m=False):
     import itertools
     import numpy as np
     if t2m:
@@ -113,7 +113,6 @@ if __name__ == "__main__":
                 '--prog', script,
                 '--bid', '20',
                 '--extras']
-    init_from = ['noise', 'source']
+    init_from = ['noise']
     data = [datasets]
-    main_loop(cmd_train, exp_paths, guidances, init_from,
-              data)
+    main_loop(cmd_train, exp_paths, guidances, init_from,data)
