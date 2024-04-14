@@ -1,6 +1,6 @@
 _target_: src.model.textencoder.clip_encoder.ClipTextEncoder
 finetune: false # if false, model weights are frozen
 # true --> 77x768 | false --> 1x768
-last_hidden_state: false # if true, the last hidden state is used as the text embedding
+last_hidden_state: true # if true, the last hidden state is used as the text embedding
 # clip-vit-base-patch32 | clip-vit-large-patch14
 modelpath: ${path.deps}/clip-vit-large-patch14
