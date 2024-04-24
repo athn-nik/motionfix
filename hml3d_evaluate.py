@@ -163,10 +163,8 @@ def hml3d_sample(newcfg: DictConfig) -> None:
     from src.model.base_diffusion import MD    
     # Load the last checkpoint
     model = MD.load_from_checkpoint(last_ckpt_path,
-                                       renderer=aitrenderer,
-                                    #    infer_scheduler=cfg.model.infer_scheduler,
-                                    #    diff_params=cfg.model.diff_params,
-                                       strict=False)
+                                    renderer=aitrenderer,
+                                    strict=False)
     model.freeze()
     logger.info(f"Model '{cfg.model.modelname}' loaded")
     # logger.info('------Generating using Scheduler------\n\n'\
@@ -197,7 +195,7 @@ def hml3d_sample(newcfg: DictConfig) -> None:
 
     tot_pkls = []
     if cfg.guidance_scale_text is None:
-        gd_text = [2.5, 3.0]
+        gd_text = [2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5]
     else:
         gd_text = [cfg.guidance_scale_text] # [1.0, 2.5, 5.0]
     if cfg.model.motion_condition is None:

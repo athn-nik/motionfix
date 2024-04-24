@@ -23,6 +23,7 @@ GPUS = {
         'a100-sxm40': ('\"NVIDIA A100-SXM4-40GB\"', 'nvidia', 40000),
         'quadro6000': ('\"Quadro RTX 6000\"', 'quadro', 24000),
         'nvidia-h100': ('\"NVIDIA H100\"', 'nvidia', 80000),
+        'nvidia-h100hbm': ('\"NVIDIA H100 80GB HBM3\"', 'nvidia', 80000),
         #'rtx2080ti': ('\"NVIDIA GeForce RTX 2080 Ti\"', 'rtx', 11000)
         }
     
@@ -36,7 +37,7 @@ SUBMISSION_TEMPLATE = f'Description=DESCRIPTION\n' \
                        'request_cpus=CPUS\n' \
                        'request_gpus=NO_GPUS\n' \
                        '+BypassLXCfs="true"\n' \
-                       'requirements=GPUS_REQS && UtsnameNodename =!= "g191"\n' \
+                       'requirements=GPUS_REQS && UtsnameNodename =!= "g164"\n' \
                        'queue 1'
 
 
