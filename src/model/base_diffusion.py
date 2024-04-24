@@ -217,7 +217,8 @@ class MD(BaseModel):
                            mode='full_cond',
                            return_init_noise=False,
                            steps_num=None,
-                           inpaint_dict=None):
+                           inpaint_dict=None,
+                           use_linear=False):
         # guidance_scale_text: 7.5 #
         #  guidance_scale_motion: 1.5
         # init latents
@@ -281,8 +282,8 @@ class MD(BaseModel):
             nomotion_mask = torch.zeros(bsz, max_motion_len, 
                             dtype=torch.bool).to(self.device)
             motion_masks = torch.cat([nomotion_mask, 
-                                    cond_motion_masks, 
-                                    cond_motion_masks],
+                                      cond_motion_masks, 
+                                      cond_motion_masks],
                                     dim=0)
             aug_mask = torch.cat([motion_masks, text_masks],
                                  dim=1)
@@ -326,6 +327,10 @@ class MD(BaseModel):
 
         # y_null = torch.tensor([1000] * n, device=device)
         # y = torch.cat([y, y_null], 0)
+        if use_linear:
+            max_steps_diff = diff_process.num_timesteps
+        else:
+            max_steps_diff = None
         if motion_embeds is not None:
             model_kwargs = dict(# noised_motion=latent_model_input,
                                 # timestep=t,
@@ -339,7 +344,8 @@ class MD(BaseModel):
                                                         motion_embeds], 1),
                                 guidance_motion=gd_motion,
                                 guidance_text_n_motion=gd_text,
-                                inpaint_dict=inpaint_dict)
+                                inpaint_dict=inpaint_dict,
+                                max_steps=max_steps_diff)
         else:
             model_kwargs = dict(# noised_motion=latent_model_input,
                     # timestep=t,
@@ -350,7 +356,8 @@ class MD(BaseModel):
                     motion_embeds=None,
                     guidance_motion=gd_motion,
                     guidance_text_n_motion=gd_text,
-                    inpaint_dict=inpaint_dict)
+                    inpaint_dict=inpaint_dict,
+                    max_steps=max_steps_diff)
 
         # model_kwargs = dict(y=y, cfg_scale=args.cfg_scale)
         # Sample images:
@@ -929,7 +936,8 @@ class MD(BaseModel):
                         return_init_noise=False, 
                         condition_mode='full_cond',
                         num_diff_steps=None, 
-                        inpaint_dict=None
+                        inpaint_dict=None,
+                        use_linear=False
                         ):
         # uncond_tokens = [""] * len(texts_cond)
         # if self.condition == 'text':
@@ -995,7 +1003,7 @@ class MD(BaseModel):
         else:
             init_diff_rev = None
             # complete noise
-            
+
         with torch.no_grad():
             if return_init_noise:
                 init_noise, diff_out = self._diffusion_reverse(text_emb, 
@@ -1011,7 +1019,8 @@ class MD(BaseModel):
                                                 return_init_noise=return_init_noise,
                                                 mode=condition_mode,
                                                 steps_num=num_diff_steps,
-                                                inpaint_dict=inpaint_dict)
+                                                inpaint_dict=inpaint_dict,
+                                                use_linear=use_linear)
                 return init_noise, diff_out.permute(1, 0, 2)
 
             else:
@@ -1028,7 +1037,8 @@ class MD(BaseModel):
                                                 return_init_noise=return_init_noise,
                                                 mode=condition_mode,
                                                 steps_num=num_diff_steps,
-                                                inpaint_dict=inpaint_dict)
+                                                inpaint_dict=inpaint_dict,
+                                                use_linear=use_linear)
 
             return diff_out.permute(1, 0, 2)
 
