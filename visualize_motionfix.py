@@ -114,11 +114,11 @@ def render_vids(newcfg: DictConfig) -> None:
     else:
         num_infer_steps = cfg.model.diff_params.num_train_timesteps
     diffusion_process = create_diffusion(timestep_respacing=None,
-                                    learn_sigma=False,
-                                    sigma_small=True,
-                                    diffusion_steps=num_infer_steps,
-                                    noise_schedule=cfg.model.diff_params.noise_schedule,
-                                    predict_xstart=False if cfg.model.diff_params.predict_type == 'noise' else True) # noise vs sample
+                                         learn_sigma=False,
+                                         sigma_small=True,
+                                         diffusion_steps=num_infer_steps,
+                                         noise_schedule=cfg.model.diff_params.noise_schedule,
+                                         predict_xstart=False if cfg.model.diff_params.predict_type == 'noise' else True) # noise vs sample
 
     # cfg.model.infer_scheduler = newcfg.model.infer_scheduler
     # cfg.model.diff_params.num_inference_timesteps = newcfg.steps
@@ -131,11 +131,14 @@ def render_vids(newcfg: DictConfig) -> None:
         annots_sinc = read_json('data/sinc_synth/for_website_v4.json')
 
 
-    fd_name = f'steps_{cfg.num_sampling_steps}'
+    fd_name = f'steps_{num_infer_steps}'
     if cfg.inpaint:
-        log_name = f'steps-{num_infer_steps}_{cfg.init_from}_{cfg.ckpt_name}_inpaint_bsl'
+        log_name = f'{cfg.data.dataname}_steps-{num_infer_steps}_{cfg.init_from}_{cfg.ckpt_name}_inpaint_bsl'
     else:
-        log_name = f'steps-{num_infer_steps}_{cfg.init_from}_{cfg.ckpt_name}'
+        log_name = f'{cfg.data.dataname}_steps-{num_infer_steps}_{cfg.init_from}_{cfg.ckpt_name}'
+    last_two_dirs = Path(*exp_folder.parts[-2:])
+    exp_str = str(last_two_dirs).replace('hml_3d', 'h3d').replace('sinc_synth', 'syn').replace('bodilex', 'B').replace('/', '__')
+    log_name = f'{exp_str.upper()}_{log_name}'
     output_path = exp_folder / log_name
     output_path.mkdir(exist_ok=True, parents=True)
 
@@ -252,6 +255,10 @@ def render_vids(newcfg: DictConfig) -> None:
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
     from aitviewer.models.smpl import SMPLLayer
     smpl_layer = SMPLLayer(model_type='smplh', ext='npz', gender='neutral')
+    if cfg.linear_gd:
+        use_linear_guid = True
+    else:
+        use_linear_guid = False
 
     with torch.no_grad():
         output_path = output_path / 'renders'
@@ -324,7 +331,8 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 gd_motion=guid_motion,
                                                 gd_text=guid_text,
                                                 num_diff_steps=num_infer_steps,
-                                                inpaint_dict=inpaint_dict)
+                                                inpaint_dict=inpaint_dict,
+                                                use_linear=use_linear_guid)
                 gen_mo = model.diffout2motion(diffout)
                 
                 src_mot_cond, tgt_mot = model.batch2motion(input_batch,

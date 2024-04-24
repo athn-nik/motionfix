@@ -210,12 +210,20 @@ class MldDenoiser(nn.Module):
                               motion_embeds=None,
                               lengths=None,
                               inpaint_dict=None,
+                              max_steps=None,
                               **kwargs):
         # if motion embeds is None
         # TODO put here that you have tow
         # implement 2 cases for that case
         # text unconditional more or less 2 replicas
-        # 
+        # timestep
+        if max_steps is not None:
+            curr_ts = timestep[0].item()
+            g_m = max(1, guidance_motion*2*curr_ts/max_steps)
+            guidance_motion = g_m
+            g_t_tm = max(1, guidance_text_n_motion*2*curr_ts/max_steps)
+            guidance_text_n_motion = g_t_tm
+
         if motion_embeds is None:
             half = noised_motion[: len(noised_motion) // 2]
             combined = torch.cat([half, half], dim=0)
@@ -231,7 +239,7 @@ class MldDenoiser(nn.Module):
             if inpaint_dict is not None:
                 source_mot = inpaint_dict['start_motion'].permute(1, 0, 2)
                 mot_len = source_mot.shape[1]
-            # concat mask for all the frames
+                # concat mask for all the frames
                 mask_src_parts = inpaint_dict['mask'].unsqueeze(1).repeat(1,
                                                                       mot_len,
                                                                       1)

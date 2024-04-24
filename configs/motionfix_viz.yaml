@@ -24,6 +24,8 @@ guidance_scale_motion: null
 
 subset: cherries2
 init_from: 'noise' # source
+inpaint: false
+linear_gd: false
 
 defaults:
   - _self_

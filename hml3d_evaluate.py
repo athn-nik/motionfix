@@ -203,6 +203,10 @@ def hml3d_sample(newcfg: DictConfig) -> None:
     else:
         mode_cond = 'full_cond'
     logger.info(f'Evaluation Set length:{len(test_dataset_hml3d)}')
+    if cfg.linear_gd:
+        use_linear_guid = True
+    else:
+        use_linear_guid = False
 
     with torch.no_grad():
         for guid_text in gd_text:
@@ -256,7 +260,8 @@ def hml3d_sample(newcfg: DictConfig) -> None:
                                                 condition_mode=mode_cond,
                                                 gd_motion=None,
                                                 gd_text=guid_text,
-                                                num_diff_steps=num_infer_steps)
+                                                num_diff_steps=num_infer_steps,
+                                                use_linear=use_linear_guid)
                 gen_mo = model.diffout2motion(diffout)
                 from src.tools.transforms3d import transform_body_pose
                 for i in range(gen_mo.shape[0]):

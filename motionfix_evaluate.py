@@ -107,7 +107,7 @@ def render_vids(newcfg: DictConfig) -> None:
     # init_diff_from = 'noise'
     # TODO pUT THIS BACK    
     # fd_name = get_folder_name(cfg)
-    fd_name = f'steps_{cfg.num_sampling_steps}'
+    fd_name = f'steps_{num_infer_steps}'
     if cfg.inpaint:
         output_path = exp_folder / f'{fd_name}_{cfg.data.dataname}_{cfg.init_from}_{cfg.ckpt_name}_inpaint_bsl'
     else:
@@ -147,7 +147,7 @@ def render_vids(newcfg: DictConfig) -> None:
 
     import numpy as np
     data_module = instantiate(cfg.data, amt_only=True,
-                              load_splits=['test'])
+                              load_splits=['test', 'val'])
 
     transl_feats = [x for x in model.input_feats if 'transl' in x]
     if set(transl_feats).issubset(["body_transl_delta", "body_transl_delta_pelv",
@@ -155,7 +155,7 @@ def render_vids(newcfg: DictConfig) -> None:
         model.using_deltas_transl = True
     # load the test set and collate it properly
     features_to_load = data_module.dataset['test'].load_feats
-    test_dataset = data_module.dataset['test'] # + data_module.dataset['val']
+    test_dataset = data_module.dataset['test'] + data_module.dataset['val']
     
     from src.data.tools.collate import collate_batch_last_padding
     collate_fn = lambda b: collate_batch_last_padding(b, features_to_load)
@@ -192,7 +192,10 @@ def render_vids(newcfg: DictConfig) -> None:
         mode_cond = 'text_cond'
     else:
         mode_cond = 'full_cond'
-
+    if cfg.linear_gd:
+        use_linear_guid = True
+    else:
+        use_linear_guid = False
 
     logger.info(f'Evaluation Set length:{len(test_dataset)}')
     with torch.no_grad():
@@ -271,7 +274,8 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 gd_motion=guid_motion,
                                                 gd_text=guid_text,
                                                 num_diff_steps=num_infer_steps,
-                                                inpaint_dict=inpaint_dict)
+                                                inpaint_dict=inpaint_dict,
+                                                use_linear=use_linear_guid)
                 gen_mo = model.diffout2motion(diffout)
                 from src.tools.transforms3d import transform_body_pose
                 for i in range(gen_mo.shape[0]):

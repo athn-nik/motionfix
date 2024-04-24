@@ -274,6 +274,10 @@ def render_vids(newcfg: DictConfig) -> None:
         assert cfg.data.dataname == 'sinc_synth'
         from src.utils.file_io import read_json
         annots_sinc = read_json('data/sinc_synth/for_website_v4.json')
+    if cfg.linear_gd:
+        use_linear_guid = True
+    else:
+        use_linear_guid = False
 
     with torch.no_grad():
         output_path.mkdir(exist_ok=True, parents=True)
@@ -348,6 +352,7 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 condition_mode=mode_cond,
                                                 num_diff_steps=num_infer_steps,
                                                 inpaint_dict=inpaint_dict,
+                                                use_linear=use_linear_guid
                                                 )
                 gen_mo = model.diffout2motion(diffout)
                 #gen_mot0 = gen_mo.detach().cpu()

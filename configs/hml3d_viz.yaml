@@ -19,6 +19,7 @@ logger_level: INFO
 num_sampling_steps: 1000
 guidance_scale_text: 2.5 #
 guidance_scale_motion: 1.5
+linear_gd: false
 
 init_from: 'noise' # noise
 inpaint: false
