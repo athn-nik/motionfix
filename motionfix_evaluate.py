@@ -88,6 +88,14 @@ def render_vids(newcfg: DictConfig) -> None:
     init_diff_from = cfg.init_from
     if init_diff_from == 'source':
         num_infer_steps //= 3
+    if cfg.linear_gd:
+        use_linear_guid = True
+        gd_str = 'lingd_'
+
+    else:
+        use_linear_guid = False
+        gd_str = ''
+
 
     diffusion_process = create_diffusion(timestep_respacing=None,
                                     learn_sigma=False,
@@ -109,9 +117,9 @@ def render_vids(newcfg: DictConfig) -> None:
     # fd_name = get_folder_name(cfg)
     fd_name = f'steps_{num_infer_steps}'
     if cfg.inpaint:
-        output_path = exp_folder / f'{fd_name}_{cfg.data.dataname}_{cfg.init_from}_{cfg.ckpt_name}_inpaint_bsl'
+        output_path = exp_folder / f'{gd_str}{fd_name}_{cfg.data.dataname}_{cfg.init_from}_{cfg.ckpt_name}_inpaint_bsl'
     else:
-        output_path = exp_folder / f'{fd_name}_{cfg.data.dataname}_{cfg.init_from}_{cfg.ckpt_name}'
+        output_path = exp_folder / f'{gd_str}{fd_name}_{cfg.data.dataname}_{cfg.init_from}_{cfg.ckpt_name}'
 
     output_path.mkdir(exist_ok=True, parents=True)
     logger.info(f"-------Output path:{output_path}------")
@@ -192,10 +200,6 @@ def render_vids(newcfg: DictConfig) -> None:
         mode_cond = 'text_cond'
     else:
         mode_cond = 'full_cond'
-    if cfg.linear_gd:
-        use_linear_guid = True
-    else:
-        use_linear_guid = False
 
     logger.info(f'Evaluation Set length:{len(test_dataset)}')
     with torch.no_grad():
