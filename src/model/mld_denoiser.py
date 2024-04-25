@@ -169,7 +169,7 @@ class MldDenoiser(nn.Module):
                                   condition_mask[:, :text_emb_latent.shape[0]],
                                   motion_in_mask,
                                   sep_token_mask,
-                                  condition_mask[:,text_emb_latent.shape[0]:]
+                                  condition_mask[:, text_emb_latent.shape[0]:]
                                     ), 1)
 
         tokens = self.encoder(xseq, src_key_padding_mask=~aug_mask)
@@ -251,11 +251,11 @@ class MldDenoiser(nn.Module):
             third = noised_motion[: len(noised_motion) // 3]
             combined = torch.cat([third, third, third], dim=0)
             model_out = self.forward(combined, timestep,
-                                    in_motion_mask=in_motion_mask,
-                                    text_embeds=text_embeds,
-                                    condition_mask=condition_mask, 
-                                    motion_embeds=motion_embeds,
-                                    lengths=lengths)
+                                     in_motion_mask=in_motion_mask,
+                                     text_embeds=text_embeds,
+                                     condition_mask=condition_mask, 
+                                     motion_embeds=motion_embeds,
+                                     lengths=lengths)
             # For exact reproducibility reasons, we apply classifier-free guidance on only
             # three channels by default. The standard approach to cfg applies it to all channels.
             # This can be done by uncommenting the following line and commenting-out the line following that.

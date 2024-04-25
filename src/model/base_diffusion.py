@@ -270,8 +270,8 @@ class MD(BaseModel):
         if self.motion_condition == 'source' and motion_embeds is not None:
             max_motion_len = cond_motion_masks.shape[1]
             full_mask = torch.ones(bsz,
-                                  max_text_len
-                                  ,dtype=torch.bool).to(self.device)
+                                  max_text_len,
+                                  dtype=torch.bool).to(self.device)
             notext_mask1 = full_mask * text_masks_from_enc[:bsz]
             notext_mask2 = full_mask * text_masks_from_enc[bsz:2*bsz]
             use_text_mask = full_mask * text_masks_from_enc[2*bsz:3*bsz]
@@ -285,7 +285,8 @@ class MD(BaseModel):
                                       cond_motion_masks, 
                                       cond_motion_masks],
                                     dim=0)
-            aug_mask = torch.cat([motion_masks, text_masks],
+            aug_mask = torch.cat([text_masks,
+                                  motion_masks],
                                  dim=1)
             # aug_mask[:, :max_text_len] *= text_masks
             # if max_text_len > 1:
@@ -858,76 +859,7 @@ class MD(BaseModel):
     #                         'global_joints_loss': loss_joints,
     #                         }
 
-    def generate_pose(self, texts_cond, motions_cond,
-                        mask_source, mask_target, 
-                        init_vec_method='noise', init_vec=None,
-                        gd_text=None, gd_motion=None, 
-                        return_init_noise=False, 
-                        condition_mode='full_cond', num_diff_steps=None):
-        bsz, seqlen_tgt = mask_target.shape
-        feat_sz = sum(self.input_feats_dims)
-        if texts_cond is not None:
-            text_emb, text_mask = self.text_encoder(texts_cond)
 
-        cond_emb_motion = None
-        cond_motion_mask = None
-        
-        if self.motion_condition == 'source':
-            bsz, seqlen_src = mask_source.shape
-            if condition_mode == 'full_cond' or condition_mode == 'mot_cond' :
-                source_motion_condition = motions_cond
-                cond_emb_motion = source_motion_condition
-                cond_motion_mask = mask_source
-            else:
-                cond_emb_motion = torch.zeros(seqlen_src, bsz, feat_sz,
-                                                device=self.device)
-                cond_motion_mask = torch.ones((bsz, 1),
-                                            dtype=bool, device=self.device)
-
-        if init_vec_method == 'noise_prev':
-            init_diff_rev = init_vec
-        elif init_vec_method == 'source':
-            init_diff_rev = motions_cond
-            tgt_len = 1
-            src_len = 1
-            init_diff_rev = init_diff_rev.permute(1, 0, 2)
-        else:
-            init_diff_rev = None
-            # complete noise
-            
-        with torch.no_grad():
-            if return_init_noise:
-                init_noise, diff_out = self._diffusion_reverse(text_emb, 
-                                                text_mask,
-                                                cond_emb_motion,
-                                                cond_motion_mask,
-                                                mask_target, 
-                                                init_vec=init_diff_rev,
-                                                init_from=init_vec_method,
-                                                gd_text=gd_text, 
-                                                gd_motion=gd_motion,
-                                                return_init_noise=return_init_noise,
-                                                mode=condition_mode,
-                                                steps_num=num_diff_steps)
-                return init_noise, diff_out.permute(1, 0, 2)
-
-            else:
-                diff_out = self._diffusion_reverse(text_emb, 
-                                                text_mask,
-                                                cond_emb_motion,
-                                                cond_motion_mask,
-                                                mask_target, 
-                                                init_vec=init_diff_rev,
-                                                init_from=init_vec_method,
-                                                gd_text=gd_text, 
-                                                gd_motion=gd_motion,
-                                                return_init_noise=return_init_noise,
-                                                mode=condition_mode,
-                                                steps_num=num_diff_steps)
-
-            return diff_out.permute(1, 0, 2)
-
-    
     def generate_motion(self, texts_cond, motions_cond,
                         mask_source, mask_target,
                         diffusion_process, 
