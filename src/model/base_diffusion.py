@@ -1222,7 +1222,7 @@ class MD(BaseModel):
                 for curidx, _ in enumerate(batch['length_source']):
                     if curidx in idx_t2m:
                         batch['length_source'][curidx] = max_source_len
-                        zeroed_src = batch['source_motion'][:, curidx].clone()
+                        cur_src = batch['source_motion'][:, curidx].clone()
                         batch['source_motion'][:, curidx] = torch.zeros_like(cur_src)
         if self.motion_condition:
             if self.pad_inputs:
