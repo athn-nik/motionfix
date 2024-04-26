@@ -1213,17 +1213,34 @@ class MD(BaseModel):
                                                            value=0)
         if 'length_source' in batch: #hml_3d only case
             if 0 in batch['length_source']:
-                max_source_len = max(batch['length_source'])
-                sliced_tensors = []
-                for i in range(batch['source_motion'].shape[1]):
-                    sliced_tensors.append(batch['source_motion'][:max_source_len, i][:, None])
-                batch['source_motion'] = torch.cat(sliced_tensors, dim=1)
+                # Assuming batch['source_motion'] is already a CUDA tensor
+                # Convert batch['length_source'] from list to a CUDA tensor for efficient operations
+                length_source_tensor = torch.tensor(batch['length_source'], 
+                                                    device=self.device)
 
-                for curidx, _ in enumerate(batch['length_source']):
-                    if curidx in idx_t2m:
-                        batch['length_source'][curidx] = max_source_len
-                        cur_src = batch['source_motion'][:, curidx].clone()
-                        batch['source_motion'][:, curidx] = torch.zeros_like(cur_src)
+                # Determine the maximum length from length_source_tensor
+                max_source_len = torch.max(length_source_tensor)
+
+                # Efficient slicing: cut off all sequences to the max length in one operation
+                batch['source_motion'] = batch['source_motion'][:max_source_len]
+
+                # Create a mask for indices that need to be zeroed out (assuming idx_t2m is some list of indices)
+                idx_t2m_mask = torch.zeros(length_source_tensor.size(0), 
+                                           dtype=torch.bool, 
+                                           device=self.device)
+                idx_t2m_mask[list(idx_t2m)] = True
+
+                # Apply the mask to modify 'length_source_tensor' efficiently
+                length_source_tensor[idx_t2m_mask] = max_source_len
+
+                # Zero out the specific indices in 'source_motion'
+                # Ensure 'source_motion' can handle boolean indexing along the second dimension
+                batch['source_motion'][:, idx_t2m_mask] = 0
+
+                # Convert length_source_tensor back to a list and store it back in batch if necessary
+                # Note: Conversion to list happens on the CPU, so move tensor to CPU before converting
+                batch['length_source'] = length_source_tensor.cpu().tolist()
+
         if self.motion_condition:
             if self.pad_inputs:
                 mask_source, mask_target = self.prepare_mot_masks(batch['length_source'],
