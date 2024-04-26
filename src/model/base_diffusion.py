@@ -1236,8 +1236,6 @@ class MD(BaseModel):
 
                 # Zero out the specific indices in 'source_motion'
                 # Ensure 'source_motion' can handle boolean indexing along the second dimension
-                if len(batch['source_motion'].shape) == 1:
-                    batch['source_motion'] = batch['source_motion'].unsqueeze(1)
                 batch['source_motion'][:, idx_t2m_mask] = 0
 
                 # Convert length_source_tensor back to a list and store it back in batch if necessary
