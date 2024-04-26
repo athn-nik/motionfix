@@ -617,8 +617,8 @@ class MD(BaseModel):
         # random permutation along the batch dimension same for all
         if self.motion_condition == 'source':
             aug_mask = torch.ones(bs_cond,
-                                  max_text_len+max_motion_len 
-                                  ,dtype=torch.bool).to(self.device)
+                                  max_text_len+max_motion_len,
+                                  dtype=torch.bool).to(self.device)
             aug_mask[:, max_text_len:] *= mask_source_motion
             if max_text_len > 1:
                 # aug_mask = text_mask
@@ -1197,6 +1197,10 @@ class MD(BaseModel):
         from src.data.tools.tensors import lengths_to_mask
         input_batch = self.norm_and_cat(batch, self.input_feats)
         # import ipdb;ipdb.set_trace()
+        if 'hml3d' in batch['dataset_name'] and self.motion_condition == 'source':
+            idx_t2m = [i for i, x in enumerate( batch['dataset_name']) 
+                       if x == 'hml3d']
+
         for k, v in input_batch.items():
             if self.input_deltas:
                 batch[f'{k}_motion'] = v[1:]
@@ -1215,16 +1219,20 @@ class MD(BaseModel):
                     sliced_tensors.append(batch['source_motion'][:max_source_len, i][:, None])
                 batch['source_motion'] = torch.cat(sliced_tensors, dim=1)
 
+                for curidx, _ in enumerate(batch['length_source']):
+                    if curidx in idx_t2m:
+                        batch['length_source'][curidx] = max_source_len
+                        zeroed_src = batch['source_motion'][:, curidx].clone()
+                        batch['source_motion'][:, curidx] = torch.zeros_like(cur_src)
         if self.motion_condition:
             if self.pad_inputs:
                 mask_source, mask_target = self.prepare_mot_masks(batch['length_source'],
-                                                              batch['length_target'],
-                                                              max_len=300)
+                                                                  batch['length_target'],
+                                                                  max_len=300)
             else:
                 mask_source, mask_target = self.prepare_mot_masks(batch['length_source'],
-                                                              batch['length_target'],
-                                                              max_len=None)
-
+                                                                  batch['length_target'],
+                                                                  max_len=None)
         else:
 
             mask_target = lengths_to_mask(batch['length_target'],

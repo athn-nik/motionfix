@@ -259,7 +259,7 @@ class BaseModel(LightningModule):
         if self.norm_type == "standardize":
             mean = stats['mean'].to(self.device)
             std = stats['std'].to(self.device)
-            return (x - mean) / (std + 1e-5)
+            return (x - mean) / (2*(std + 1e-5))
         elif self.norm_type == "min_max":
             max = stats['max'].to(self.device)
             min = stats['min'].to(self.device)
@@ -271,7 +271,7 @@ class BaseModel(LightningModule):
         if self.norm_type == "standardize":
             mean = stats['mean'].to(self.device)
             std = stats['std'].to(self.device)
-            return x * (std + 1e-5) + mean
+            return x * 2 * (std + 1e-5) + mean
         elif self.norm_type == "min_max":
             max = stats['max'].to(self.device)
             min = stats['min'].to(self.device)
