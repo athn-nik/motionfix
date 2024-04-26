@@ -616,15 +616,20 @@ class MD(BaseModel):
         #rand_perm = torch.randperm(batch_size)
         # random permutation along the batch dimension same for all
         if self.motion_condition == 'source':
-            aug_mask = torch.ones(bs_cond,
-                                  max_text_len+max_motion_len,
-                                  dtype=torch.bool).to(self.device)
-            aug_mask[:, max_text_len:] *= mask_source_motion
-            if max_text_len > 1:
-                # aug_mask = text_mask
-                # text_mask_aux = torch.ones(bs_cond, max_text_len, 
-                #             dtype=torch.bool).to(self.device)
-                aug_mask[:, :max_text_len] *= text_mask
+            # aug_mask = torch.ones(bs_cond,
+            #                       max_text_len+max_motion_len,
+            #                       dtype=torch.bool).to(self.device)
+            # aug_mask[:, max_text_len:] *= mask_source_motion
+            # if max_text_len > 1:
+            #     # aug_mask = text_mask
+            #     # text_mask_aux = torch.ones(bs_cond, max_text_len, 
+            #     #             dtype=torch.bool).to(self.device)
+            #     aug_mask[:, :max_text_len] *= text_mask
+            # After
+            aug_mask = torch.cat([text_mask if max_text_len > 1 
+                                  else torch.ones_like(text_mask),
+                                  mask_source_motion], dim=1).to(self.device)
+
         else:
             if max_text_len > 1:
                 aug_mask = text_mask
@@ -1225,10 +1230,9 @@ class MD(BaseModel):
                 batch['source_motion'] = batch['source_motion'][:max_source_len]
 
                 # Create a mask for indices that need to be zeroed out (assuming idx_t2m is some list of indices)
-                idx_t2m_mask = torch.zeros(length_source_tensor.size(0), 
-                                           dtype=torch.bool, 
-                                           device=self.device)
-                idx_t2m_mask[list(idx_t2m)] = True
+                idx_t2m_mask = torch.zeros_like(length_source_tensor, 
+                                                dtype=torch.bool)
+                idx_t2m_mask[idx_t2m] = True
 
                 # Apply the mask to modify 'length_source_tensor' efficiently
                 length_source_tensor[idx_t2m_mask] = max_source_len
@@ -1239,7 +1243,7 @@ class MD(BaseModel):
 
                 # Convert length_source_tensor back to a list and store it back in batch if necessary
                 # Note: Conversion to list happens on the CPU, so move tensor to CPU before converting
-                batch['length_source'] = length_source_tensor.cpu().tolist()
+                batch['length_source'] = length_source_tensor.tolist()
 
         if self.motion_condition:
             if self.pad_inputs:
@@ -1401,31 +1405,5 @@ class MD(BaseModel):
                                      'text_descr': gt_texts,
                                      'keyids': gt_keyids}                    
                     self.set_buf['mot_cond'].append(render_motion)
-            # else:
-            #     nvids = 2
-            #     gt_texts_sub = gt_texts[:nvids]
-            #     gt_keyids_sub = batch['id'][:nvids]
-            #     source_motion_gt, target_motion_gt = self.batch2motion(batch,
-            #                                                         slice_til=nvids)
-            #     with torch.no_grad():
-            #         motion_out_metrs = self.generate_motion(texts_cond=gt_texts[:nvids], 
-            #                                             mask_source=None,
-            #                                             mask_target=mask_tgt_mets[:nvids],
-            #                                             motions_cond=None,
-            #                                             init_vec_method='noise',
-            #                                             condition_mode='text_cond')
-            #     motion_unnorm_metrs = self.unnorm_delta(motion_out_metrs)
-            #     # do something with the full motion
-            #     gen_metrics = pack_to_render(rots=motion_unnorm_metrs[...,
-            #                                                         3:].detach().cpu(),
-            #                                 trans=motion_unnorm_metrs[...,
-            #                                                         :3].detach().cpu())
-
-            #     render_text = {'generation': gen_metrics,
-            #                    'text_descr': gt_texts_sub,
-            #                    'keyids': gt_keyids_sub}
-            #     self.set_buf['text_cond'].append(render_text)
-                
-            #     # TODO do the same for dropped ones!
 
         return total_loss
