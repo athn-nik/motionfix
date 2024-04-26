@@ -193,7 +193,7 @@ def render_vids(newcfg: DictConfig) -> None:
         gd_motion = [1.5, 2.5]
     else:
         gd_motion = [cfg.guidance_scale_motion] #[1.0, 2.5, 5.0]
-    
+
     guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
     
     if cfg.model.motion_condition is None:
