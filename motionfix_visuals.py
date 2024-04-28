@@ -29,46 +29,77 @@ logger = logging.getLogger(__name__)
 os.environ["WANDB__SERVICE_WAIT"] = "300"
 
 
-import os
-from pathlib import Path
-from concurrent.futures import ProcessPoolExecutor
-import torch
-from tqdm import tqdm
+# import os
+# from pathlib import Path
+# from concurrent.futures import ProcessPoolExecutor
+# import torch
+# from tqdm import tqdm
+# with torch.no_grad():
+#     output_path = output_path / 'renders'
+#     output_path.mkdir(exist_ok=True, parents=True)
+#     tasks = []
+#     for path_to_fd in guid_fds:
+#         cur_guid_comb = Path(path_to_fd).name
+#         all_keys = read_json(f'{path_to_fd}/all_candkeyids.json')
+#         batch_keys = read_json(f'{path_to_fd}/guo_candkeyids.json')
+#         keys_to_rend = set(all_keys + batch_keys + extra_keys)
+#         for batch in tqdm(testloader):
+#             idx_to_rend = [i for i, x in enumerate(batch['id']) if x in keys_to_rend]
+#             if not idx_to_rend:
+#                 continue
+#             batch = {k: v.index_select(0, torch.tensor(idx_to_rend)) if isinstance(v, torch.Tensor) else [v[i] for i in idx_to_rend] for k, v in batch.items()}
+#             src_mot_cond, tgt_mot = model.batch2motion(prepare_test_batch(model, batch), pack_to_dict=False)
+#             gen_mo = [torch.from_numpy(
+#                                 np.load(f'{path_to_fd}/{key}.npy',
+#                                 allow_pickle=True).item()['pose'])
+#                         for key in batch['id']]
+#             gen_mo = collate_tensor_with_padding(gen_mo)
 
-def render_video(data):
-    elem_id, monames, lof_mots, lens_to_mask, color_map, output_path, text_diff, aitrenderer, smpl_layer, keyid = data
-    cur_group_of_vids = []
-    curid = keyid
-    for moid, one_motion in enumerate(lof_mots):
-        cur_mol = []
-        cur_colors = []
-        crop_len = lens_to_mask[moid]
+#             monames = ['source', 'target', 'overlaid_GT', 'generated', 'generated_vs_target', 'generated_vs_source']
+#             lof_mots = output2renderable([src_mot_cond, tgt_mot, [src_mot_cond, tgt_mot], gen_mo, [tgt_mot, gen_mo], [src_mot_cond, gen_mo]])
+#             lens_of_mots = [batch['length_source'], batch['length_target']] * 3
+#             crop_lens = [max(a, b) for a, b in zip(batch['length_target'], batch['length_source'])]
+#             lens_to_mask = [crop_lens] * 6
+#             for elem_id, keyid in enumerate(batch['id']):
+#                 tasks.append((elem_id, keyid, monames, lof_mots, lens_to_mask, aitrenderer, smpl_layer, output_path, batch['text'], color_map))
 
-        if isinstance(one_motion, list):
-            for motion in one_motion:
-                cur_mol.append({k: v[elem_id][:crop_len[elem_id]] for k, v in motion.items()})
-                if monames[moid].endswith('_source'):
-                    cur_colors = [color_map['source'], color_map['generated']]
-                elif monames[moid].endswith('_target'):
-                    cur_colors = [color_map['target'], color_map['generated']]
-                elif monames[moid] == 'overlaid_GT':
-                    cur_colors = [color_map['source'], color_map['target']]
-        else:
-            cur_mol.append({k: v[elem_id][:crop_len[elem_id]] for k, v in one_motion.items()})
-            cur_colors.append(color_map[monames[moid]])
+#     with ProcessPoolExecutor() as executor:
+#         results = list(executor.map(render_and_stack_videos, tasks))
 
-        fname = render_motion(aitrenderer, cur_mol,
-                              output_path / f"movie_{elem_id}_{moid}",
-                              pose_repr='aa', text_for_vid=monames[moid],
-                              color=cur_colors, smpl_layer=smpl_layer)
-        cur_group_of_vids.append(fname)
+#     for final_fl, keyid, is_short in results:
+#         video_key = final_fl.split('/')[-1].replace('.mp4', '')
+#         short = '_short' if is_short else ''
+#         wandb.log({f"{cur_guid_comb}{short}/{video_key}": wandb.Video(final_fl, fps=30, format="mp4")})
 
-    stacked_vid = stack_vids(cur_group_of_vids, f'{output_path}/{elem_id}_stacked.mp4', orient='3x3')
-    text_wrap = split_txt_into_multi_lines(text_diff[elem_id], 40)
-    final_file = put_text(text=text_wrap.replace("'", " "), fname=stacked_vid,
-                          outf=f'{output_path}/{curid}_text.mp4', position='top_center')
-    cleanup_files(cur_group_of_vids + [stacked_vid])
-    return final_file, elem_id, len(text_diff[elem_id].split()) <= 5
+# def render_and_stack_videos(data):
+#     elem_id, keyid, monames, lof_mots, lens_to_mask, aitrenderer, smpl_layer, output_path, text_diff, color_map = data
+#     cur_group_of_vids = []
+#     for moid, moname in enumerate(monames):
+#         cur_mol = []
+#         cur_colors = []
+#         one_motion = lof_mots[moid]
+#         crop_len = lens_to_mask[moid][elem_id]
+#         if isinstance(one_motion, list):
+#             for motion in one_motion:
+#                 cur_mol.append({k: v[elem_id][:crop_len] for k, v in motion.items()})
+#                 if moname == 'generated_vs_source':
+#                     cur_colors = [color_map['source'], color_map['generated']]
+#                 elif moname == 'generated_vs_target':
+#                     cur_colors = [color_map['target'], color_map['generated']]
+#                 elif moname == 'overlaid_GT':
+#                     cur_colors = [color_map['source'], color_map['target']]
+#         else:
+#             cur_mol.append({k: v[elem_id][:crop_len] for k, v in one_motion.items()})
+#             cur_colors.append(color_map[moname])
+
+#         fname = render_motion(aitrenderer, cur_mol, output_path / f"movie_{elem_id}_{moid}", pose_repr='aa', text_for_vid=moname, color=cur_colors, smpl_layer=smpl_layer)
+#         cur_group_of_vids.append(fname)
+
+#     stacked_vid = stack_vids(cur_group_of_vids, f'{output_path}/{elem_id}_stacked.mp4', orient='3x3')
+#     text_wrap = split_txt_into_multi_lines(text_diff[elem_id], 40)
+#     final_fl = put_text(text=text_wrap.replace("'", " "), fname=stacked_vid, outf=f'{output_path}/{keyid}_text.mp4', position='top_center')
+#     cleanup_files(cur_group_of_vids + [stacked_vid])
+#     return final_fl, keyid, len(text_diff[elem_id].split()) <= 5
 
 
 @hydra.main(config_path="configs", config_name="mfix_viz")
@@ -317,174 +348,106 @@ def render_vids(newcfg: DictConfig) -> None:
     for x in guid_fds:
         assert os.path.exists(x)
 
-    def render_and_stack_videos(data):
-        elem_id, keyid, monames, lof_mots, lens_to_mask, aitrenderer, smpl_layer, output_path, text_diff, color_map = data
-        cur_group_of_vids = []
-        for moid, moname in enumerate(monames):
-            cur_mol = []
-            cur_colors = []
-            one_motion = lof_mots[moid]
-            crop_len = lens_to_mask[moid][elem_id]
-            if isinstance(one_motion, list):
-                for motion in one_motion:
-                    cur_mol.append({k: v[elem_id][:crop_len] for k, v in motion.items()})
-                    if moname == 'generated_vs_source':
-                        cur_colors = [color_map['source'], color_map['generated']]
-                    elif moname == 'generated_vs_target':
-                        cur_colors = [color_map['target'], color_map['generated']]
-                    elif moname == 'overlaid_GT':
-                        cur_colors = [color_map['source'], color_map['target']]
-            else:
-                cur_mol.append({k: v[elem_id][:crop_len] for k, v in one_motion.items()})
-                cur_colors.append(color_map[moname])
-
-            fname = render_motion(aitrenderer, cur_mol, output_path / f"movie_{elem_id}_{moid}", pose_repr='aa', text_for_vid=moname, color=cur_colors, smpl_layer=smpl_layer)
-            cur_group_of_vids.append(fname)
-
-        stacked_vid = stack_vids(cur_group_of_vids, f'{output_path}/{elem_id}_stacked.mp4', orient='3x3')
-        text_wrap = split_txt_into_multi_lines(text_diff[elem_id], 40)
-        final_fl = put_text(text=text_wrap.replace("'", " "), fname=stacked_vid, outf=f'{output_path}/{keyid}_text.mp4', position='top_center')
-        cleanup_files(cur_group_of_vids + [stacked_vid])
-        return final_fl, keyid, len(text_diff[elem_id].split()) <= 5
-
     with torch.no_grad():
         output_path = output_path / 'renders'
         output_path.mkdir(exist_ok=True, parents=True)
-        tasks = []
         for path_to_fd in guid_fds:
             cur_guid_comb = Path(path_to_fd).name
             all_keys = read_json(f'{path_to_fd}/all_candkeyids.json')
             batch_keys = read_json(f'{path_to_fd}/guo_candkeyids.json')
-            keys_to_rend = set(all_keys + batch_keys + extra_keys)
+            keys_to_rend = list(set(all_keys + batch_keys + extra_keys))
             for batch in tqdm(testloader):
-                idx_to_rend = [i for i, x in enumerate(batch['id']) if x in keys_to_rend]
+                idx_to_rend = [i for i, x in enumerate(batch['id']) 
+                               if x in keys_to_rend]
                 if not idx_to_rend:
                     continue
-                batch = {k: v.index_select(0, torch.tensor(idx_to_rend)) if isinstance(v, torch.Tensor) else [v[i] for i in idx_to_rend] for k, v in batch.items()}
-                src_mot_cond, tgt_mot = model.batch2motion(prepare_test_batch(model, batch), pack_to_dict=False)
+                for k, v in batch.items():
+                    if isinstance(v, torch.Tensor):
+                        batch[k] = v.index_select(0, torch.tensor(idx_to_rend))
+                    else:
+                        batch[k] = [v[candix] for candix in idx_to_rend]
+                target_lens = batch['length_target']
+                source_lens = batch['length_source']
+                keyids = batch['id']
+                text_diff = batch['text']
+                no_of_motions = len(keyids)
+                input_batch = prepare_test_batch(model, batch)
                 gen_mo = [torch.from_numpy(
                                   np.load(f'{path_to_fd}/{key}.npy',
                                   allow_pickle=True).item()['pose'])
-                          for key in batch['id']]
+                          for key in keyids]
                 gen_mo = collate_tensor_with_padding(gen_mo)
+                src_mot_cond, tgt_mot = model.batch2motion(input_batch,
+                                                pack_to_dict=False)
+                mots_to_render = [src_mot_cond, tgt_mot, 
+                                  [src_mot_cond, tgt_mot],
+                                  gen_mo,
+                                  [tgt_mot, gen_mo], 
+                                  [src_mot_cond, gen_mo]]
+                monames = ['source', 'target', 'overlaid_GT', 'generated',
+                           'generated_vs_target', 'generated_vs_source']
+                lens_of_mots = [source_lens, target_lens, 
+                                    [source_lens, target_lens],
+                                    target_lens,
+                                    [target_lens, target_lens],
+                                    [source_lens, target_lens]]
+                lof_mots = output2renderable(mots_to_render)
+                crop_lens = [max(a, b) for a, b in zip(target_lens, source_lens)]
+                lens_to_mask = [crop_lens, crop_lens, crop_lens,
+                                crop_lens, crop_lens, crop_lens]
+                for elem_id in range(no_of_motions):
+                    cur_group_of_vids = []
+                    curid = keyids[elem_id]
+                    for moid in range(len(monames)):
+                        one_motion = lof_mots[moid]
+                        cur_mol = []
+                        cur_colors = []
+                        if lens_to_mask[moid] is not None:
+                            crop_len = lens_to_mask[moid]
 
-                monames = ['source', 'target', 'overlaid_GT', 'generated', 'generated_vs_target', 'generated_vs_source']
-                lof_mots = output2renderable([src_mot_cond, tgt_mot, [src_mot_cond, tgt_mot], gen_mo, [tgt_mot, gen_mo], [src_mot_cond, gen_mo]])
-                lens_of_mots = [batch['length_source'], batch['length_target']] * 3
-                crop_lens = [max(a, b) for a, b in zip(batch['length_target'], batch['length_source'])]
-                lens_to_mask = [crop_lens] * 6
-                for elem_id, keyid in enumerate(batch['id']):
-                    tasks.append((elem_id, keyid, monames, lof_mots, lens_to_mask, aitrenderer, smpl_layer, output_path, batch['text'], color_map))
+                        if isinstance(one_motion, list):
+                            for xx in one_motion:
+                                cur_mol.append({k: v[elem_id][:crop_len[elem_id]]
+                                                for k, v in xx.items()})
+                                if monames[moid] == 'generated_vs_source':
+                                    cur_colors = [color_map['source'],
+                                                  color_map['generated']]
+                                elif monames[moid] == 'generated_vs_target':
+                                    cur_colors = [color_map['target'],
+                                                  color_map['generated']]
+                                elif monames[moid] == 'overlaid_GT':
+                                    cur_colors = [color_map['source'],
+                                                  color_map['target']]
+                        else:
+                            cur_mol.append({k: v[elem_id][:crop_len[elem_id]]
+                                                for k, v in one_motion.items()})
+                            cur_colors.append(color_map[monames[moid]])
 
-        with ProcessPoolExecutor() as executor:
-            results = list(executor.map(render_and_stack_videos, tasks))
-
-        for final_fl, keyid, is_short in results:
-            video_key = final_fl.split('/')[-1].replace('.mp4', '')
-            short = '_short' if is_short else ''
-            wandb.log({f"{cur_guid_comb}{short}/{video_key}": wandb.Video(final_fl, fps=30, format="mp4")})
-
-
-    # with torch.no_grad():
-    #     output_path = output_path / 'renders'
-    #     output_path.mkdir(exist_ok=True, parents=True)
-    #     for path_to_fd in guid_fds:
-    #         cur_guid_comb = Path(path_to_fd).name
-    #         all_keys = read_json(f'{path_to_fd}/all_candkeyids.json')
-    #         batch_keys = read_json(f'{path_to_fd}/guo_candkeyids.json')
-    #         keys_to_rend = list(set(all_keys + batch_keys + extra_keys))
-    #         for batch in tqdm(testloader):
-    #             idx_to_rend = [i for i, x in enumerate(batch['id']) 
-    #                            if x in keys_to_rend]
-    #             if not idx_to_rend:
-    #                 continue
-    #             for k, v in batch.items():
-    #                 if isinstance(v, torch.Tensor):
-    #                     batch[k] = v.index_select(0, torch.tensor(idx_to_rend))
-    #                 else:
-    #                     batch[k] = [v[candix] for candix in idx_to_rend]
-    #             target_lens = batch['length_target']
-    #             source_lens = batch['length_source']
-    #             keyids = batch['id']
-    #             text_diff = batch['text']
-    #             no_of_motions = len(keyids)
-    #             input_batch = prepare_test_batch(model, batch)
-    #             gen_mo = [torch.from_numpy(
-    #                               np.load(f'{path_to_fd}/{key}.npy',
-    #                               allow_pickle=True).item()['pose'])
-    #                       for key in keyids]
-    #             gen_mo = collate_tensor_with_padding(gen_mo)
-    #             src_mot_cond, tgt_mot = model.batch2motion(input_batch,
-    #                                             pack_to_dict=False)
-    #             mots_to_render = [src_mot_cond, tgt_mot, 
-    #                               [src_mot_cond, tgt_mot],
-    #                               gen_mo,
-    #                               [tgt_mot, gen_mo], 
-    #                               [src_mot_cond, gen_mo]]
-    #             monames = ['source', 'target', 'overlaid_GT', 'generated',
-    #                        'generated_vs_target', 'generated_vs_source']
-    #             lens_of_mots = [source_lens, target_lens, 
-    #                                 [source_lens, target_lens],
-    #                                 target_lens,
-    #                                 [target_lens, target_lens],
-    #                                 [source_lens, target_lens]]
-    #             lof_mots = output2renderable(mots_to_render)
-    #             crop_lens = [max(a, b) for a, b in zip(target_lens, source_lens)]
-    #             lens_to_mask = [crop_lens, crop_lens, crop_lens,
-    #                             crop_lens, crop_lens, crop_lens]
-    #             for elem_id in range(no_of_motions):
-    #                 cur_group_of_vids = []
-    #                 curid = keyids[elem_id]
-    #                 for moid in range(len(monames)):
-    #                     one_motion = lof_mots[moid]
-    #                     cur_mol = []
-    #                     cur_colors = []
-    #                     if lens_to_mask[moid] is not None:
-    #                         crop_len = lens_to_mask[moid]
-
-    #                     if isinstance(one_motion, list):
-    #                         for xx in one_motion:
-    #                             cur_mol.append({k: v[elem_id][:crop_len[elem_id]]
-    #                                             for k, v in xx.items()})
-    #                             if monames[moid] == 'generated_vs_source':
-    #                                 cur_colors = [color_map['source'],
-    #                                               color_map['generated']]
-    #                             elif monames[moid] == 'generated_vs_target':
-    #                                 cur_colors = [color_map['target'],
-    #                                               color_map['generated']]
-    #                             elif monames[moid] == 'overlaid_GT':
-    #                                 cur_colors = [color_map['source'],
-    #                                               color_map['target']]
-    #                     else:
-    #                         cur_mol.append({k: v[elem_id][:crop_len[elem_id]]
-    #                                             for k, v in one_motion.items()})
-    #                         cur_colors.append(color_map[monames[moid]])
-
-    #                     fname = render_motion(aitrenderer, cur_mol,
-    #                                         output_path / f"movie_{elem_id}_{moid}",
-    #                                         pose_repr='aa',
-    #                                         text_for_vid=monames[moid],
-    #                                         color=cur_colors,
-    #                                         smpl_layer=smpl_layer)
-    #                     cur_group_of_vids.append(fname)
-    #                 stacked_vid = stack_vids(cur_group_of_vids,
-    #                                         f'{output_path}/{elem_id}_stacked.mp4',
-    #                                         orient='3x3')
-    #                 text_wrap = split_txt_into_multi_lines(text_diff[elem_id],
-    #                                                         40)
-    #                 fnal_fl = put_text(text=text_wrap.replace("'", " "),
-    #                                    fname=stacked_vid, 
-    #                                    outf=f'{output_path}/{curid}_text.mp4',
-    #                                    position='top_center')
-    #                 cleanup_files(cur_group_of_vids+[stacked_vid])
-    #                 video_key = fnal_fl.split('/')[-1].replace('.mp4','')
-    #                 if len(text_diff[elem_id].split()) <= 5:
-    #                     short = '_short'
-    #                 else:
-    #                     short = ''
-    #                 wandb.log({f"{cur_guid_comb}{short}/{video_key}":
-    #                                 wandb.Video(fnal_fl, fps=30, format="mp4")
-    #                             })
+                        fname = render_motion(aitrenderer, cur_mol,
+                                            output_path / f"movie_{elem_id}_{moid}",
+                                            pose_repr='aa',
+                                            text_for_vid=monames[moid],
+                                            color=cur_colors,
+                                            smpl_layer=smpl_layer)
+                        cur_group_of_vids.append(fname)
+                    stacked_vid = stack_vids(cur_group_of_vids,
+                                            f'{output_path}/{elem_id}_stacked.mp4',
+                                            orient='3x3')
+                    text_wrap = split_txt_into_multi_lines(text_diff[elem_id],
+                                                            40)
+                    fnal_fl = put_text(text=text_wrap.replace("'", " "),
+                                       fname=stacked_vid, 
+                                       outf=f'{output_path}/{curid}_text.mp4',
+                                       position='top_center')
+                    cleanup_files(cur_group_of_vids+[stacked_vid])
+                    video_key = fnal_fl.split('/')[-1].replace('.mp4','')
+                    if len(text_diff[elem_id].split()) <= 5:
+                        short = '_short'
+                    else:
+                        short = ''
+                    wandb.log({f"{cur_guid_comb}{short}/{video_key}":
+                                    wandb.Video(fnal_fl, fps=30, format="mp4")
+                                })
 
 
     
