@@ -36,7 +36,6 @@ def prepare_test_batch(model, batch):
         else:
             batch[f'{k}_motion'] = v
             batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
-
     return batch
 
 def cleanup_files(lo_fls):

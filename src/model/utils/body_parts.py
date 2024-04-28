@@ -54,6 +54,7 @@ bp2ids = {
     }
 
 BODY_PART_DICT = read_json('deps/gpt/gpt3-labels-list.json')
+BODY_PART_DICT_EDIT = read_json('deps/gpt/edit/gpt-labels_full.json')
 
 def get_sinc_labels(list_of_texts):
     tot_list_bps = []
@@ -89,11 +90,16 @@ def text_to_bp(text, return_original=False):
                 'swim on air']:
 
         if return_original:
-            return [1] * len(smpl_bps_ids), BODY_PART_DICT[text][2]
-
+            if text in BODY_PART_DICT:
+                return [1] * len(smpl_bps_ids), BODY_PART_DICT[text][2]
+            else:
+                return [1] * len(smpl_bps_ids), BODY_PART_DICT_EDIT[text][2]
         return [1] * len(smpl_bps_ids)
     else:
-        original_cur_lbl = BODY_PART_DICT[text][2]
+        if text in BODY_PART_DICT:
+            original_cur_lbl = BODY_PART_DICT[text][2]
+        else:
+            original_cur_lbl = BODY_PART_DICT_EDIT[text]
         cur_lbl = original_cur_lbl.translate(str.maketrans('', '',
                                                         string.punctuation))
         cur_lbl = cur_lbl.lower().replace('answer', '')

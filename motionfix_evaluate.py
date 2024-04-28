@@ -108,7 +108,7 @@ def render_vids(newcfg: DictConfig) -> None:
     # cfg.model.diff_params.guidance_scale_motion = newcfg.guidance_scale_motion
     # cfg.model.diff_params.guidance_scale_text = newcfg.guidance_scale_text
     if cfg.inpaint:
-        assert cfg.data.dataname == 'sinc_synth'
+        assert cfg.data.dataname in ['sinc_synth', 'bodilex']
         from src.utils.file_io import read_json
         annots_sinc = read_json('data/sinc_synth/for_website_v4.json')
 
@@ -221,11 +221,13 @@ def render_vids(newcfg: DictConfig) -> None:
                     ############### BODY PART BASELINE ###############
                     from src.model.utils.body_parts import get_mask_from_texts, get_mask_from_bps
                     # jts idxs #Texts x [jts ids] list of lists
-
-                    parts_to_keep = [annots_sinc[kd]['source_annot'] 
-                                     if kd.endswith(('_0', '_1'))
-                                     else annots_sinc[kd]['target_annot']
-                                     for kd in keyids]
+                    if cfg.data.dataname == 'sinc_synth':
+                        parts_to_keep = [annots_sinc[kd]['source_annot'] 
+                                        if kd.endswith(('_0', '_1'))
+                                        else annots_sinc[kd]['target_annot']
+                                        for kd in keyids]
+                    else:
+                        parts_to_keep = text_diff
                     jts_ids = get_mask_from_texts(parts_to_keep)
                     # True for involved body_parts aka joint groups
                     # Tensor #Texts x features [207]

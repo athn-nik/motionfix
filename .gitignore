@@ -17,6 +17,7 @@ deps/*
 /condor_logs
 lightning_logs
 sinc-env
+fast-cluster
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
