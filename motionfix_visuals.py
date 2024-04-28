@@ -138,6 +138,45 @@ def get_folder_name(config):
 
     return f'{sset}{ckpt_n}{init_from}{sched_name}_mot{mot_guid}_text{text_guid}_steps{infer_steps}'
 
+def render_and_stack_videos(data):
+    cur_group_of_vids = [] 
+    from src.utils.art_utils import color_map
+    from aitviewer.models.smpl import SMPLLayer
+    smpl_layer = SMPLLayer(model_type='smplh', ext='npz', gender='neutral')
+    # aitrenderer = 
+    from aitviewer.headless import HeadlessRenderer
+    from aitviewer.configuration import CONFIG as AITVIEWER_CONFIG
+    AITVIEWER_CONFIG.update_conf({"playback_fps": 30,
+                                  "auto_set_floor": True,
+                                  "smplx_models": 'data/body_models',
+                                  'z_up': True})
+    aitrenderer = HeadlessRenderer()
+    for moid, moname in enumerate(monames):
+        cur_mol = []
+        cur_colors = []
+        one_motion = lof_mots[moid]
+        crop_len = lens_to_mask[moid][elem_id]
+        if isinstance(one_motion, list):
+            for motion in one_motion:
+                cur_mol.append({k: v[elem_id][:crop_len] for k, v in motion.items()})
+                if moname == 'generated_vs_source':
+                    cur_colors = [color_map['source'], color_map['generated']]
+                elif moname == 'generated_vs_target':
+                    cur_colors = [color_map['target'], color_map['generated']]
+                elif moname == 'overlaid_GT':
+                    cur_colors = [color_map['source'], color_map['target']]
+        else:
+            cur_mol.append({k: v[elem_id][:crop_len] for k, v in one_motion.items()})
+            cur_colors.append(color_map[moname])
+
+        fname = render_motion(aitrenderer, cur_mol, output_path / f"movie_{elem_id}_{moid}", pose_repr='aa', text_for_vid=moname, color=cur_colors, smpl_layer=smpl_layer)
+        cur_group_of_vids.append(fname)
+
+    stacked_vid = stack_vids(cur_group_of_vids, f'{str(output_path)}/{elem_id}_stacked.mp4', orient='3x3')
+    text_wrap = split_txt_into_multi_lines(text_diff[elem_id], 40)
+    final_fl = put_text(text=text_wrap.replace("'", " "), fname=stacked_vid, outf=f'{output_path}/{keyid}_text.mp4', position='top_center')
+    cleanup_files(cur_group_of_vids + [stacked_vid])
+    return final_fl, keyid, len(text_diff[elem_id].split()) <= 5
 
 def render_vids(newcfg: DictConfig) -> None:
     from pathlib import Path
@@ -317,41 +356,12 @@ def render_vids(newcfg: DictConfig) -> None:
     for x in guid_fds:
         assert os.path.exists(x)
 
-    def render_and_stack_videos(data):
-        elem_id, keyid, monames, lof_mots, lens_to_mask, aitrenderer, smpl_layer, output_path, text_diff, color_map = data
-        cur_group_of_vids = []
-        for moid, moname in enumerate(monames):
-            cur_mol = []
-            cur_colors = []
-            one_motion = lof_mots[moid]
-            crop_len = lens_to_mask[moid][elem_id]
-            if isinstance(one_motion, list):
-                for motion in one_motion:
-                    cur_mol.append({k: v[elem_id][:crop_len] for k, v in motion.items()})
-                    if moname == 'generated_vs_source':
-                        cur_colors = [color_map['source'], color_map['generated']]
-                    elif moname == 'generated_vs_target':
-                        cur_colors = [color_map['target'], color_map['generated']]
-                    elif moname == 'overlaid_GT':
-                        cur_colors = [color_map['source'], color_map['target']]
-            else:
-                cur_mol.append({k: v[elem_id][:crop_len] for k, v in one_motion.items()})
-                cur_colors.append(color_map[moname])
-
-            fname = render_motion(aitrenderer, cur_mol, output_path / f"movie_{elem_id}_{moid}", pose_repr='aa', text_for_vid=moname, color=cur_colors, smpl_layer=smpl_layer)
-            cur_group_of_vids.append(fname)
-
-        stacked_vid = stack_vids(cur_group_of_vids, f'{output_path}/{elem_id}_stacked.mp4', orient='3x3')
-        text_wrap = split_txt_into_multi_lines(text_diff[elem_id], 40)
-        final_fl = put_text(text=text_wrap.replace("'", " "), fname=stacked_vid, outf=f'{output_path}/{keyid}_text.mp4', position='top_center')
-        cleanup_files(cur_group_of_vids + [stacked_vid])
-        return final_fl, keyid, len(text_diff[elem_id].split()) <= 5
-
     with torch.no_grad():
         output_path = output_path / 'renders'
         output_path.mkdir(exist_ok=True, parents=True)
-        tasks = []
-        for path_to_fd in guid_fds:
+        executor = ProcessPoolExecutor(max_workers=4)
+        futures = []
+        for path_to_fd in guid_fds[:3]:
             cur_guid_comb = Path(path_to_fd).name
             all_keys = read_json(f'{path_to_fd}/all_candkeyids.json')
             batch_keys = read_json(f'{path_to_fd}/guo_candkeyids.json')
@@ -374,10 +384,11 @@ def render_vids(newcfg: DictConfig) -> None:
                 crop_lens = [max(a, b) for a, b in zip(batch['length_target'], batch['length_source'])]
                 lens_to_mask = [crop_lens] * 6
                 for elem_id, keyid in enumerate(batch['id']):
-                    tasks.append((elem_id, keyid, monames, lof_mots, lens_to_mask, aitrenderer, smpl_layer, output_path, batch['text'], color_map))
+                    args = (elem_id, keyid, monames, lof_mots, lens_to_mask, output_path, batch['text'], color_map)
+                    futures.append(executor.submit(render_and_stack_videos, args))
 
-        with ProcessPoolExecutor() as executor:
-            results = list(executor.map(render_and_stack_videos, tasks))
+
+        results = [future.result() for future in futures]
 
         for final_fl, keyid, is_short in results:
             video_key = final_fl.split('/')[-1].replace('.mp4', '')

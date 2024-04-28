@@ -1202,7 +1202,7 @@ class MD(BaseModel):
         from src.data.tools.tensors import lengths_to_mask
         input_batch = self.norm_and_cat(batch, self.input_feats)
         # import ipdb;ipdb.set_trace()
-        if 'hml3d' in batch['dataset_name'] and self.motion_condition == 'source':
+        if 'hml3d' in batch['dataset_name']:
             idx_t2m = [i for i, x in enumerate( batch['dataset_name']) 
                        if x == 'hml3d']
 
