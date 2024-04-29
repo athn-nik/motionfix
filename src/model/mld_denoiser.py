@@ -1,3 +1,4 @@
+from networkx import planted_partition_graph
 import torch
 import torch.nn as nn
 from torch import  nn
@@ -181,15 +182,15 @@ class MldDenoiser(nn.Module):
         else:
             denoised_motion_proj = tokens[emb_latent.shape[0]:]
 
-        # if self.pred_delta_motion and motion_embeds is not None:
-        #     if self.fuse == 'concat':
-        #         denoised_motion_proj = torch.cat([denoised_motion_proj,
-        #                                             motion_embeds_proj],
-        #                                             dim=-1)
-        #     elif self.fuse == 'add':
-        #         denoised_motion_proj = denoised_motion_proj + self.feat_comb_coeff*motion_embeds_proj
-        #     else:
-        #         denoised_motion_proj = denoised_motion_proj
+        if self.pred_delta_motion and motion_embeds is not None:
+            import torch.nn.functional as F
+            tgt_size = len(denoised_motion_proj)
+            if len(denoised_motion_proj) > len(motion_embeds_proj):
+                pad_for_src = len(denoised_motion_proj) - len(motion_embeds_proj)
+                motion_embeds_proj = F.pad(motion_embeds_proj, 
+                                        (0, 0, 0, 0, 0, pad_for_src))
+            denoised_motion_proj = denoised_motion_proj + motion_embeds_proj[:tgt_size]
+
         denoised_motion = self.pose_proj_out(denoised_motion_proj)
         denoised_motion[~motion_in_mask.T] = 0
         # zero for padded area

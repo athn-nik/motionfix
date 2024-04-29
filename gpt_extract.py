@@ -31,14 +31,14 @@ def gpt_extract():
     for k, v in ds_amt.items():
         unique_texts.append(v['annotation'])
     pathout='deps/gpt/edit/gpt-labels_full.json'
-    already_existing = read_json(pathout)
-    already_existing = list(already_existing.keys())
+    already_existing_dict = read_json(pathout)
+    already_existing = list(already_existing_dict.keys())
     unique_texts = list(set(unique_texts))
     unique_texts.remove('')
 
     unique_texts = [item for item in unique_texts if item not in already_existing]
     responses = {}
-    responses_full = {}
+    responses_full = dict(already_existing_dict)
     write_every = 50
     elems = 0
     cur_model = 'gpt-3.5-turbo'
@@ -47,6 +47,7 @@ def gpt_extract():
     
     client = OpenAI()
     if unique_texts:
+        batch_id = 0
         for action_text in tqdm(unique_texts[:n_to_keep]):
             prompts = edit_prompts_to_gpt.replace('[EDIT TEXT]', action_text)
             response = client.chat.completions.create(model="gpt-3.5-turbo",
@@ -67,6 +68,7 @@ def gpt_extract():
         batch_id += 1
         write_json(responses, f'deps/gpt/edit/gpt-labels_batch{batch_id}.json')
         # write html/tex to file
+        import ipdb; ipdb.set_trace()
         write_json(responses_full, pathout)
     else:
         print(f'All texts exists in {pathout}')
