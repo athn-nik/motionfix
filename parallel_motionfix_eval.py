@@ -4,12 +4,13 @@ import time
 import subprocess
 import re
 import argparse
+from tqdm import tqdm 
 
 def run(cmd):
-    print(f"Executing: {' '.join(cmd)}")
+    # print(f"Executing: {' '.join(cmd)}")
     x = subprocess.run(cmd)
 
-def get_guidances(s=1.5, e=10.5, no=5, t2m=False):
+def get_guidances(s=1.0, e=5, no=5, t2m=False):
     import itertools
     import numpy as np
     if t2m:
@@ -47,7 +48,7 @@ def main_loop(command, exp_paths,
         arg0 = 'guidance_scale_text'
         arg1 = 'guidance_scale_motion'
         t2m = True
-    for fd, gd, in_lat, data_type in exp_grid:
+    for fd, gd, in_lat, data_type in tqdm(exp_grid):
         cur_cmd = list(cmd_train)
         idx_of_exp = cur_cmd.index("FOLDER")
         cur_cmd[idx_of_exp] = str(fd)

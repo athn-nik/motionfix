@@ -68,7 +68,7 @@ def get_gpus(min_mem=32000, arch=('volta', 'quadro', 'rtx', 'nvidia')):
     for k, (gpu_name, gpu_arch, gpu_mem) in GPUS.items():
         if gpu_mem >= min_mem and gpu_arch in arch:
             gpu_names.append(gpu_name)
-    print("The selected GPUs to run this job are:", gpu_names)
+    # print("The selected GPUs to run this job are:", gpu_names)
     assert len(gpu_names) > 0, 'Suitable GPU model could not be found'
 
     return gpu_names
@@ -79,7 +79,8 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
                            bid_amount: int = 10, num_workers: int = 32,
                            memory: int = 128000, gpu_min_mem:int = 32000,
                            gpu_arch: Optional[List[Tuple[str, ...]]] = 
-                           ('volta', 'quadro', 'rtx', 'nvidia')) -> None:
+                           ('volta', 'quadro', 'rtx', 'nvidia'),
+                           verbose=False) -> None:
 
 
     gpus_requirements = get_gpus(min_mem=gpu_min_mem, arch=gpu_arch)
@@ -145,12 +146,13 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
 
             with open(submission_path, 'w') as f:
                 f.write(sub_file)
-
-            logger.info('The cluster logs for this experiments can be found under:'\
+            if verbose:
+                logger.info('The cluster logs for this experiments can be found under:'\
                         f'{str(logdir_condor)}')
             
             cmd = ['condor_submit_bid', f'{bid_amount}', str(submission_path)]
-            logger.info('Executing ' + ' '.join(cmd))
+            if verbose:
+                logger.info('Executing ' + ' '.join(cmd))
             subprocess.run(cmd)
     elif mode in ["evaluate", 'eval', 'sample']:
         for experiment in configs: 
@@ -188,12 +190,13 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
 
             with open(submission_path, 'w') as f:
                 f.write(sub_file)
-
-            logger.info('The cluster logs for this experiments can be found under:'\
+            if verbose:
+                logger.info('The cluster logs for this experiments can be found under:'\
                         f'{str(logdir_condor)}')
             
             cmd = ['condor_submit_bid', f'{bid_amount}', str(submission_path)]
-            logger.info('Executing ' + ' '.join(cmd))
+            if verbose:
+                logger.info('Executing ' + ' '.join(cmd))
             subprocess.run(cmd)
 
     elif mode in ["sweep"]:
@@ -248,11 +251,12 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
 
         with open(submission_path, 'w') as f:
             f.write(sub_file)
-
-        logger.info('The cluster logs for this experiments can be found under:'\
+        if verbose:
+            logger.info('The cluster logs for this experiments can be found under:'\
                     f'{str(logdir_condor)}')
         cmd = ['condor_submit_bid', f'{bid_amount}', str(submission_path)]
-        logger.info('Executing ' + ' '.join(cmd))
+        if verbose:
+            logger.info('Executing ' + ' '.join(cmd))
         subprocess.run(cmd)
 
         # #!/bin/bash

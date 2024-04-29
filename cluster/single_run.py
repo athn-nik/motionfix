@@ -7,7 +7,8 @@ if __name__ == "__main__":
     parser.add_argument('--mode', required=True, choices=['train', 'sample', 'sweep',
                                                           'eval', 'evaluate', 'render', 'fast-render'], type=str,
                             help='Mode is either train or sample or eval!')
-    
+    parser.add_argument('-v', '--verbose', action='store_true',
+                    help='Increase output verbosity')    
     parser.add_argument('--folder', required=False, type=str, default=None,
                         help='folder for evaluation')
     parser.add_argument('--name', required=False, type=str, default=None,
@@ -36,6 +37,7 @@ if __name__ == "__main__":
     fd = arguments.folder
     name = arguments.name
     script = arguments.prog
+    verbose = arguments.verbose
     if arguments.extras is not None:
         args = arguments.extras
         _args = args.strip().split()
@@ -77,4 +79,5 @@ if __name__ == "__main__":
 
     launch_task_on_cluster(experiments, bid_amount=bid_for_exp, 
                            gpu_min_mem=gpu_mem,
-                           mode=cluster_mode)
+                           mode=cluster_mode,
+                           verbose=verbose)
