@@ -211,8 +211,8 @@ def render_and_stack_videos(data):
 
 def render_vids(newcfg: DictConfig) -> None:
     from pathlib import Path
-    
-    exp_folder = Path(hydra.utils.to_absolute_path(newcfg.folder))
+     
+    exp_folder = Path(hydra.utils.to_absolute_path(Path(newcfg.folder).parent))
     last_ckpt_path = newcfg.last_ckpt_path
     # Load previous config
     prevcfg = OmegaConf.load(exp_folder / ".hydra/config.yaml")
@@ -378,10 +378,10 @@ def render_vids(newcfg: DictConfig) -> None:
     from aitviewer.models.smpl import SMPLLayer
     smpl_layer = SMPLLayer(model_type='smplh', ext='npz', gender='neutral')
     # Get a list of all items in the directory
-    all_dirnames = os.listdir(cfg.samples)
+    all_dirnames = os.listdir(cfg.folder)
 
     # Filter the list to include only directories
-    guid_fds = [os.path.join(cfg.samples, item) 
+    guid_fds = [os.path.join(cfg.folder, item) 
                 for item in all_dirnames]
     for x in guid_fds:
         assert os.path.exists(x)

@@ -6,7 +6,6 @@ hydra:
   output_subdir: null
 
 folder: ???
-samples: ???
 
 savedir: null
 mean: false
