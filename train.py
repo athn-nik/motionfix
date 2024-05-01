@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Optional
 from pytorch_lightning.callbacks import LearningRateMonitor
 import os
+IS_LOCAL_DEBUG = src.launch.prepare.get_local_debug()
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +90,10 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     else: 
         renderer=None
     ######## DATA LOADING #########
+    if IS_LOCAL_DEBUG:
+        base_p_lcl = '/home/nathanasiou/Desktop/local-dedug/data/amass_bodilex_' 
+        cfg.data.datapath = f'{base_p_lcl}v11.pth.tar'
+
     logger.info(f'Loading data module: {cfg.data.dataname}')
     data_module = instantiate(cfg.data)
     # here you can access data_module.nfeats

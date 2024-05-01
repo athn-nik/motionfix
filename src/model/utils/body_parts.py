@@ -144,20 +144,18 @@ def text_to_bp(text, return_original=False):
         bp_list = [0] * len(smpl_bps_ids)
         
         for bp_str in precise_bp:
-            if bp_str == 'buttocks' or bp_str=='waist':
-                bp_final = 'global'
-            elif bp_str == 'neck':
+            if bp_str.strip()  == 'buttocks' or bp_str.strip() =='waist':
+                bp_final= 'global'
+            elif bp_str.strip() == 'neck':
                 bp_final = 'torso'
             else:
-                bp_final = str(bp_str)
+                bp_final = str(bp_str.strip())
 
-            try:
-                bp_list[smpl_bps_ids[bp_final]] += 1
-            except:
-                import ipdb; ipdb.set_trace()
+            assert bp_final in smpl_bps_ids
+            bp_list[smpl_bps_ids[bp_final]] += 1
         bp_list = [1 if x>1 else x for x in bp_list ]
-        if bp_list == [0, 0 ,0, 0, 0, 0]:
-            import ipdb; ipdb.set_trace()
+
+        assert bp_list != [0, 0 ,0, 0, 0, 0]
         if return_original:
             return bp_list, original_cur_lbl
         return bp_list

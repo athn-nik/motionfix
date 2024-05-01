@@ -8,7 +8,6 @@ from sympy import O
 from src import data
 from src.render.mesh_viz import render_motion
 from torch import Tensor
-
 # from src.render.mesh_viz import visualize_meshes
 from src.render.video import save_video_samples
 import src.launch.prepare  # noqa
@@ -17,6 +16,9 @@ import torch
 import itertools
 from src.model.utils.tools import pack_to_render
 logger = logging.getLogger(__name__)
+import numpy as np
+
+IS_LOCAL_DEBUG = src.launch.prepare.get_local_debug()
 
 @hydra.main(config_path="configs", config_name="motionfix_eval")
 def _render_vids(cfg: DictConfig) -> None:
@@ -153,7 +155,10 @@ def render_vids(newcfg: DictConfig) -> None:
     logger.info('------Diffusion Parameters------\n\n'\
                 f'{model.diff_params}')
 
-    import numpy as np
+    if IS_LOCAL_DEBUG:
+        base_p_lcl = '/home/nathanasiou/Desktop/local-dedug/data/amass_bodilex_' 
+        cfg.data.datapath = f'{base_p_lcl}v11.pth.tar'
+
     data_module = instantiate(cfg.data, amt_only=True,
                               load_splits=['test', 'val'])
 
@@ -241,12 +246,19 @@ def render_vids(newcfg: DictConfig) -> None:
 
 
                 if model.pad_inputs:
-                    source_mot_pad = torch.nn.functional.pad(input_batch['source_motion'],
-                                                            (0, 0, 0, 0, 0,
-                                                300 - input_batch['source_motion'].size(0)),
-                                                            value=0)
+                    if inpaint_dict is None:
+                        source_mot_pad = torch.nn.functional.pad(input_batch['source_motion'],
+                                                                (0, 0, 0, 0, 0,
+                                                    300 - input_batch['source_motion'].size(0)),
+                                                                value=0)
+                    else:
+                        source_mot_pad = None
                 else:
-                    source_mot_pad = input_batch['source_motion'].clone()
+                    if inpaint_dict is None:
+                        source_mot_pad = input_batch['source_motion'].clone()
+                    else:
+                        source_mot_pad = None
+
                 if model.motion_condition == 'source' or init_diff_from == 'source':
                     source_lens = batch['length_source']
                     if model.pad_inputs:
@@ -262,6 +274,10 @@ def render_vids(newcfg: DictConfig) -> None:
                     from src.data.tools.tensors import lengths_to_mask
                     mask_target = lengths_to_mask(target_lens,
                                                 model.device)
+                    batch['source_motion'] = None
+                    mask_source = None
+
+                if inpaint_dict is not None:
                     batch['source_motion'] = None
                     mask_source = None
 
@@ -290,7 +306,6 @@ def render_vids(newcfg: DictConfig) -> None:
                             dict_to_save)
                     # np.load(output_path / f"{str(batch['id'][i]).zfill(6)}.npy")
                 # output_path = Path('/home/nathanasiou/Desktop/conditional_action_gen/modilex')
-                   
         logger.info(f"Sample script. The outputs are stored in:{cur_outpath}")
     
 if __name__ == '__main__':
