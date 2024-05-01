@@ -277,7 +277,6 @@ def render_vids(newcfg: DictConfig) -> None:
 
     seed_logger = logging.getLogger("pytorch_lightning.utilities.seed")
     seed_logger.setLevel(logging.WARNING)
-    
     pl.seed_everything(cfg.seed)
     from aitviewer.headless import HeadlessRenderer
     from aitviewer.configuration import CONFIG as AITVIEWER_CONFIG
@@ -287,7 +286,7 @@ def render_vids(newcfg: DictConfig) -> None:
                                   'z_up': True})
     aitrenderer = HeadlessRenderer()
     import wandb
-    
+    def save_png
     wandb.init(project="motionfix-visuals", job_type="evaluate",
                name=log_name, dir=output_path)
 
@@ -390,7 +389,7 @@ def render_vids(newcfg: DictConfig) -> None:
     with torch.no_grad():
         output_path = output_path / 'renders'
         output_path.mkdir(exist_ok=True, parents=True)
-        for path_to_fd in guid_fds[:4]:
+        for path_to_fd in guid_fds:
             cur_guid_comb = Path(path_to_fd).name
             all_keys = read_json(f'{path_to_fd}/all_candkeyids.json')
             batch_keys = read_json(f'{path_to_fd}/guo_candkeyids.json')

@@ -15,6 +15,14 @@ def code_path(path=""):
     code_dir = Path(code_dir)
     return str(code_dir / path)
 
+def get_local_debug():
+    import socket
+    hostname = socket.gethostname()
+    if hostname == 'ps018':
+        local_debug = True
+    else:
+        local_debug = False
+    return local_debug
 
 def working_path(path):
     return str(Path(os.getcwd()) / path)

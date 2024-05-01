@@ -34,7 +34,6 @@ def gpt_extract():
     already_existing_dict = read_json(pathout)
     already_existing = list(already_existing_dict.keys())
     unique_texts = list(set(unique_texts))
-    unique_texts.remove('')
 
     unique_texts = [item for item in unique_texts if item not in already_existing]
     responses = {}
@@ -44,7 +43,7 @@ def gpt_extract():
     cur_model = 'gpt-3.5-turbo'
     n_to_keep = len(unique_texts)
     from openai import OpenAI
-    
+    import ipdb; ipdb.set_trace() 
     client = OpenAI()
     if unique_texts:
         batch_id = 0
