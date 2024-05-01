@@ -5,7 +5,7 @@ hydra:
     chdir: true
   output_subdir: null
 
-samples: ???
+folder: ???
 
 savedir: null
 mean: false
