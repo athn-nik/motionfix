@@ -211,8 +211,8 @@ def render_and_stack_videos(data):
 
 def render_vids(newcfg: DictConfig) -> None:
     from pathlib import Path
-    
-    exp_folder = Path(hydra.utils.to_absolute_path(newcfg.folder))
+     
+    exp_folder = Path(hydra.utils.to_absolute_path(Path(newcfg.samples).parent))
     last_ckpt_path = newcfg.last_ckpt_path
     # Load previous config
     prevcfg = OmegaConf.load(exp_folder / ".hydra/config.yaml")
