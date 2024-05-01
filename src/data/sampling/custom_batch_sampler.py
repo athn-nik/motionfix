@@ -1,17 +1,20 @@
-from torch.utils.data import Sampler
+from torch.utils.data import BatchSampler, Sampler
 import numpy as np
 import math
 from itertools import cycle
 import random
-class PercBatchSampler(Sampler):
-    def __init__(self, data_source, batch_size, dataset_percentages):
+
+class PercBatchSampler(BatchSampler):
+    def __init__(self, data_source, batch_size, dataset_percentages, num_gpus=1):
         self.data_source = data_source
         self.batch_size = batch_size
         self.dataset_percentages = dataset_percentages
+        self.num_gpus = num_gpus
+        self.adjusted_batch_size = self.batch_size * self.num_gpus  # Total batch size for all GPUs
         self.batches = self._precompute_batches()
+        super().__init__(self.batches, batch_size, drop_last=False)  # Initialize the BatchSampler superclass
 
     def _group_indices_by_dataset(self):
-        # Group indices by dataset_name
         dataset_indices = {}
         for idx, item in enumerate(self.data_source):
             dataset_name = item['dataset_name']
@@ -23,24 +26,23 @@ class PercBatchSampler(Sampler):
     def _precompute_batches(self):
         dataset_indices = self._group_indices_by_dataset()
         samples_per_dataset = {
-            name: int(round(self.batch_size * perc))
+            name: int(round(self.adjusted_batch_size * perc / self.num_gpus))
             for name, perc in self.dataset_percentages.items()
-            if name in dataset_indices  # Ensure dataset exists
+            if name in dataset_indices
         }
 
-        # Adjust samples per dataset if total is less than batch_size
-        diff = self.batch_size - sum(samples_per_dataset.values())
-        if diff > 0:
-            samples_per_dataset[next(iter(samples_per_dataset))] += diff
+        # Adjust for proper distribution across GPUs
+        for name, count in samples_per_dataset.items():
+            if count % self.num_gpus != 0:
+                samples_per_dataset[name] += self.num_gpus - (count % self.num_gpus)
 
-        # Cycle through datasets if necessary
         dataset_cycles = {
             name: cycle(indices)
             for name, indices in dataset_indices.items()
         }
 
         total_items = sum(len(indices) for indices in dataset_indices.values())
-        total_batches = math.ceil(total_items / self.batch_size)
+        total_batches = math.ceil(total_items / self.adjusted_batch_size)
         batches = []
 
         for _ in range(total_batches):
@@ -52,9 +54,14 @@ class PercBatchSampler(Sampler):
         return batches
 
     def __iter__(self):
-        np.random.shuffle(self.batches)  # Shuffle batches for each epoch
+        np.random.shuffle(self.batches)
         for batch in self.batches:
             yield batch
 
     def __len__(self):
         return len(self.batches)
+
+# Using the sampler in DataLoader
+# sampler = PercBatchSampler(data_source, batch_size, dataset_percentages, num_gpus=4)
+# data_loader = DataLoader(dataset, batch_sampler=sampler)
+

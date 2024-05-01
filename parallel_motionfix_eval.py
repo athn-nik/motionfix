@@ -108,6 +108,8 @@ if __name__ == "__main__":
         script = 'hml3d_evaluate'
     guidances = get_guidances()
     parser = argparse.ArgumentParser()
+    if datasets == 'bodilex':
+        bid_for_data = 2000
     cmd_train = ['python', 'cluster/single_run.py',
                 '--folder', 'FOLDER',
                 '--mode', mode,

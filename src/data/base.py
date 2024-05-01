@@ -53,7 +53,8 @@ class BASEDataModule(pl.LightningDataModule):
             from src.data.sampling.custom_batch_sampler import PercBatchSampler
             ratio_batch_sampler = PercBatchSampler(data_source=self.dataset['train'],
                                                    batch_size=self.batch_size,
-                                                   dataset_percentages=self.ds_perc)
+                                                   dataset_percentages=self.ds_perc,
+                                                   num_gpus=4)
             del self.dataloader_options['batch_size']
             return DataLoader(self.dataset['train'],
                               batch_sampler=ratio_batch_sampler,
@@ -68,7 +69,8 @@ class BASEDataModule(pl.LightningDataModule):
             from src.data.sampling.custom_batch_sampler import PercBatchSampler
             ratio_batch_sampler = PercBatchSampler(data_source=self.dataset['train'],
                                                    batch_size=self.batch_size,
-                                                   dataset_percentages=self.ds_perc)
+                                                   dataset_percentages=self.ds_perc,
+                                                   num_gpus=4)
             if 'batch_size' in self.dataloader_options:
                 del self.dataloader_options['batch_size']
             return DataLoader(self.dataset['train'],

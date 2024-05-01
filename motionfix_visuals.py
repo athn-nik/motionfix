@@ -287,7 +287,7 @@ def render_vids(newcfg: DictConfig) -> None:
     aitrenderer = HeadlessRenderer()
     import wandb
     def save_png
-    wandb.init(project="motionfix-visuals", job_type="evaluate",
+    wandb.init(project="renders-parallel", job_type="evaluate",
                name=log_name, dir=output_path)
 
     #############################################################

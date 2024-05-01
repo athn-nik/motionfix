@@ -165,12 +165,14 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     if int(cfg.devices) > 1:
         cfg.trainer.strategy = "ddp_find_unused_parameters_true"
         # cfg.trainer.strategy = "ddp"
+        
         logger.info("Force ddp strategy for more than one gpu.")
     else:
         cfg.trainer.strategy = "auto"
     logger.info(f"Training on: {cfg.devices} GPUS using {cfg.trainer.strategy} strategy.")
+    # trainer = Trainer(max_epochs=10, gpus=4, use_distributed_sampler=False)
     trainer = pl.Trainer(**OmegaConf.to_container(cfg.trainer, resolve=True),
-                         devices=cfg.devices, logger=train_logger,
+                         devices=cfg.devices, logger=train_logger, use_distributed_sampler=False,
                          callbacks=callbacks)
     logger.info("Trainer initialized")
 

@@ -114,6 +114,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
             run_id = experiment["run_id"]
             extra_args = experiment["args"]
             no_gpus = experiment["gpus"]
+            # import ipdb;ipdb.set_trace()
             sub_file = SUBMISSION_TEMPLATE
             sub_file = sub_file.replace('EXPMODE', mode)
             sub_file = sub_file.replace('DESCRIPTION', f'TRAIN_{run_id}')
@@ -121,14 +122,19 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
                 strategy = 'ddp'
             else:
                 strategy = 'auto'
-            bash = 'export HYDRA_FULL_ERROR=1 export PYTHONFAULTHANDLER=1\nexport PYTHONUNBUFFERED=1\nexport PATH=$PATH\n' \
+            # if no_gpus > 1:
+            #    extra_str_gpu = 'export NCCL_P2P_DISABLE=1\n'
+            #    sub_file = sub_file.replace('request_memory = 128000','request_memory = 256000')
+            #else:
+            extra_str_gpu = ''
+            bash = f'export HYDRA_FULL_ERROR=1 export PYTHONFAULTHANDLER=1\nexport PYTHONUNBUFFERED=1\nexport PATH=$PATH\n{extra_str_gpu}' \
                    'export PATH=/home/nathanasiou/apps/imagemagick/bin:$PATH\n' \
                    'export LD_LIBRARY_PATH=/home/nathanasiou/apps/imagemagick/lib:$LD_LIBRARY_PATH\n' \
                    f'exec {sys.executable} train.py ' \
                    f'run_id={run_id} trainer.strategy={strategy} devices={no_gpus} machine.num_workers={int(cpus/2)} {extra_args}'
             shell_dir.mkdir(parents=True, exist_ok=True)
             run_cmd_path = shell_dir / (run_id + '_' + mode + ID_EXP +".sh")
-
+            import ipdb;ipdb.set_trace()
             with open(run_cmd_path, 'w') as f:
                 f.write(bash)
             os.chmod(run_cmd_path, stat.S_IRWXU)
@@ -160,6 +166,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
             no_gpus = experiment["gpus"]
             folder = experiment["folder"]
             script = experiment["script"]
+
             run_id = folder.split('/')[-2:]
             run_id = '__'.join(run_id)
             sub_file = SUBMISSION_TEMPLATE
@@ -178,12 +185,19 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
             os.chmod(run_cmd_path, stat.S_IRWXU)
 
             log = f'{mode}/{run_id}'
-            for x, y in [("NO_GPUS", str(no_gpus)), ("GPUS_REQS", gpus_requirements),
+            if script == 'motionfix_visuals':
+                for x, y in [("CNR_LOG_ID", f'{CONDOR_FD}/{log}/logs'),
+                              ("CPUS", str(cpus)),
+                              ("RUN_SCRIPT", os.fspath(run_cmd_path))]:
+                    sub_file = sub_file.replace(x, y)
+                sub_file = sub_file.replace('request_gpus=NO_GPUS\n', '')
+                sub_file = sub_file.replace('requirements=GPUS_REQS\n', '')
+            else:
+                for x, y in [("NO_GPUS", str(no_gpus)), ("GPUS_REQS", gpus_requirements),
                          ("CNR_LOG_ID", f'{CONDOR_FD}/{log}/logs'),
                          ("CPUS", str(cpus)),
                          ("RUN_SCRIPT", os.fspath(run_cmd_path))]:
-                sub_file = sub_file.replace(x, y)
-
+                    sub_file = sub_file.replace(x, y)
             submission_path = condor_dir / log / (run_id + ID_EXP + ".sub")
             logdir_condor = condor_dir / log / 'logs'
             logdir_condor.mkdir(parents=True, exist_ok=True)
