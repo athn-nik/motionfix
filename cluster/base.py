@@ -37,7 +37,7 @@ SUBMISSION_TEMPLATE = f'Description=DESCRIPTION\n' \
                        'request_cpus=CPUS\n' \
                        'request_gpus=NO_GPUS\n' \
                        '+BypassLXCfs="true"\n' \
-                       'requirements=GPUS_REQS && UtsnameNodename =!= "g164"\n' \
+                       'requirements=GPUS_REQS\n' \
                        'queue 1'
 
 
@@ -134,7 +134,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
                    f'run_id={run_id} trainer.strategy={strategy} devices={no_gpus} machine.num_workers={int(cpus/2)} {extra_args}'
             shell_dir.mkdir(parents=True, exist_ok=True)
             run_cmd_path = shell_dir / (run_id + '_' + mode + ID_EXP +".sh")
-            import ipdb;ipdb.set_trace()
+            # import ipdb;ipdb.set_trace()
             with open(run_cmd_path, 'w') as f:
                 f.write(bash)
             os.chmod(run_cmd_path, stat.S_IRWXU)
@@ -198,6 +198,7 @@ def launch_task_on_cluster(configs: List[Dict[str, str]],
                          ("CPUS", str(cpus)),
                          ("RUN_SCRIPT", os.fspath(run_cmd_path))]:
                     sub_file = sub_file.replace(x, y)
+            # import ipdb;ipdb.set_trace()
             submission_path = condor_dir / log / (run_id + ID_EXP + ".sub")
             logdir_condor = condor_dir / log / 'logs'
             logdir_condor.mkdir(parents=True, exist_ok=True)

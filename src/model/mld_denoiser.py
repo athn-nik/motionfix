@@ -238,7 +238,15 @@ class MldDenoiser(nn.Module):
                                                      dim=0)
             # make it BxSxfeatures
             if inpaint_dict is not None:
+                import torch.nn.functional as F
                 source_mot = inpaint_dict['start_motion'].permute(1, 0, 2)
+                if source_mot.shape[1] >= uncond_eps.shape[1]:
+                    source_mot = source_mot[:, :uncond_eps.shape[1]]
+                else:
+                    pad = uncond_eps.shape[1] - source_mot.shape[1]
+                    # Pad the tensor on the second dimension (time)
+                    source_mot = F.pad(source_mot, (0, 0, 0, pad), 'constant', 0)
+
                 mot_len = source_mot.shape[1]
                 # concat mask for all the frames
                 mask_src_parts = inpaint_dict['mask'].unsqueeze(1).repeat(1,

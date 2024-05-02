@@ -10,12 +10,18 @@ def run(cmd):
     # print(f"Executing: {' '.join(cmd)}")
     x = subprocess.run(cmd)
 
-def get_guidances(s=1.0, e=5, no=5, t2m=False):
+def get_guidances(s=1.0, e=5, no=5, t2m=False, inpaint=False):
     import itertools
     import numpy as np
     if t2m:
         gd_text = np.linspace(s, e, no, endpoint=True)
         all_combs = [round(c,2) for c in list(gd_text)]
+    elif inpaint:
+        gd_motion = [1.0]
+        gd_text_motion = np.linspace(s, e, no, endpoint=True)
+
+        all_combinations = list(itertools.product(gd_motion, gd_text_motion))
+        all_combs = [(round(c[0],2), round(c[1],2)) for c in all_combinations]
     else:
         gd_motion = np.linspace(s, e, no, endpoint=True)
         gd_text_motion = np.linspace(s, e, no, endpoint=True)
@@ -28,7 +34,7 @@ def get_guidances(s=1.0, e=5, no=5, t2m=False):
 
 def main_loop(command, exp_paths,
               guidance_vals,
-              init_from, data):
+              init_from, data, inpaint=False):
 
     cmd_no=0
     cmd_sample = command
@@ -59,17 +65,26 @@ def main_loop(command, exp_paths,
                                  f"{arg0}={gd[0]}",
                                  f"data={data_type}"])
         else:
-            list_of_args = ' '.join([f"init_from={in_lat}",
-                                 f"ckpt_name={ckt_name}",
-                                 f"{arg1}={gd[1]}",
-                                 f"{arg0}={gd[0]}",
-                                 f"data={data_type}"])
+            if inpaint:
+                list_of_args = ' '.join([f"init_from={in_lat}",
+                                     f"ckpt_name={ckt_name}",
+                                     f"{arg1}={gd[1]}",
+                                     f"{arg0}={gd[0]}",
+                                     f"data={data_type}",
+                                     "inpaint=true"])
+            else:
+                list_of_args = ' '.join([f"init_from={in_lat}",
+                                     f"ckpt_name={ckt_name}",
+                                     f"{arg1}={gd[1]}",
+                                     f"{arg0}={gd[0]}",
+                                     f"data={data_type}"])
+        
         cur_cmd.extend([list_of_args])
-         
-        run(cur_cmd)
+        
+        #run(cur_cmd)
         time.sleep(0.01)
         cmd_no += 1
-        # import ipdb;ipdb.set_trace()
+        import ipdb;ipdb.set_trace()
 
 if __name__ == "__main__":
     from pathlib import Path
@@ -82,6 +97,8 @@ if __name__ == "__main__":
                         help='dataset')
     parser.add_argument('--bid', required=False, default=30, type=int,
                         help='bid money for cluster')
+    parser.add_argument('--inpaint', action='store_true',
+                    help='Increase output verbosity')
     parser.add_argument(
             "--runs",
             nargs="*",  # expects arguments
@@ -106,16 +123,23 @@ if __name__ == "__main__":
         script = 'motionfix_evaluate'
     else:
         script = 'hml3d_evaluate'
-    guidances = get_guidances()
+    # import ipdb;ipdb.set_trace()
+    if args.inpaint:
+        guidances = get_guidances(inpaint=True)
+    else:
+        guidances = get_guidances()
+    # import ipdb;ipdb.set_trace()
     parser = argparse.ArgumentParser()
     if datasets == 'bodilex':
         bid_for_data = 2000
+    else:
+        bid_for_data = 50
     cmd_train = ['python', 'cluster/single_run.py',
                 '--folder', 'FOLDER',
                 '--mode', mode,
                 '--prog', script,
-                '--bid', '20',
+                '--bid', str(bid_for_data),
                 '--extras']
     init_from = ['noise']
     data = [datasets]
-    main_loop(cmd_train, exp_paths, guidances, init_from,data)
+    main_loop(cmd_train, exp_paths, guidances, init_from, data, inpaint=args.inpaint)

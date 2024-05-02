@@ -205,7 +205,6 @@ def render_vids(newcfg: DictConfig) -> None:
         mode_cond = 'text_cond'
     else:
         mode_cond = 'full_cond'
-
     logger.info(f'Evaluation Set length:{len(test_dataset)}')
     with torch.no_grad():
         for guid_text, guid_motion in guidances_mix:

@@ -286,7 +286,6 @@ def render_vids(newcfg: DictConfig) -> None:
                                   'z_up': True})
     aitrenderer = HeadlessRenderer()
     import wandb
-    def save_png
     wandb.init(project="renders-parallel", job_type="evaluate",
                name=log_name, dir=output_path)
 
@@ -354,7 +353,7 @@ def render_vids(newcfg: DictConfig) -> None:
 
         batch_to_use = len(ktokeep)
     elif cfg.data.dataname == 'bodilex':
-        counter_short = 24
+        counter_short = 5
         from src.utils.motionfix_utils import test_subset_amt
         test_dataset_subset = [elem for elem in test_dataset
                          if elem['id'] in test_subset_amt[:1]]
@@ -393,7 +392,13 @@ def render_vids(newcfg: DictConfig) -> None:
             cur_guid_comb = Path(path_to_fd).name
             all_keys = read_json(f'{path_to_fd}/all_candkeyids.json')
             batch_keys = read_json(f'{path_to_fd}/guo_candkeyids.json')
-            keys_to_rend = list(set(all_keys + batch_keys + extra_keys))
+            num_samples_all = min(len(all_keys), 10)
+            num_samples_batch = min(len(batch_keys), 10)
+            import random
+            cur_all_keys = random.sample(all_keys, num_samples_all)
+            cur_batch_keys = random.sample(batch_keys, num_samples_batch)
+            keys_to_rend = list(set(cur_all_keys + cur_batch_keys + extra_keys))
+            logger.info(f"There will be {len(keys_to_rend)} keys to be rendered.")
             for batch in tqdm(testloader):
                 idx_to_rend = [i for i, x in enumerate(batch['id']) 
                                if x in keys_to_rend]

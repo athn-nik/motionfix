@@ -19,7 +19,7 @@ load_splits:
 - "test"
 
 # Machine
-batch_size: 256 # ${machine.batch_size}
+batch_size: ${machine.batch_size}
 num_workers: ${machine.num_workers}
 rot_repr: '6d'
 preproc:
