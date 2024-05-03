@@ -81,10 +81,10 @@ def main_loop(command, exp_paths,
         
         cur_cmd.extend([list_of_args])
         
-        #run(cur_cmd)
+        run(cur_cmd)
         time.sleep(0.01)
         cmd_no += 1
-        import ipdb;ipdb.set_trace()
+        # import ipdb;ipdb.set_trace()
 
 if __name__ == "__main__":
     from pathlib import Path

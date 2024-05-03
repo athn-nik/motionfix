@@ -242,7 +242,7 @@ def render_vids(newcfg: DictConfig) -> None:
         use_linear_guid = True
         gd_str = 'lingd_'
     else:
-        use_linear_guid = False
+        use_linear_geuid = False
         gd_str = ''
 
     # cfg.model.infer_scheduler = newcfg.model.infer_scheduler
@@ -256,7 +256,7 @@ def render_vids(newcfg: DictConfig) -> None:
 
 
     fd_name = f'steps_{num_infer_steps}'
-    if cfg.inpaint:
+    if 'inpaint' in str(Path(newcfg.folder).name):
         log_name = f'{gd_str}{cfg.data.dataname}_steps-{num_infer_steps}_{cfg.init_from}_{cfg.ckpt_name}_inpaint_bsl'
     else:
         log_name = f'{gd_str}{cfg.data.dataname}_steps-{num_infer_steps}_{cfg.init_from}_{cfg.ckpt_name}'

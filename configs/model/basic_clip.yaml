@@ -10,7 +10,7 @@ droupout: 0.1
 activation: "gelu"
 render_vids_every_n_epochs: 100
 num_vids_to_render: 2
-lr_scheduler: cosine # null # reduceonplateau, steplr
+lr_scheduler: null # cosine # null # reduceonplateau, steplr
 
 # normalization
 statistics_path: ${statistics_path}
