@@ -4,7 +4,6 @@ import hydra
 import joblib
 from omegaconf import DictConfig
 from omegaconf import OmegaConf
-from sympy import O
 from src import data
 from src.render.mesh_viz import render_motion
 from torch import Tensor
@@ -156,7 +155,7 @@ def render_vids(newcfg: DictConfig) -> None:
                 f'{model.diff_params}')
 
     if IS_LOCAL_DEBUG:
-        base_p_lcl = '/home/nathanasiou/Desktop/local-dedug/data/amass_bodilex_' 
+        base_p_lcl = '/home/nathanasiou/Desktop/local-debug/data/amass_bodilex_' 
         cfg.data.datapath = f'{base_p_lcl}v11.pth.tar'
 
     data_module = instantiate(cfg.data, amt_only=True,
