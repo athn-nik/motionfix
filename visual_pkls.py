@@ -11,8 +11,10 @@ def get_file_list(directory, pattern):
     return files
 
 def load_convert(path, lofs, gt_path, gt_dict, tgt2tgt=False):
+    
+    import ipdb; ipdb.set_trace()
     if path is not None:
-        path_for_renders = f'{path}/for_render'
+        path_for_renders = f'fast-cluster/data/motion-editing-project/for_render'
     else:
         path_for_renders = 'fast-cluster/data/motion-editing-project/gt_renders'
     if 'sinc_synth' in path:

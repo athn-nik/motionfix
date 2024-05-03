@@ -892,7 +892,7 @@ class MD(BaseModel):
 
         cond_emb_motion = None
         cond_motion_mask = None
-        if self.motion_condition == 'source' and motions_cond is not None:
+        if self.motion_condition == 'source':
             bsz, seqlen_src = mask_source.shape
             if condition_mode == 'full_cond' or condition_mode == 'mot_cond' :
                 if self.motion_cond_encoder is not None:
