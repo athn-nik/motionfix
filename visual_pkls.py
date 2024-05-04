@@ -10,25 +10,54 @@ def get_file_list(directory, pattern):
     files = glob.glob(f'{directory}/{pattern}')
     return files
 
+
+def find_gt(search_value):
+    """
+    Function to find the key corresponding to a given value in a dictionary where values are lists.
+    
+    Parameters:
+        search_dict (dict): The dictionary to search through.
+        search_value (str): The value to search for in the dictionary's value lists.
+    
+    Returns:
+        str: The key corresponding to the found value, or None if the value is not found.
+    """
+    ss_seq2key = '/fast/nathanasiou/logs/blender_motionfix/info/sinc_synth_seq2keys.json'
+    search_dict = read_json(ss_seq2key)
+    # Iterate over each key and list of values in the dictionary
+    for key, values in search_dict.items():
+        # Check if the search_value is in the current list of values
+        if search_value in values:
+            return key  # Return the key if the value is found
+    return None  # Return None if the value is not found in any list
+
+
+
 def load_convert(path, lofs, gt_path, gt_dict, tgt2tgt=False):
     
-    import ipdb; ipdb.set_trace()
+    # import ipdb; ipdb.set_trace()
     if path is not None:
-        path_for_renders = f'fast-cluster/data/motion-editing-project/for_render'
+        path_for_renders = f'fast-cluster/logs/blender_motionfix/results_render/pkls'
+        pts_gen = '/'.join(path.split('/')[2:])
+        path_for_renders = f'{path_for_renders}/{pts_gen}'
+        os.makedirs(path_for_renders, exist_ok=True)
     else:
-        path_for_renders = 'fast-cluster/data/motion-editing-project/gt_renders'
-    if 'sinc_synth' in path:
+        path_for_renders = 'fast-cluster/logs/blender_motionfix/gt_renders'
+    if 'sinc_synth' in gt_path:
         amt = False
+        # path_for_renders = 'fast-cluster/logs/blender_motionfix/gt_renders/sinc_synth'
     else:
         amt = True
+        # path_for_renders = 'fast-cluster/logs/blender_motionfix/gt_renders/bodilex'
 
-    os.makedirs(f'{path}/for_render', exist_ok=True)
+    # os.makedirs(f'{path}/for_render', exist_ok=True)
     dict_to_save = {
                     'motion_a': [], 
                     'motion_b': [], 
                     'stamps_a': [], 
                     'stamps_b': []
                    }
+    from src.tools.transforms3d import transform_body_pose
     if path is not None:
         gt_dict_map = extract_gt_pairs(gt_dict, gt_path, 
                                        return_dict=True)
@@ -37,35 +66,36 @@ def load_convert(path, lofs, gt_path, gt_dict, tgt2tgt=False):
             sample_gt = f'{gt_path}/{fname}.pth.tar'
             sample_npy_path = f'{path}/{fname}.npy'
             sample_pth_path = f'{path_for_renders}/{fname}.pth.tar'
-
+            # import ipdb;ipdb.set_trace() 
             if os.path.exists(sample_npy_path):
                 gen_motion = np.load(sample_npy_path,
                                     allow_pickle=True).item()['pose']
                 gen_motion = torch.from_numpy(gen_motion)
                 trans = gen_motion[..., :3]
-                global_orient_6d = gen_motion[..., 3:9]
-                body_pose_6d = gen_motion[..., 9:]
+                body_pose = transform_body_pose(gen_motion[..., 3:], f"6d->aa")
+                global_orient_6d = body_pose[..., :3]
+                body_pose_6d = body_pose[..., 3:]
                 cur_rots = torch.cat([global_orient_6d, body_pose_6d],
                                     dim=-1)
                 sample = {'rots': cur_rots, 
                           'trans': trans}
                 if not tgt2tgt:
-                    dict_to_save['motion_b'].append(sample_pth_path)
+                    dict_to_save['motion_b'].append(sample_pth_path.replace('.pth.tar',''))
                     dict_to_save['stamps_b'].append({'begin': 0,
                                                      'end': len(gen_motion)})
-
-                    dict_to_save['motion_a'].append(gt_dict_map[fname]['motion_a'])
+                    
+                    dict_to_save['motion_a'].append(gt_dict_map[fname]['motion_a'].replace('.pth.tar',''))
                     dict_to_save['stamps_a'].append({'begin': gt_dict_map[fname]['sta_a']['begin'],
                                                      'end': gt_dict_map[fname]['sta_a']['end']})
                 else:
-                    dict_to_save['motion_b'].append(sample_pth_path)
+                    dict_to_save['motion_b'].append(sample_pth_path.replace('.pth.tar',''))
                     dict_to_save['stamps_b'].append({'begin': 0,
                                                      'end': len(gen_motion)})
 
-                    dict_to_save['motion_a'].append(gt_dict_map[fname]['motion_b'])
+                    dict_to_save['motion_a'].append(gt_dict_map[fname]['motion_b'].replace('.pth.tar',''))
                     dict_to_save['stamps_a'].append({'begin': gt_dict_map[fname]['sta_b']['begin'],
                                                      'end': gt_dict_map[fname]['sta_b']['end']})
-
+                # import ipdb;ipdb.set_trace()
                 joblib.dump(sample, sample_pth_path)
 
     else:
@@ -76,12 +106,34 @@ def load_convert(path, lofs, gt_path, gt_dict, tgt2tgt=False):
         dict_to_save['stamps_b'] = st_tgt
         dict_to_save['motion_a'] = k_src
         dict_to_save['stamps_a'] = st_src
-    import ipdb; ipdb.set_trace()
-    write_json(dict_to_save, f'{path_for_renders}/selected.json')
+    # import ipdb; ipdb.set_trace()
+    if tgt2tgt:
+        extra_str = 't2t'
+    else:
+        extra_str = 's2t'
+    print(f'The path that you can grab a json from and run the renderings is in\n{path_for_renders}/selected_{extra_str}.json')
+    # import ipdb; ipdb.set_trace()
+    write_json(dict_to_save, f'{path_for_renders}/selected_{extra_str}.json')
     return dict_to_save
 
 
 def extract_gt_pairs(dict_to_loop, gt_path, return_dict=False):
+    import os
+    
+    if 'sinc_synth' in gt_path:
+        path_to_d = '/fast/nathanasiou/logs/blender_motionfix/info/sinc_synth.json'
+        
+        if os.path.exists(path_to_d):
+            print("GT Data file already exists!")
+            dictio = read_json(path_to_d)
+            return dictio
+    else:
+        path_to_d = '/fast/nathanasiou/logs/blender_motionfix/info/bodilex.json'
+        if os.path.exists(path_to_d):
+            print("GT Data file already exists!")
+            dictio = read_json(path_to_d)
+            return dictio
+
     sta_src = []
     sta_tgt = []
     key_src_lst = []
@@ -95,11 +147,18 @@ def extract_gt_pairs(dict_to_loop, gt_path, return_dict=False):
         if amt:
             key_src = v['motion_source']
             key_tgt = v['motion_target']
-            t_src = [int(s*30) for s in  v['timestamp_source']]
-            t_tgt = [int(s*30) for s in  v['timestamp_target']]
-            t_src_d = {'begin': t_src[0], 'end': t_src[1]}
-            t_tgt_d = {'begin': t_tgt[0], 'end': t_tgt[1]}
+            
+            kdur_src = v['motion_a'].split('/')[-1].replace('.mp4','')
+            dur_src = kdur_src.split('_')[-2:]
 
+            kdur_tgt = v['motion_b'].split('/')[-1].replace('.mp4','')
+            dur_tgt = kdur_tgt.split('_')[-2:]
+            assert int(dur_src[0]) < int(dur_src[1])
+            assert int(dur_tgt[0]) < int(dur_tgt[1])
+            t_src_d = {'begin': int(dur_src[0]), 'end': int(dur_src[1])}
+            t_tgt_d = {'begin': int(dur_tgt[0]), 'end': int(dur_tgt[1])}
+            
+            # import ipdb;ipdb.set_trace()
         else:
             key_src = v['source_babel_key']
             key_tgt = v['target_babel_key']
@@ -127,13 +186,20 @@ def extract_gt_pairs(dict_to_loop, gt_path, return_dict=False):
                      'sta_a': t_src_d,
                      'sta_b': t_tgt_d}
 
-        # import ipdb; ipdb.set_trace()
     assert len(key_src_lst) == len(key_tgt_lst) == len(sta_src) == len(sta_tgt)
+    if 'sinc_synth' in gt_path:
+        path_to_d = '/fast/nathanasiou/logs/blender_motionfix/info/sinc_synth.json'
+        write_json(dictio, path_to_d)
+        return dictio
+    else:
+        path_to_d = '/fast/nathanasiou/logs/blender_motionfix/info/bodilex.json'
+        write_json(dictio, path_to_d)
+        return dictio
     if return_dict:
         return dictio
     return key_src_lst, key_tgt_lst, sta_src, sta_tgt
 
-def main_loop(path, gt_path, gt_dict):
+def main_loop(path, gt_path, gt_dict, mode):
     from pathlib import Path
     if path is not None: # just the GT
         list_of_cands = get_file_list(path, '*candkeyids.json')
@@ -143,9 +209,11 @@ def main_loop(path, gt_path, gt_dict):
         cand_keys = list(set(cand_keys))
     else:
         cand_keys = None
-    load_convert(path, cand_keys, gt_path, gt_dict)
-
-    import ipdb;ipdb.set_trace()
+    assert mode in ['t2t', 's2t']
+    tgt2tgt = False if mode =='s2t' else True
+    load_convert(path, cand_keys, gt_path, gt_dict, tgt2tgt)
+    
+    # import ipdb;ipdb.set_trace()
 
 
 if __name__ == "__main__":
@@ -163,9 +231,11 @@ if __name__ == "__main__":
                         help='dataset', default=None)
     parser.add_argument('--ds', required=True, type=str,
                         help='dataset')
-
+    parser.add_argument('--mode', required=True, type=str,
+                        help='dataset')
     args = parser.parse_args()
     path = args.path
+    mode = args.mode
     dataset = args.ds
     if dataset == 'bodilex':
         gt_dict = read_json(path_amt_dict)
@@ -175,7 +245,7 @@ if __name__ == "__main__":
         gt_path = path_sinc
     else:
         raise ValueError('Dataset not supported')
-    main_loop(path, gt_path, gt_dict)
+    main_loop(path, gt_path, gt_dict, mode)
 #  python visual_pkls.py --path experiments/clean-motionfix/bodilex/bs64_100ts_clip77/steps_1000_bodilex_noise_last/ld_txt-1.0_ld_mot-1.5 --ds bodilex
 
 # 'all_candkeyids.json'
