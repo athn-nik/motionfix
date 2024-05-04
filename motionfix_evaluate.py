@@ -301,13 +301,15 @@ def render_vids(newcfg: DictConfig) -> None:
                 gen_mo = model.diffout2motion(diffout)
                 from src.tools.transforms3d import transform_body_pose
                 for i in range(gen_mo.shape[0]):
-                    dict_to_save = {'pose': gen_mo[i].cpu().numpy() }
+                    dict_to_save = {'pose': gen_mo[i, 
+                                                   :target_lens[i]].cpu().numpy() 
+                                    }
                     np.save(cur_outpath / f"{str(batch['id'][i]).zfill(6)}.npy",
                             dict_to_save)
                     # np.load(output_path / f"{str(batch['id'][i]).zfill(6)}.npy")
                 # output_path = Path('/home/nathanasiou/Desktop/conditional_action_gen/modilex')
         logger.info(f"Sample script. The outputs are stored in:{cur_outpath}")
-    
+
 if __name__ == '__main__':
 
     _render_vids()

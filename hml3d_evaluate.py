@@ -264,7 +264,9 @@ def hml3d_sample(newcfg: DictConfig) -> None:
                 gen_mo = model.diffout2motion(diffout)
                 from src.tools.transforms3d import transform_body_pose
                 for i in range(gen_mo.shape[0]):
-                    dict_to_save = {'pose': gen_mo[i].cpu().numpy() }
+                    dict_to_save = {'pose': gen_mo[i,
+                                                   :target_lens[i]].cpu().numpy() 
+                                    }
                     np.save(cur_outpath / f"{str(batch['id'][i]).zfill(6)}.npy",
                             dict_to_save)
                     # np.load(output_path / f"{str(batch['id'][i]).zfill(6)}.npy")
