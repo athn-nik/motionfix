@@ -4,6 +4,7 @@ import numpy as np
 import joblib
 import torch
 from tqdm import tqdm
+import src.launch.prepare  # noqa
 
 def get_file_list(directory, pattern):
     import glob
@@ -119,16 +120,24 @@ def load_convert(path, lofs, gt_path, gt_dict, tgt2tgt=False):
 
 def extract_gt_pairs(dict_to_loop, gt_path, return_dict=False):
     import os
-    
+
+    IS_LOCAL_DEBUG = src.launch.prepare.get_local_debug()
     if 'sinc_synth' in gt_path:
-        path_to_d = '/fast/nathanasiou/logs/blender_motionfix/info/sinc_synth.json'
+        if IS_LOCAL_DEBUG:
+            path_to_d = 'fast-cluster/logs/blender_motionfix/info/sinc_synth.json'
+        else:
+            path_to_d = '/fast/nathanasiou/logs/blender_motionfix/info/sinc_synth.json'
         
         if os.path.exists(path_to_d):
             print("GT Data file already exists!")
             dictio = read_json(path_to_d)
             return dictio
     else:
-        path_to_d = '/fast/nathanasiou/logs/blender_motionfix/info/bodilex.json'
+        if IS_LOCAL_DEBUG:
+            path_to_d = 'fast-cluster/logs/blender_motionfix/info/bodilex.json'
+        else:
+            path_to_d = '/fast/nathanasiou/logs/blender_motionfix/info/bodilex.json'
+        
         if os.path.exists(path_to_d):
             print("GT Data file already exists!")
             dictio = read_json(path_to_d)

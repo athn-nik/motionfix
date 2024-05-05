@@ -91,7 +91,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
         renderer=None
     ######## DATA LOADING #########
     if IS_LOCAL_DEBUG:
-        base_p_lcl = '/home/nathanasiou/Desktop/local-dedug/data/amass_bodilex_' 
+        base_p_lcl = '/home/nathanasiou/Desktop/local-debug/data/amass_bodilex_' 
         cfg.data.datapath = f'{base_p_lcl}v11.pth.tar'
 
     logger.info(f'Loading data module: {cfg.data.dataname}')
