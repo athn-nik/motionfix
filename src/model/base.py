@@ -518,7 +518,7 @@ class BaseModel(LightningModule):
             # optim_dict['optimizer'] = optimizer
             scheduler = CosineAnnealingLRWarmup(optimizer, 
                                                 T_max=self.trainer.max_epochs, 
-                                                T_warmup=3)
+                                                T_warmup=100)
 
             optim_dict = {"optimizer": optimizer,
                         "lr_scheduler": scheduler}
