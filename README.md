@@ -33,12 +33,40 @@
 |------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
 | [![PaperVideo](https://img.youtube.com/vi/vidid/0.jpg)](https://www.youtube.com/) | -->
 
+## Evaluation of Model
+
+### Step 1: Extract the samples
+
+```bash
+python parallel_motionfix_eval.py --mode eval --runs experiments/clean-motionfix/bodilex_hml3d/50-50_bs128_300ts_clip77_with_zeros_source/ --ds bodilex --inpaint
+```
+
+- inpaint: if you should use inpaint or not
+- ds: bodilex / sinc_synth
+- runs: path to the foler `exp_name`
+- mode: eval (don't ask why).
+
+### Step 2: Compute the metrics
+
+```bash
+python parallel_evaluation.py --ds bodilex --extras 'samples_path=experiments/kinedit/bodilex/lr1-4_300ts_bs128_wo_sched/steps_300_bodilex_noise_last' --set val
+```
+
+_Quotes_ : `'` quotes are needed!
+
+- set: val/test/all --> defaults is `test`
+- ds: bodilex/sinc_synth
+- extras: the path to the experiment you are evaluating for.
+
 ## Extracting Visuals
 
 ``` bash
 python visual_pkls.py --path path/to/ --ds bodilex --mode s2t
 ```
-
+* start: path to samples should look like
+    - `exp_name/steps_XX_DS_noise_last/ld_txt-YY_ld_mot-WW`
+* ds: bodilex / sinc_synth
+* mode: source2target or target2target (based on T2T score what to extract for renders)
 
 ``` bash
 python render_motions_bodilex.py --path_to_json /path/a.json 
@@ -46,6 +74,7 @@ python render_motions_bodilex.py --path_to_json /path/a.json
 --outdir debug-colors2 
 --mode sequence --ca red --cb green
 ```
+* path_to_json: path returned from previous script
 * start: start point of the list
 * upto: endpoint
 * outdir: where to put the output file
