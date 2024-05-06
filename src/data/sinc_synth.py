@@ -4,7 +4,7 @@ from glob import glob
 from os import listdir
 from os.path import exists, join
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 import joblib
 import numpy as np
 from omegaconf import DictConfig
@@ -41,12 +41,12 @@ class SincSynthDataset(Dataset):
                  stats_file: str, norm_type: str,
                  smplh_path: str = None, rot_repr: str = "6d",
                  load_feats: List[str] = None,
-                 do_augmentations=False):
+                 text_augment_db: Dict[str, List[str]] = None):
         self.data = data
         self.norm_type = norm_type
         self.rot_repr = rot_repr
         self.load_feats = load_feats
-        self.do_augmentations = do_augmentations
+        self.text_augment_db = text_augment_db
         self.name = "sinc_synth"
         
         # self.seq_parser = SequenceParserAmass(self.cfg)
@@ -163,7 +163,14 @@ class SincSynthDataset(Dataset):
         # add id fiels in order to turn the dict into a list without loosing it
         # random.seed(self.preproc.split_seed) 
         # calculate feature statistics
-        splits = read_json(f'{os.path.dirname(datapath)}/splits.json')
+        import src.launch.prepare  # noqa
+        IS_LOCAL_DEBUG = src.launch.prepare.get_local_debug()
+        if IS_LOCAL_DEBUG:
+            splits = read_json(f'{os.path.dirname(datapath)}/splits_sinc.json')
+        else:
+            splits = read_json(f'{os.path.dirname(datapath)}/splits.json')
+        id_split_dict = {}
+
         id_split_dict = {}
         data_ids = list(data_dict.keys())
         for id_sample in data_ids:
@@ -437,7 +444,19 @@ class SincSynthDataset(Dataset):
         data_dict = {**data_dict_source, **data_dict_target, **meta_data_dict}
         data_dict['length_source'] = len(data_dict['body_pose_source'])
         data_dict['length_target'] = len(data_dict['body_pose_target'])
-        data_dict['text'] = datum['text']
+        text_idx = 0
+        text_idx = 0
+        if self.text_augment_db is not None:
+            curtxt = datum['text']
+            if self.text_augment_db[curtxt]:
+                text_cands = [curtxt] + self.text_augment_db[curtxt]
+                if datum['split'] == 0:
+                    text_idx = np.random.randint(len(text_cands))
+                data_dict['text'] = text_cands[text_idx]
+            else:
+                data_dict['text'] = datum['text']
+        else:
+            data_dict['text'] = datum['text']
         data_dict['split'] = datum['split']
         data_dict['id'] = datum['id']
         # data_dict['dims'] = self._feat_dims
@@ -487,6 +506,7 @@ class SincSynthDataModule(BASEDataModule):
                  dataname: str = "",
                  rot_repr: str = "6d",
                  proportion: float = 1.0,
+                 text_augment: bool = False,
                  **kwargs):
         super().__init__(batch_size=batch_size,
                          num_workers=num_workers,
@@ -519,6 +539,14 @@ class SincSynthDataModule(BASEDataModule):
         else:
             # takes ~4min to load
             ds_db_path = Path(self.datapath)
+        if text_augment:
+            from src.utils.genutils import extract_data_path
+            dpath = extract_data_path(self.datapath)
+            text_aug_db = read_json(f'{dpath}/text-augmentations/paraphrases_dict.json')
+            log.info(f'...Loaded Text Augmentations')
+        else:
+            text_aug_db = None
+
         # define splits
         # For example
         # from itertools import islice
@@ -620,7 +648,12 @@ class SincSynthDataModule(BASEDataModule):
         ################################################################
         # random.random()  # restore randomness in life (maybe randomness is life)
         # calculate feature statistics
-        splits = read_json(f'{os.path.dirname(self.datapath)}/splits.json')
+        import src.launch.prepare  # noqa
+        IS_LOCAL_DEBUG = src.launch.prepare.get_local_debug()
+        if IS_LOCAL_DEBUG:
+            splits = read_json(f'{os.path.dirname(self.datapath)}/splits_sinc.json')
+        else:
+            splits = read_json(f'{os.path.dirname(self.datapath)}/splits.json')
         id_split_dict = {}
         
         data_ids = list(data_dict.keys())
@@ -644,7 +677,7 @@ class SincSynthDataModule(BASEDataModule):
                                                       self.smpl_p,
                                                       self.rot_repr,
                                                       self.load_feats,
-                                                      do_augmentations=False))
+                                                      ))
         # import ipdb; ipdb.set_trace()
         slice_to = int(proportion * len(data_dict.items()))
 
@@ -662,7 +695,7 @@ class SincSynthDataModule(BASEDataModule):
                         self.smpl_p,
                         self.rot_repr,
                         self.load_feats,
-                        do_augmentations=True), 
+                        text_aug_db), 
            SincSynthDataset([v for k, v in data_dict.items() if id_split_dict[k] == 1],
                         self.preproc.n_body_joints,
                         self.preproc.stats_file,
@@ -670,7 +703,7 @@ class SincSynthDataModule(BASEDataModule):
                         self.smpl_p,
                         self.rot_repr,
                         self.load_feats,
-                        do_augmentations=True), 
+                        ), 
            SincSynthDataset([v for k, v in data_dict.items() if id_split_dict[k] == 2],
                         self.preproc.n_body_joints,
                         self.preproc.stats_file,
@@ -678,7 +711,7 @@ class SincSynthDataModule(BASEDataModule):
                         self.smpl_p,
                         self.rot_repr,
                         self.load_feats,
-                        do_augmentations=False) 
+                        ) 
         )
         for splt in ['train', 'val', 'test']:
             log.info("Set up {} set with {} items."\

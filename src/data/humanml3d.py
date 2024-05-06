@@ -4,7 +4,7 @@ from glob import glob
 from os import listdir
 from os.path import exists, join
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 import joblib
 import numpy as np
 from omegaconf import DictConfig
@@ -44,12 +44,12 @@ class HumanML3DDataset(Dataset):
                  stats_file: str, norm_type: str,
                  smplh_path: str = None, rot_repr: str = "6d",
                  load_feats: List[str] = None,
-                 do_augmentations=False):
+                 text_augment_db: Dict[str, List[str]] = None):
         self.data = data
         self.norm_type = norm_type
         self.rot_repr = rot_repr
         self.load_feats = load_feats
-        self.do_augmentations = do_augmentations
+        self.text_augment_db = text_augment_db
         self.name = "hml3d"
         # self.body_model = smplx.SMPLHLayer(f'{smplh_path}/smplh',
         #                                    model_type='smplh',
@@ -361,11 +361,23 @@ class HumanML3DDataset(Dataset):
                           for feat, method in self._meta_data_get_methods.items()}
         data_dict = {**data_dict_target, **meta_data_dict}
         data_dict['length_target'] = len(data_dict['body_pose_target'])
-
         text_idx = 0
-        if datum['split'] == 0:
-            text_idx = np.random.randint(len(datum['text']))
-        data_dict['text'] = datum['text'][text_idx]
+        
+        if self.text_augment_db is not None:
+            curtxt = datum['text']
+            rand_exist = np.random.randint(len(curtxt))
+
+            if self.text_augment_db[curtxt[rand_exist]]:
+                text_cands = curtxt + self.text_augment_db[curtxt[rand_exist]]
+            else:
+                text_cands = datum['text']
+            if datum['split'] == 0:
+                text_idx = np.random.randint(len(text_cands))
+            data_dict['text'] = text_cands[text_idx]
+        else:
+            if datum['split'] == 0:
+                text_idx = np.random.randint(len(datum['text']))
+            data_dict['text'] = datum['text'][text_idx]
 
         data_dict['split'] = datum['split']
         data_dict['id'] = datum['id']
@@ -399,6 +411,7 @@ class HumanML3DDataModule(BASEDataModule):
                  annot_path: str = "",
                  load_splits: List[str] = ["val", "test", "train"],
                  proportion: float = 1.0,
+                 text_augment: bool = False,
                  **kwargs):
         super().__init__(batch_size=batch_size,
                          num_workers=num_workers,
@@ -433,6 +446,13 @@ class HumanML3DDataModule(BASEDataModule):
             else:
                 # takes ~4min to load
                 ds_db_path = Path(self.datapath)
+            if text_augment:
+                from src.utils.genutils import extract_data_path
+                dpath = extract_data_path(self.datapath)
+                text_aug_db = read_json(f'{dpath}/text-augmentations/paraphrases_dict.json')
+            else:
+                text_aug_db = None
+
             # define splits
             # For example
             # from itertools import islice
@@ -539,6 +559,13 @@ class HumanML3DDataModule(BASEDataModule):
                 v['id'] = k
                 v['split'] = id_split_dict[k]
         else:
+            if text_augment:
+                from src.utils.genutils import extract_data_path
+                dpath = extract_data_path(self.datapath)
+                text_aug_db = read_json(f'{dpath}/text-augmentations/paraphrases_dict.json')
+            else:
+                text_aug_db = None
+
             hml3d_data_dict = {}
             for split in load_splits:
                 list_for_split = joblib.load(f'{self.datapath}/{split}.pth.tar')
@@ -560,7 +587,7 @@ class HumanML3DDataModule(BASEDataModule):
                                                         self.smpl_p,
                                                         self.rot_repr,
                                                         self.load_feats,
-                                                        do_augmentations=False))
+                                                        ))
         # setup collate function meta parameters
         # self.collate_fn = lambda b: collate_batch(b, self.cfg.load_feats)
         # create datasets
@@ -569,10 +596,11 @@ class HumanML3DDataModule(BASEDataModule):
             lends_train = len(hml3d_data_dict['train'])
             log.info(f'Using {100*round(slice_to/lends_train, 2)}% of the data.')
             log.info(f'Using {slice_to}/{lends_train} of the data.')
-
+        text_augs = None
         for spl in load_splits:
             if spl == 'train':
                 hml3d_data_dict[spl] = hml3d_data_dict[spl][:slice_to]
+                text_augs = text_aug_db
             self.dataset[spl] = HumanML3DDataset(hml3d_data_dict[spl] ,
                                                  self.preproc.n_body_joints,
                                                  self.preproc.stats_file,
@@ -580,7 +608,7 @@ class HumanML3DDataModule(BASEDataModule):
                                                  self.smpl_p,
                                                  self.rot_repr,
                                                  self.load_feats,
-                                                 do_augmentations=True)
+                                                 text_augs)
 
             log.info(f'Set up {spl} set with {len(self.dataset[spl])} items.')
 

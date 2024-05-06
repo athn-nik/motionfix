@@ -69,6 +69,7 @@ class MixerDataModule(BASEDataModule):
                  hml3d_ratio=40,
                  sinc_synth_ratio=30,
                  bodilex_ratio=30,
+                 text_augment: bool = False,
                  **kwargs):
         if batch_sampler is not None:
             dataset_percentages = {'hml3d': hml3d_ratio / 100,
@@ -96,6 +97,13 @@ class MixerDataModule(BASEDataModule):
             'sinc_synth': SincSynthDataset,
             'hml3d': HumanML3DDataset,
         }
+        if text_augment:
+            from src.utils.genutils import extract_data_path
+            dpath = extract_data_path(self.datapaths.bodilex)
+            text_aug_db = read_json(f'{dpath}/text-augmentations/paraphrases_dict.json')
+        else:
+            text_aug_db = None
+
         dataset_list = []
         for name in dataset_names:
             assert name in DATA_CLASS_MAP.keys(), f"Dataset {name} not recognized"
@@ -107,7 +115,7 @@ class MixerDataModule(BASEDataModule):
                                                     norm_type=self.preproc.norm_type,
                                                     rot_repr=self.rot_repr,
                                                     load_feats=self.load_feats,
-                                                    do_augmentations=True))
+                                                    text_augment_db=text_aug_db))
         self.dataset = {split: ConcatDataset([d[split] for d in dataset_list])
                          for split in ['train', 'val', 'test']}
 

@@ -4,7 +4,7 @@ from glob import glob
 from os import listdir
 from os.path import exists, join
 from pathlib import Path
-from typing import List, Callable
+from typing import List, Callable, Dict
 import joblib
 import numpy as np
 from omegaconf import DictConfig
@@ -20,7 +20,7 @@ from torch.nn.functional import pad
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 from src.data.base import BASEDataModule
-from src.utils.genutils import DotDict, cast_dict_to_tensors, to_tensor
+from src.utils.genutils import DotDict, cast_dict_to_tensors, extract_data_path, to_tensor
 from src.tools.transforms3d import (
     change_for, local_to_global_orient, transform_body_pose, remove_z_rot,
     rot_diff, get_z_rot)
@@ -41,12 +41,13 @@ class BodilexDataset(Dataset):
                  stats_file: str, norm_type: str,
                  smplh_path: str = None, rot_repr: str = "6d",
                  load_feats: List[str] = None,
-                 do_augmentations=False):
+                 text_augment_db: Dict[str, List[str]] = None):
+
         self.data = data
         self.norm_type = norm_type
         self.rot_repr = rot_repr
         self.load_feats = load_feats
-        self.do_augmentations = do_augmentations
+        self.text_augment_db = text_augment_db
         self.name = "bodilex"
         
         # self.seq_parser = SequenceParserAmass(self.cfg)
@@ -423,20 +424,6 @@ class BodilexDataset(Dataset):
 
     def __getitem__(self, idx):
         datum = self.data[idx]
-        # perform augmentations except when in test mode
-        # if self.do_augmentations:
-        #     datum = self.seq_parser.augment_npz(datum)
-
-        # CANONICALIZE MOTION AND BRING IT TO 0
-        # for mtype in ['motion_source', 'motion_target']:
-            
-        #     rots_can, trans_can = self._canonica_facefront(datum[mtype]['rots'],
-        #                                                    datum[mtype]['trans']
-        #                                                    )
-
-        #     datum[mtype]['rots'] = rots_can
-        #     datum[mtype]['trans'] = trans_can
-
         data_dict_source = {f'{feat}_source': self._feat_get_methods[feat](datum['motion_source'])
                             for feat in self.load_feats}
         data_dict_target = {f'{feat}_target': self._feat_get_methods[feat](datum['motion_target'])
@@ -446,10 +433,21 @@ class BodilexDataset(Dataset):
         data_dict = {**data_dict_source, **data_dict_target, **meta_data_dict}
         data_dict['length_source'] = len(data_dict['body_pose_source'])
         data_dict['length_target'] = len(data_dict['body_pose_target'])
-        data_dict['text'] = datum['text']
+
+        text_idx = 0
+        if self.text_augment_db is not None:
+            curtxt = datum['text']
+            if self.text_augment_db[curtxt]:
+                text_cands = [curtxt] + self.text_augment_db[curtxt]
+                if datum['split'] == 0:
+                    text_idx = np.random.randint(len(text_cands))
+                data_dict['text'] = text_cands[text_idx]
+            else:
+                data_dict['text'] = datum['text']
+        else:
+            data_dict['text'] = datum['text']
         data_dict['split'] = datum['split']
         data_dict['id'] = datum['id']
-        # data_dict['dims'] = self._feat_dims
         return DotDict(data_dict)
 
     def npz2feats(self, idx, npz):
@@ -496,6 +494,7 @@ class BodilexDataModule(BASEDataModule):
                  dataname: str = "",
                  rot_repr: str = "6d",
                  proportion: float = 1.0,
+                 text_augment: bool = False,
                  **kwargs):
         super().__init__(batch_size=batch_size,
                          num_workers=num_workers,
@@ -528,6 +527,12 @@ class BodilexDataModule(BASEDataModule):
         else:
             # takes ~4min to load
             ds_db_path = Path(self.datapath)
+        if text_augment:
+            dpath = extract_data_path(self.datapath)
+            text_aug_db = read_json(f'{dpath}/text-augmentations/paraphrases_dict.json')
+            log.info(f'...Loaded Text Augmentations')
+        else:
+            text_aug_db = None
         # define splits
         # For example
         # from itertools import islice
@@ -627,7 +632,7 @@ class BodilexDataModule(BASEDataModule):
                                                       self.smpl_p,
                                                       self.rot_repr,
                                                       self.load_feats,
-                                                      do_augmentations=False))
+                                                      ))
         # setup collate function meta parameters
         # self.collate_fn = lambda b: collapPte_batch(b, self.cfg.load_feats)
         # create datasets
@@ -645,7 +650,7 @@ class BodilexDataModule(BASEDataModule):
                         self.smpl_p,
                         self.rot_repr,
                         self.load_feats,
-                        do_augmentations=True), 
+                        text_aug_db), 
            BodilexDataset([v for k, v in data_dict.items() 
                            if id_split_dict[k] == 1],
                         self.preproc.n_body_joints,
@@ -654,7 +659,7 @@ class BodilexDataModule(BASEDataModule):
                         self.smpl_p,
                         self.rot_repr,
                         self.load_feats,
-                        do_augmentations=True), 
+                        ), 
            BodilexDataset([v for k, v in data_dict.items() 
                            if id_split_dict[k] == 2],
                         self.preproc.n_body_joints,
@@ -662,8 +667,7 @@ class BodilexDataModule(BASEDataModule):
                         self.preproc.norm_type,
                         self.smpl_p,
                         self.rot_repr,
-                        self.load_feats,
-                        do_augmentations=False) 
+                        self.load_feats) 
         )
         for splt in ['train', 'val', 'test']:
             log.info("Set up {} set with {} items."\

@@ -6,6 +6,27 @@ import logging
 import os
 import random
 from einops import rearrange
+from pathlib import Path
+
+def extract_data_path(full_path, directory_name="data"):
+    """
+    Slices the given path up to and including the specified directory.
+
+    Args:
+    full_path (str): The full path as a string.
+    directory_name (str): The directory to slice up to (included in the result).
+
+    Returns:
+    str: The sliced path as a string up to and including the specified directory.
+    """
+    path = Path(full_path)
+    subpath = Path()
+    for part in path.parts:
+        subpath /= part
+        if part == directory_name:
+            break
+
+    return str(subpath)
 
 
 def freeze(model) -> None:

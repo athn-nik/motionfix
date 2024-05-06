@@ -3,7 +3,7 @@
 
 <p align="center">
 
-  <h1 align="center">SINC: Spatial Composition of 3D Human Motions for Simultaneous Action Generation
+  <h1 align="center">MotionFix: Motion Editing using Language Instructions
     <br>
     <a href='https://arxiv.org/abs/2304.10417'>
     <img src='https://img.shields.io/badge/arxiv-report-red' alt='ArXiv PDF'>
@@ -18,8 +18,8 @@
     |
     <a href="https://imagine.enpc.fr/~varolg"><strong>G&#252;l Varol</strong></a>
   </p>
-  <h2 align="center">ICCV 2023</h2>
- <div align="center">Official PyTorch implementation of the paper "SINC: Spatial Composition of 3D Human Motions for Simultaneous Action Generation" </div>
+  <h2 align="center">TOG '24</h2>
+ <div align="center">Official PyTorch implementation of the paper "XXX" </div>
  <div align="center">
   </div>
 </p>

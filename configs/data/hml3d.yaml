@@ -12,6 +12,7 @@ smplh_path: ${path.data}/body_models
 smplh_path_dbg: ${path.minidata}/body_models
 
 load_with_rot: true
+text_augment: false
 
 load_splits:
 - "train"
