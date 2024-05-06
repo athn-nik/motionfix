@@ -582,6 +582,7 @@ class MD(BaseModel):
             mask = (torch.rand(bs_cond, 1, 1, device=cond_emb_motion.device) > perc_drop_motion).float()
             cond_emb_motion = cond_emb_motion.permute(1, 0, 2) * mask
             cond_emb_motion = cond_emb_motion.permute(1, 0, 2)
+            mask_source_motion = (mask_source_motion * mask.squeeze(-1)).bool()
 
             text_list = [
                 "" if np.random.rand(1) < perc_drop_text else i
@@ -594,7 +595,7 @@ class MD(BaseModel):
                 text_list[idx] = ""
             cond_emb_motion = cond_emb_motion.permute(1, 0, 2) * mask_both
             cond_emb_motion = cond_emb_motion.permute(1, 0, 2)
-            # aug_mask[:, max_text_len:] *= mask_source_motion
+            mask_source_motion = (mask_source_motion * mask_both.squeeze(-1)).bool()
         else:
             text_list = [
                 "" if np.random.rand(1) < self.diff_params.prob_uncondp else i
@@ -1244,6 +1245,10 @@ class MD(BaseModel):
                 # Convert length_source_tensor back to a list and store it back in batch if necessary
                 # Note: Conversion to list happens on the CPU, so move tensor to CPU before converting
                 batch['length_source'] = length_source_tensor.tolist()
+                batch['length_source'] = [0 if ii in idx_t2m
+                                          else ll 
+                                          for ii, ll in enumerate(batch['length_source']) 
+                                          ]
 
         if self.motion_condition:
             if self.pad_inputs:
