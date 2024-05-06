@@ -54,6 +54,7 @@ def main_loop(command, exp_paths,
         arg0 = 'guidance_scale_text'
         arg1 = 'guidance_scale_motion'
         t2m = True
+    # import ipdb;ipdb.set_trace()
     for fd, gd, in_lat, data_type in tqdm(exp_grid):
         cur_cmd = list(cmd_train)
         idx_of_exp = cur_cmd.index("FOLDER")
