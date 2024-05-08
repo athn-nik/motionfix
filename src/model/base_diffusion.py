@@ -845,12 +845,11 @@ class MD(BaseModel):
                     cur_feat_loss = full_feature_loss[:, 1:, f_rg[i]:f_rg[i+1]
                                                       ].mean(-1)*pad_mask[:, 1:]
                     tot_feat_loss = cur_feat_loss.sum() / pad_mask[:, 1:].sum()
-                    all_losses_dict.update({self.input_feats[i]: tot_feat_loss})
                 else:
                     cur_feat_loss = full_feature_loss[..., f_rg[i]:f_rg[i+1]
                                                       ].mean(-1)*pad_mask
                     tot_feat_loss = cur_feat_loss.sum() / pad_mask.sum()
-                    all_losses_dict.update({self.input_feats[i]: tot_feat_loss})
+                all_losses_dict.update({self.input_feats[i]: tot_feat_loss})
                 tot_loss += tot_feat_loss
 
         tot_loss /= len(self.input_feats)
@@ -1212,7 +1211,7 @@ class MD(BaseModel):
         print(batch['dataset_name'].count('hml3d') / len(batch['dataset_name']))
         print('-------AMT------')
         print(batch['dataset_name'].count('bodilex') / len(batch['dataset_name']))
-        return
+        dnames = batch['dataset_name']
         for k, v in input_batch.items():
             if self.input_deltas:
                 batch[f'{k}_motion'] = v[1:]
@@ -1293,7 +1292,7 @@ class MD(BaseModel):
 
 
         # rs_set Bx(S+1)xN --> first pose included
-        total_loss, loss_dict = self.compute_losses(dif_dict)
+        total_loss, loss_dict = self.compute_losses(dif_dict,dnames)
 
         # if self.trainer.current_epoch % 100 == 0 and self.trainer.current_epoch != 0:
         #     if self.global_rank == 0 and split=='train' and batch_idx == 0:
