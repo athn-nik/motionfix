@@ -7,6 +7,7 @@ dataset_names:
 - "hml3d"
 # Define the percentages for each dataset_name value
 batch_sampler: 'ratio' # null false 
+
 hml3d_ratio: 20
 sinc_synth_ratio: 40
 bodilex_ratio: 40
