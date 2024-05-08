@@ -17,3 +17,4 @@ latent_dim: ${model.latent_dim}
 # guidance_uncondp: ${model.diff_params.guidance_uncondp}
 nfeats: ${model.nfeats} # TODO FIX THIS
 pred_delta_motion: false
+repos: false

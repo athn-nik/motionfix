@@ -1248,7 +1248,7 @@ class MD(BaseModel):
                 batch['length_source'] = [0 if ii in idx_t2m
                                           else ll 
                                           for ii, ll in enumerate(batch['length_source']) 
-                                          ]
+                                         ]
 
         if self.motion_condition:
             if self.pad_inputs:
@@ -1277,7 +1277,7 @@ class MD(BaseModel):
 
         gt_lens_tgt = batch['length_target']
         gt_lens_src = batch['length_source']
-
+        batch['text'] = [el.lower() for el in batch['text']]
         gt_texts = batch['text']
         gt_keyids = batch['id']
         self.batch_size = len(gt_texts)

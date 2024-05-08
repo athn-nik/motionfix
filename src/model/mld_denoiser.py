@@ -28,6 +28,7 @@ class MldDenoiser(nn.Module):
                  text_encoded_dim: int = 768,
                  use_deltas: bool = False,
                  pred_delta_motion: bool = False,
+                 repos: bool = False,
                  **kwargs) -> None:
 
         super().__init__()
@@ -40,8 +41,13 @@ class MldDenoiser(nn.Module):
         self.feat_comb_coeff = nn.Parameter(torch.tensor([1.0]))
         # if self.diffusion_only:
             # assert self.arch == "trans_enc", "only implement encoder for diffusion-only"
-        self.pose_proj_in = nn.Linear(nfeats, self.latent_dim)
-        self.pose_proj_out = nn.Linear(self.latent_dim, nfeats)            
+        self.repos = repos
+        if repos:            
+            self.pose_proj_in_source = nn.Linear(nfeats, self.latent_dim)
+            self.pose_proj_in_target = nn.Linear(nfeats, self.latent_dim)
+        else:
+            self.pose_proj_in = nn.Linear(nfeats, self.latent_dim)
+        self.pose_proj_out = nn.Linear(self.latent_dim, nfeats)
         self.first_pose_proj = nn.Linear(self.latent_dim, nfeats)
         self.motion_condition = motion_condition
 
@@ -69,6 +75,7 @@ class MldDenoiser(nn.Module):
         self.mem_pos = PositionalEncoding(self.latent_dim, dropout)
         if self.motion_condition == "source":
             self.sep_token = nn.Parameter(torch.randn(1, self.latent_dim))
+
         # use torch transformer
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=self.latent_dim,
@@ -125,7 +132,11 @@ class MldDenoiser(nn.Module):
 
             if motion_embeds is not None:
                 if motion_embeds.shape[-1] != self.latent_dim:
-                    motion_embeds_proj = self.pose_proj_in(motion_embeds)
+                    if self.repos:
+                        motion_embeds_proj = self.pose_proj_in_source(motion_embeds)
+                    else:
+                        motion_embeds_proj = self.pose_proj_in(motion_embeds)
+
                 else:
                     motion_embeds_proj = motion_embeds
  
@@ -133,15 +144,24 @@ class MldDenoiser(nn.Module):
             raise TypeError(f"condition type {self.condition} not supported")
         # 4. transformer
         # if self.diffusion_only:
-        proj_noised_motion = self.pose_proj_in(noised_motion)
+        if self.repos:
+            proj_noised_motion = self.pose_proj_in_target(noised_motion)
+        else:
+            proj_noised_motion = self.pose_proj_in(noised_motion)
+
         if motion_embeds is None:
             xseq = torch.cat((emb_latent, proj_noised_motion), axis=0)
         else:
             sep_token_batch = torch.tile(self.sep_token, (bs,)).reshape(bs,
                                                                          -1)
-            xseq = torch.cat((emb_latent, proj_noised_motion,
-                              sep_token_batch[None],
-                              motion_embeds_proj), axis=0)
+            if self.repos:
+                xseq = torch.cat((emb_latent, motion_embeds_proj,
+                                  sep_token_batch[None],
+                                  proj_noised_motion), axis=0)
+            else:
+                xseq = torch.cat((emb_latent, proj_noised_motion,
+                                  sep_token_batch[None],
+                                  motion_embeds_proj), axis=0)
 
         # if self.ablation_skip_connection:
         #     xseq = self.query_pos(xseq)
@@ -165,20 +185,31 @@ class MldDenoiser(nn.Module):
             sep_token_mask = torch.ones((bs, self.sep_token.shape[0]),
                                         dtype=bool,
                                         device=xseq.device)
-
-            aug_mask = torch.cat((time_token_mask,
-                                  condition_mask[:, :text_emb_latent.shape[0]],
-                                  motion_in_mask,
-                                  sep_token_mask,
-                                  condition_mask[:, text_emb_latent.shape[0]:]
+            if self.repos:
+                aug_mask = torch.cat((time_token_mask,
+                                    condition_mask[:, :text_emb_latent.shape[0]],
+                                    condition_mask[:, text_emb_latent.shape[0]:],
+                                    sep_token_mask,
+                                    motion_in_mask,
                                     ), 1)
+
+            else:
+                aug_mask = torch.cat((time_token_mask,
+                                    condition_mask[:, :text_emb_latent.shape[0]],
+                                    motion_in_mask,
+                                    sep_token_mask,
+                                    condition_mask[:, text_emb_latent.shape[0]:]
+                                        ), 1)
 
         tokens = self.encoder(xseq, src_key_padding_mask=~aug_mask)
 
         # if self.diffusion_only:
         if motion_embeds is not None:
             denoised_motion_proj = tokens[emb_latent.shape[0]:]
-            denoised_motion_proj = denoised_motion_proj[:-(1+motion_embeds_proj.shape[0])]
+            if self.repos:
+                denoised_motion_proj = denoised_motion_proj[(motion_embeds_proj.shape[0]+1):]
+            else:
+                denoised_motion_proj = denoised_motion_proj[:-(1+motion_embeds_proj.shape[0])]
         else:
             denoised_motion_proj = tokens[emb_latent.shape[0]:]
 
@@ -273,6 +304,24 @@ class MldDenoiser(nn.Module):
             uncond_eps, cond_eps_motion, cond_eps_text_n_motion = torch.split(model_out,
                                                                             len(model_out) // 3,
                                                                             dim=0)
+            if inpaint_dict is not None:
+                import torch.nn.functional as F
+                source_mot = inpaint_dict['start_motion'].permute(1, 0, 2)
+                if source_mot.shape[1] >= uncond_eps.shape[1]:
+                    source_mot = source_mot[:, :uncond_eps.shape[1]]
+                else:
+                    pad = uncond_eps.shape[1] - source_mot.shape[1]
+                    # Pad the tensor on the second dimension (time)
+                    source_mot = F.pad(source_mot, (0, 0, 0, pad), 'constant', 0)
+
+                mot_len = source_mot.shape[1]
+                # concat mask for all the frames
+                mask_src_parts = inpaint_dict['mask'].unsqueeze(1).repeat(1,
+                                                                      mot_len,
+                                                                      1)
+                uncond_eps = uncond_eps*(~mask_src_parts) + source_mot*mask_src_parts
+                cond_eps_text = cond_eps_text*(~mask_src_parts) + source_mot*mask_src_parts
+                cond_eps_text_n_motion = cond_eps_text_n_motion*(~mask_src_parts) + source_mot*mask_src_parts
             third_eps = uncond_eps + guidance_motion * (cond_eps_motion - uncond_eps) + \
                         guidance_text_n_motion * (cond_eps_text_n_motion - cond_eps_motion)
             eps = torch.cat([third_eps, third_eps, third_eps], dim=0)

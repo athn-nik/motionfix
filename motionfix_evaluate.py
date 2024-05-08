@@ -244,20 +244,10 @@ def render_vids(newcfg: DictConfig) -> None:
                 else:
                     inpaint_dict = None
 
-
-                if model.pad_inputs:
-                    if inpaint_dict is None:
-                        source_mot_pad = torch.nn.functional.pad(input_batch['source_motion'],
-                                                                (0, 0, 0, 0, 0,
-                                                    300 - input_batch['source_motion'].size(0)),
-                                                                value=0)
-                    else:
-                        source_mot_pad = None
+                if model.motion_condition == 'source':
+                    source_mot_pad = input_batch['source_motion'].clone()
                 else:
-                    if inpaint_dict is None:
-                        source_mot_pad = input_batch['source_motion'].clone()
-                    else:
-                        source_mot_pad = None
+                    source_mot_pad = None
 
                 if model.motion_condition == 'source' or init_diff_from == 'source':
                     source_lens = batch['length_source']
