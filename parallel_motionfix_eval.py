@@ -10,7 +10,7 @@ def run(cmd):
     # print(f"Executing: {' '.join(cmd)}")
     x = subprocess.run(cmd)
 
-def get_guidances(s=2, e=4, no=4, t2m=False, inpaint=False):
+def get_guidances(s=1, e=5, no=5, t2m=False, inpaint=False):
     import itertools
     import numpy as np
     if t2m:

@@ -1,4 +1,4 @@
 _target_: torch.optim.AdamW
-lr: 5e-5
+lr: 1e-4
 lr_final: 1e-6
 t_warmup: 150
