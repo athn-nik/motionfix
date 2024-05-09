@@ -93,7 +93,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     if IS_LOCAL_DEBUG:
         if cfg.data.dataname == 'bodilex':
             base_p_lcl = '/home/nathanasiou/Desktop/local-debug/data/amass_bodilex_' 
-            cfg.data.datapath = f'{base_p_lcl}v11.pth.tar'
+            cfg.data.datapath = f'{base_p_lcl}v13.pth.tar'
         elif cfg.data.dataname == 'sinc_synth':
             base_p_lcl = '/home/nathanasiou/Desktop/local-debug/data/sinc_synth_edits_v4.pth.tar' 
             cfg.data.datapath = base_p_lcl
