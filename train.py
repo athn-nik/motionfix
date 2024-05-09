@@ -103,7 +103,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
             cfg.data.annot_path = f'{base_p_lcl}/annotations.json'
         else:
             base_p_lcl = '/home/nathanasiou/Desktop/local-debug/data/amass_bodilex_' 
-            bdlex_path = f'{base_p_lcl}v11.pth.tar'
+            bdlex_path = f'{base_p_lcl}v13.pth.tar'
             ss_path = '/home/nathanasiou/Desktop/local-debug/data/sinc_synth_edits_v4.pth.tar' 
             hml3d_path = '/home/nathanasiou/Desktop/local-debug/data/hml3d' 
             cfg.data.datapaths.bodilex = bdlex_path
