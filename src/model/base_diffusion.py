@@ -865,7 +865,7 @@ class MD(BaseModel):
 
         # Optionally convert accumulated scalars to tensors after loop
         for name in dataset_losses:
-            dataset_losses[name] = dataset_losses[name].clone().detach()
+            dataset_losses[name] = dataset_losses[name].clone().detach() / len(self.input_feats)
 
         tot_loss /= len(self.input_feats)
         all_losses_dict['total_loss'] = tot_loss
