@@ -1322,8 +1322,14 @@ class MD(BaseModel):
         # self.losses[split](rs_set)
         # if loss is None:
         #     raise ValueError("Loss is None, this happend with torchmetrics > 0.7")
-        loss_dict_to_log = {f'losses/{split}/{k}': v for k, v in 
-                            loss_dict.items()}
+        loss_dict_to_log = {
+            f'total_losses/{split}/{k}' if k not in self.input_feats
+            else f'feature_losses/{split}/{k}': v 
+            for k, v in loss_dict.items()
+        }
+
+        # loss_dict_to_log = {f'losses/{split}/{k}': v for k, v in 
+        #                     loss_dict.items()}
         self.log_dict(loss_dict_to_log, on_epoch=True, 
                       batch_size=self.batch_size)
         import random
