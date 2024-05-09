@@ -7,9 +7,10 @@ dataset_names:
 - "hml3d"
 # Define the percentages for each dataset_name value
 batch_sampler: 'ratio' # null false 
-hml3d_ratio: 50
-sinc_synth_ratio: 20
-bodilex_ratio: 50
+
+hml3d_ratio: 20
+sinc_synth_ratio: 40
+bodilex_ratio: 40
 
 dataname: ${concat_string_list:${.dataset_names},${.hml3d_ratio},${.bodilex_ratio},${.sinc_synth_ratio}}
 datapaths:
