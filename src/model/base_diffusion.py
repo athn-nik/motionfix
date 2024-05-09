@@ -269,16 +269,17 @@ class MD(BaseModel):
             max_text_len = 0
         if self.motion_condition == 'source' and motion_embeds is not None:
             max_motion_len = cond_motion_masks.shape[1]
-            full_mask = torch.ones(bsz,
-                                  max_text_len,
-                                  dtype=torch.bool).to(self.device)
-            notext_mask1 = full_mask * text_masks_from_enc[:bsz]
-            notext_mask2 = full_mask * text_masks_from_enc[bsz:2*bsz]
-            use_text_mask = full_mask * text_masks_from_enc[2*bsz:3*bsz]
-            text_masks = torch.cat([notext_mask1, 
-                                    notext_mask2, 
-                                    use_text_mask],
-                                    dim=0)
+            # full_mask = torch.ones(bsz,
+            #                       max_text_len,
+            #                       dtype=torch.bool).to(self.device)
+            # notext_mask1 = full_mask * text_masks_from_enc[:bsz]
+            # notext_mask2 = full_mask * text_masks_from_enc[bsz:2*bsz]
+            # use_text_mask = full_mask * text_masks_from_enc[2*bsz:3*bsz]
+            # text_masks = torch.cat([notext_mask1, 
+            #                         notext_mask2, 
+            #                         use_text_mask],
+            #                         dim=0)
+            text_masks = text_masks_from_enc.clone()
             nomotion_mask = torch.zeros(bsz, max_motion_len, 
                             dtype=torch.bool).to(self.device)
             motion_masks = torch.cat([nomotion_mask, 
