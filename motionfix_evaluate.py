@@ -37,7 +37,7 @@ def prepare_test_batch(model, batch):
             batch[f'{k}_motion'] = v[1:]
         else:
             batch[f'{k}_motion'] = v
-            batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
+            # batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
 
     return batch
 
@@ -156,7 +156,7 @@ def render_vids(newcfg: DictConfig) -> None:
 
     if IS_LOCAL_DEBUG:
         base_p_lcl = '/home/nathanasiou/Desktop/local-debug/data/amass_bodilex_' 
-        cfg.data.datapath = f'{base_p_lcl}v11.pth.tar'
+        cfg.data.datapath = f'{base_p_lcl}v13.pth.tar'
 
     data_module = instantiate(cfg.data, amt_only=True,
                               load_splits=['test', 'val'])
@@ -205,8 +205,8 @@ def render_vids(newcfg: DictConfig) -> None:
     else:
         mode_cond = 'full_cond'
     logger.info(f'Evaluation Set length:{len(test_dataset)}')
-    if cfg.inpaint:
-        model.motion_condition = None
+    # if cfg.inpaint:
+    #     model.motion_condition = None
     with torch.no_grad():
         for guid_text, guid_motion in guidances_mix:
             cur_guid_comb = f'ld_txt-{guid_text}_ld_mot-{guid_motion}'
@@ -215,8 +215,7 @@ def render_vids(newcfg: DictConfig) -> None:
             logger.info(f"Sample MotionFix test set\n in:{cur_outpath}")
 
             for batch in tqdm(ds_iterator):
-
-                text_diff = batch['text']
+                text_diff = [el.lower() for el in batch['text']]
                 target_lens = batch['length_target']
                 keyids = batch['id']
                 no_of_motions = len(keyids)
@@ -267,9 +266,6 @@ def render_vids(newcfg: DictConfig) -> None:
                     batch['source_motion'] = None
                     mask_source = None
 
-                if inpaint_dict is not None:
-                    batch['source_motion'] = None
-                    mask_source = None
 
                 if init_diff_from == 'source':
                     source_init = source_mot_pad

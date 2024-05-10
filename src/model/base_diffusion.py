@@ -269,16 +269,17 @@ class MD(BaseModel):
             max_text_len = 0
         if self.motion_condition == 'source' and motion_embeds is not None:
             max_motion_len = cond_motion_masks.shape[1]
-            full_mask = torch.ones(bsz,
-                                  max_text_len,
-                                  dtype=torch.bool).to(self.device)
-            notext_mask1 = full_mask * text_masks_from_enc[:bsz]
-            notext_mask2 = full_mask * text_masks_from_enc[bsz:2*bsz]
-            use_text_mask = full_mask * text_masks_from_enc[2*bsz:3*bsz]
-            text_masks = torch.cat([notext_mask1, 
-                                    notext_mask2, 
-                                    use_text_mask],
-                                    dim=0)
+            # full_mask = torch.ones(bsz,
+            #                       max_text_len,
+            #                       dtype=torch.bool).to(self.device)
+            # notext_mask1 = full_mask * text_masks_from_enc[:bsz]
+            # notext_mask2 = full_mask * text_masks_from_enc[bsz:2*bsz]
+            # use_text_mask = full_mask * text_masks_from_enc[2*bsz:3*bsz]
+            # text_masks = torch.cat([notext_mask1, 
+            #                         notext_mask2, 
+            #                         use_text_mask],
+            #                         dim=0)
+            text_masks = text_masks_from_enc.clone()
             nomotion_mask = torch.zeros(bsz, max_motion_len, 
                             dtype=torch.bool).to(self.device)
             motion_masks = torch.cat([nomotion_mask, 
@@ -810,7 +811,7 @@ class MD(BaseModel):
 
         return loss_joints, pred_smpl_params
 
-    def compute_losses(self, out_dict):
+    def compute_losses(self, out_dict, dataset_names):
         from torch import nn
         from src.data.tools.tensors import lengths_to_mask
 
@@ -823,39 +824,53 @@ class MD(BaseModel):
         f_rg = np.cumsum([0] + self.input_feats_dims)
         all_losses_dict = {}
         tot_loss = torch.tensor(0.0, device=self.device)
-        if self.loss_params['predict_epsilon']:
-            noise_loss = self.loss_func_feats(out_dict['target'],
-                                              out_dict['model_output'],
-                                              reduction='none')
-        # predict x
+        data_loss = self.loss_func_feats(out_dict['target'],
+                                            out_dict['model_output'],
+                                            reduction='none')
+        if self.input_deltas:
+            first_pose_loss = data_loss[:, 0].mean(-1)
+            first_pose_loss = first_pose_loss.mean()
+            full_feature_loss = data_loss[:, 1:]
         else:
-            data_loss = self.loss_func_feats(out_dict['target'],
-                                             out_dict['model_output'],
-                                             reduction='none')
-            if self.input_deltas:
-                first_pose_loss = data_loss[:, 0].mean(-1)
-                first_pose_loss = first_pose_loss.mean()
-                full_feature_loss = data_loss[:, 1:]
+            first_pose_loss = torch.tensor(0.0)
+            full_feature_loss = data_loss
+        # maybe i should do weighted average .. maybe not
+        unique_datasets = list(set(dataset_names))
+        dataset_to_idx = {name: i for i, name in enumerate(unique_datasets)}
+        dataset_indices = torch.tensor([dataset_to_idx[name] for name in dataset_names])
+
+        # Dictionary to store losses per dataset
+        dataset_losses = {name: 0.0 for name in unique_datasets}
+        # Main loss calculation loop
+        for i, _ in enumerate(f_rg[:-1]):
+            if 'delta' in self.input_feats[i]:
+                cur_feat_loss = full_feature_loss[:, 1:, f_rg[i]:f_rg[i+1]].mean(-1) * pad_mask[:, 1:]
+                tot_feat_loss = cur_feat_loss.sum() / pad_mask[:, 1:].sum()
             else:
-                first_pose_loss = torch.tensor(0.0)
-                full_feature_loss = data_loss
-            # maybe i should do weighted average .. maybe not
-            for i, _ in enumerate(f_rg[:-1]):
-                if 'delta' in self.input_feats[i]:
-                    cur_feat_loss = full_feature_loss[:, 1:, f_rg[i]:f_rg[i+1]
-                                                      ].mean(-1)*pad_mask[:, 1:]
-                    tot_feat_loss = cur_feat_loss.sum() / pad_mask[:, 1:].sum()
-                    all_losses_dict.update({self.input_feats[i]: tot_feat_loss})
-                else:
-                    cur_feat_loss = full_feature_loss[..., f_rg[i]:f_rg[i+1]
-                                                      ].mean(-1)*pad_mask
-                    tot_feat_loss = cur_feat_loss.sum() / pad_mask.sum()
-                    all_losses_dict.update({self.input_feats[i]: tot_feat_loss})
-                tot_loss += tot_feat_loss
+                cur_feat_loss = full_feature_loss[..., f_rg[i]:f_rg[i+1]].mean(-1) * pad_mask
+                tot_feat_loss = cur_feat_loss.sum() / pad_mask.sum()
+
+            # Update all_losses_dict with overall tot_feat_loss
+            all_losses_dict.update({self.input_feats[i]: tot_feat_loss})
+            tot_loss += tot_feat_loss  # Overall loss across datasets
+
+            # Compute per-dataset losses
+            for name, idx in dataset_to_idx.items():
+                dataset_mask = (dataset_indices == idx)
+                dataset_pad_mask = pad_mask[dataset_mask]
+                if dataset_mask.any():
+                    dataset_cur_feat_loss = cur_feat_loss[dataset_mask]
+                    if dataset_pad_mask.sum() > 0:  # Avoid division by zero
+                        dataset_tot_feat_loss = dataset_cur_feat_loss.sum() / dataset_pad_mask.sum()
+                        dataset_losses[name] += dataset_tot_feat_loss  # Accumulate per-dataset loss
+
+        # Optionally convert accumulated scalars to tensors after loop
+        for name in dataset_losses:
+            dataset_losses[name] = dataset_losses[name].clone().detach() / len(self.input_feats)
 
         tot_loss /= len(self.input_feats)
         all_losses_dict['total_loss'] = tot_loss
-
+        all_losses_dict = all_losses_dict | dataset_losses
         return tot_loss, all_losses_dict 
     # {'total_loss': total_loss,
     #                         self.input_feats[2]: pose_loss,
@@ -1206,7 +1221,16 @@ class MD(BaseModel):
         if 'hml3d' in batch['dataset_name']:
             idx_t2m = [i for i, x in enumerate( batch['dataset_name']) 
                        if x == 'hml3d']
-
+        # print('-------SincSynth------')
+        # print(batch['dataset_name'].count('sinc_synth') / len(batch['dataset_name']))
+        # print('-------H3D------')
+        # print(batch['dataset_name'].count('hml3d') / len(batch['dataset_name']))
+        # print('-------AMT------')
+        # print(batch['dataset_name'].count('bodilex') / len(batch['dataset_name']))
+        # unique_datasets = list(set(batch['dataset_name']))  # Extract unique names
+        # dataset_to_idx = {name: i for i, name in enumerate(unique_datasets)}
+        # # Map each batch item to its dataset index
+        # dset_idxs = torch.tensor([dataset_to_idx[name] for name in dataset_names])
         for k, v in input_batch.items():
             if self.input_deltas:
                 batch[f'{k}_motion'] = v[1:]
@@ -1287,7 +1311,7 @@ class MD(BaseModel):
 
 
         # rs_set Bx(S+1)xN --> first pose included
-        total_loss, loss_dict = self.compute_losses(dif_dict)
+        total_loss, loss_dict = self.compute_losses(dif_dict, batch['dataset_name'])
 
         # if self.trainer.current_epoch % 100 == 0 and self.trainer.current_epoch != 0:
         #     if self.global_rank == 0 and split=='train' and batch_idx == 0:
@@ -1299,8 +1323,14 @@ class MD(BaseModel):
         # self.losses[split](rs_set)
         # if loss is None:
         #     raise ValueError("Loss is None, this happend with torchmetrics > 0.7")
-        loss_dict_to_log = {f'losses/{split}/{k}': v for k, v in 
-                            loss_dict.items()}
+        loss_dict_to_log = {
+            f'total_losses/{split}/{k}' if k not in self.input_feats
+            else f'feature_losses/{split}/{k}': v 
+            for k, v in loss_dict.items()
+        }
+
+        # loss_dict_to_log = {f'losses/{split}/{k}': v for k, v in 
+        #                     loss_dict.items()}
         self.log_dict(loss_dict_to_log, on_epoch=True, 
                       batch_size=self.batch_size)
         import random

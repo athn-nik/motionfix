@@ -39,7 +39,6 @@ def prepare_test_batch(model, batch):
             batch[f'{k}_motion'] = v[1:]
         else:
             batch[f'{k}_motion'] = v
-            batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
 
     return batch
 
