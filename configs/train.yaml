@@ -24,6 +24,12 @@ run_id: ${generate_id:}
 resume: null
 resume_ckpt_name: null
 renderer: null # ait # null
+
+# log gradients/weights
+watch_model: True
+log_freq: 50
+log: 'all'
+
 devices: 1
 
 # For finetuning

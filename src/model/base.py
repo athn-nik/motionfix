@@ -20,6 +20,7 @@ from src.utils.genutils import cast_dict_to_tensors
 from src.utils.art_utils import color_map
 import joblib
 from src.model.utils.tools import remove_padding, pack_to_render
+from pytorch_lightning.utilities import grad_norm
 
 # A logger for this file
 log = logging.getLogger(__name__)
@@ -102,6 +103,12 @@ class BaseModel(LightningModule):
                 nontrainable += np.prod(p.size())
         self.hparams.n_params_trainable = trainable
         self.hparams.n_params_nontrainable = nontrainable
+
+    def on_before_optimizer_step(self, optimizer):
+        # Compute the 2-norm for each layer
+        # If using mixed precision, the gradients are already unscaled here
+        norms = grad_norm(self, norm_type=2)
+        self.log_dict(norms)
 
     
     def load_norm_statistics(self, path, device):

@@ -194,6 +194,10 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
                          callbacks=callbacks)
     logger.info("Trainer initialized")
 
+    if cfg.watch_model:
+        import wandb
+        wandb.watch(model, log=cfg.log, log_freq=cfg.log_freq)
+
     logger.info("Fitting the model..")
     trainer.fit(model, datamodule=data_module, ckpt_path=ckpt_ft)
     logger.info("Fitting done")
