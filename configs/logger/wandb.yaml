@@ -11,3 +11,5 @@ offline: false
 resume: false
 save_code: false
 log_model: false
+
+#    wandb.watch(model, log=cfg.log, log_freq=cfg.log_freq)

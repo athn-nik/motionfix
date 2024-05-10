@@ -27,7 +27,7 @@ renderer: null # ait # null
 
 # log gradients/weights
 watch_model: True
-log_freq: 50
+log_freq: 1000
 log: 'all'
 
 devices: 1
