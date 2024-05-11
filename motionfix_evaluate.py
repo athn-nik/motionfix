@@ -147,6 +147,7 @@ def render_vids(newcfg: DictConfig) -> None:
                                     #    infer_scheduler=cfg.model.infer_scheduler,
                                     #    diff_params=cfg.model.diff_params,
                                        strict=False)
+    model.eval()
     model.freeze()
     logger.info(f"Model '{cfg.model.modelname}' loaded")
     # logger.info('------Generating using Scheduler------\n\n'\
