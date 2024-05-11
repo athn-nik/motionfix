@@ -1,4 +1,3 @@
-from networkx import planted_partition_graph
 import torch
 import torch.nn as nn
 from torch import  nn

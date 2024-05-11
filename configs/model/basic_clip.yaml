@@ -11,7 +11,7 @@ activation: "gelu"
 render_vids_every_n_epochs: 100
 num_vids_to_render: 2
 lr_scheduler: null # cosine # null # reduceonplateau, steplr
-
+zero_len_source: true
 # normalization
 statistics_path: ${statistics_path}
 norm_type: standardize # min_max standardize

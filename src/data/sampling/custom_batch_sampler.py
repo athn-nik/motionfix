@@ -117,7 +117,8 @@ class CustomBatchSamplerV2(Sampler):
         total_samples = self.epoch_size
         # Ensure weights sum to 1
         self.weights /= np.sum(self.weights)
-        indices = np.random.choice(len(self.concat_dataset), total_samples, replace=True, p=self.weights)
+        indices = np.random.choice(len(self.concat_dataset), total_samples, 
+                                   replace=True, p=self.weights)
         for i in range(0, total_samples, self.batch_size):
             yield indices[i:i + self.batch_size]
 

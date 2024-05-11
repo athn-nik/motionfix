@@ -117,6 +117,7 @@ class HumanML3DDataset(Dataset):
                     elem['rots'] = elem['rots'][:300]
                     elem['trans'] = elem['trans'][:300]
                     elem['joint_positions'] = elem['joint_positions'][:300]
+                elem['id'] = f"h3d_{elem['id']}"
             hml3d_data_dict[split] = list_for_split
 
         # create datasets
