@@ -140,7 +140,7 @@ def render_vids(newcfg: DictConfig) -> None:
     #            name=log_name, dir=output_path)
     aitrenderer = None
     logger.info("Loading model")
-    from src.model.base_diffusion import MD    
+    from src.model.base_diffusion import MD
     # Load the last checkpoint
     model = MD.load_from_checkpoint(last_ckpt_path,
                                        renderer=aitrenderer,

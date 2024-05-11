@@ -1227,6 +1227,7 @@ class MD(BaseModel):
         # print(batch['dataset_name'].count('hml3d') / len(batch['dataset_name']))
         # print('-------AMT------')
         # print(batch['dataset_name'].count('bodilex') / len(batch['dataset_name']))
+        # return 
         # unique_datasets = list(set(batch['dataset_name']))  # Extract unique names
         # dataset_to_idx = {name: i for i, name in enumerate(unique_datasets)}
         # # Map each batch item to its dataset index
@@ -1269,12 +1270,13 @@ class MD(BaseModel):
                 # Convert length_source_tensor back to a list and store it back in batch if necessary
                 # Note: Conversion to list happens on the CPU, so move tensor to CPU before converting
                 batch['length_source'] = length_source_tensor.tolist()
-                batch['length_source'] = [0 if ii in idx_t2m
-                                          else ll 
-                                          for ii, ll in enumerate(batch['length_source']) 
-                                         ]
 
-        if self.motion_condition:
+                # batch['length_source'] = [0 if ii in idx_t2m
+                #                           else ll 
+                #                           for ii, ll in enumerate(batch['length_source']) 
+                #                          ]
+
+        if self.motion_condition is not None:
             if self.pad_inputs:
                 mask_source, mask_target = self.prepare_mot_masks(batch['length_source'],
                                                                   batch['length_target'],
