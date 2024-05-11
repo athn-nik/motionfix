@@ -60,6 +60,7 @@ class MD(BaseModel):
                  renderer = None,
                  pad_inputs = False,
                  source_encoder: str = 'trans_enc',
+                 zero_len_source: bool = True,
                  **kwargs):
 
         super().__init__(statistics_path, nfeats, norm_type, input_feats,
@@ -85,7 +86,7 @@ class MD(BaseModel):
             self.using_deltas_transl = True
         else:
             self.using_deltas_transl = False
-
+        self.zero_len_source = zero_len_source
         self.smpl_path = smpl_path
         self.condition = condition
         self.motion_condition = motion_condition
@@ -280,7 +281,11 @@ class MD(BaseModel):
             #                         use_text_mask],
             #                         dim=0)
             text_masks = text_masks_from_enc.clone()
-            nomotion_mask = torch.zeros(bsz, max_motion_len, 
+            if self.zero_len_source:
+                nomotion_mask = torch.zeros(bsz, max_motion_len, 
+                            dtype=torch.bool).to(self.device)
+            else:
+                nomotion_mask = torch.ones(bsz, max_motion_len,
                             dtype=torch.bool).to(self.device)
             motion_masks = torch.cat([nomotion_mask, 
                                       cond_motion_masks, 
@@ -1270,12 +1275,10 @@ class MD(BaseModel):
                 # Convert length_source_tensor back to a list and store it back in batch if necessary
                 # Note: Conversion to list happens on the CPU, so move tensor to CPU before converting
                 batch['length_source'] = length_source_tensor.tolist()
-
-                # batch['length_source'] = [0 if ii in idx_t2m
-                #                           else ll 
-                #                           for ii, ll in enumerate(batch['length_source']) 
-                #                          ]
-
+                if self.zero_len_source:
+                    batch['length_source'] = [0 if ii in idx_t2m else ll 
+                                              for ii, ll in enumerate(batch['length_source']) 
+                                             ]
         if self.motion_condition is not None:
             if self.pad_inputs:
                 mask_source, mask_target = self.prepare_mot_masks(batch['length_source'],
