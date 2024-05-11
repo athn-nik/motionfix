@@ -164,6 +164,7 @@ def hml3d_sample(newcfg: DictConfig) -> None:
     model = MD.load_from_checkpoint(last_ckpt_path,
                                     renderer=aitrenderer,
                                     strict=False)
+    model.eval()
     model.freeze()
     logger.info(f"Model '{cfg.model.modelname}' loaded")
     # logger.info('------Generating using Scheduler------\n\n'\
