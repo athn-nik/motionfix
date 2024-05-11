@@ -193,6 +193,10 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
                          devices=cfg.devices, logger=train_logger,
                          callbacks=callbacks)
     logger.info("Trainer initialized")
+    # import ipdb;ipdb.set_trace()
+    if cfg.watch_model:
+        # import wandb
+        train_logger.watch(model, log=cfg.log, log_freq=cfg.log_freq)
 
     logger.info("Fitting the model..")
     trainer.fit(model, datamodule=data_module, ckpt_path=ckpt_ft)
