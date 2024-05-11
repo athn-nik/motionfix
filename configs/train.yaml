@@ -26,7 +26,7 @@ resume_ckpt_name: null
 renderer: null # ait # null
 
 # log gradients/weights
-watch_model: True
+watch_model: false
 log_freq: 1000
 log: 'all'
 
