@@ -143,7 +143,7 @@ class BodilexDataset(Dataset):
         #        seqlen, jts_no = rots_can.shape[:2]
         #        
         #        rots_can_rotm = transform_body_pose(rots_can,
-                                                  'aa->rot')
+        #                                           'aa->rot')
                 # self.body_model.batch_size = seqlen * jts_no
 
         #        jts_can_ds = body_model.smpl_forward_fast(transl=trans_can,
