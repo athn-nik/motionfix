@@ -206,8 +206,8 @@ def render_vids(newcfg: DictConfig) -> None:
     else:
         mode_cond = 'full_cond'
     logger.info(f'Evaluation Set length:{len(test_dataset)}')
-    # if cfg.inpaint:
-    #     model.motion_condition = None
+    if cfg.inpaint:
+        model.motion_condition = None
     with torch.no_grad():
         for guid_text, guid_motion in guidances_mix:
             cur_guid_comb = f'ld_txt-{guid_text}_ld_mot-{guid_motion}'
@@ -216,7 +216,7 @@ def render_vids(newcfg: DictConfig) -> None:
             logger.info(f"Sample MotionFix test set\n in:{cur_outpath}")
 
             for batch in tqdm(ds_iterator):
-                text_diff = [el.lower() for el in batch['text']]
+                text_diff = batch['text']
                 target_lens = batch['length_target']
                 keyids = batch['id']
                 no_of_motions = len(keyids)
@@ -244,7 +244,9 @@ def render_vids(newcfg: DictConfig) -> None:
                 else:
                     inpaint_dict = None
 
-                if model.motion_condition == 'source':
+                text_diff = [el.lower() for el in batch['text']]
+                
+                if model.motion_condition == 'source' or init_diff_from!='noise':
                     source_mot_pad = input_batch['source_motion'].clone()
                 else:
                     source_mot_pad = None

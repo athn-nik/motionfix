@@ -62,8 +62,7 @@ def main_loop(command, exp_paths,
         if t2m:
             list_of_args = ' '.join([f"init_from={in_lat}",
                                  f"ckpt_name={ckt_name}",
-                                 f"{arg1}={gd[1]}",
-                                 f"{arg0}={gd[0]}",
+                                 f"{arg0}={gd}",
                                  f"data={data_type}"])
         else:
             if inpaint:
@@ -119,19 +118,26 @@ if __name__ == "__main__":
     print('---------------------------------------------------')
     assert mode in ['viz_t2m', 'sample_t2m', 'viz', 'sample', 'eval']
     assert datasets in ['bodilex', 'sinc_synth', 'hml3d']
+    text2mot = False
+    if datasets == 'hml3d':
+        text2mot = True
+
     if mode == 'viz':
         script = 'visualize_motionfix'
     elif mode == 'viz_t2m':
         script = 'visualize_hml3d'
     elif mode in ['sample', 'eval']:
-        script = 'motionfix_evaluate'
-    else:
-        script = 'hml3d_evaluate'
+        if text2mot:
+            script = 'hml3d_evaluate'
+        else:
+            script = 'motionfix_evaluate'
+    if datasets == 'hml3d':
+        text2mot = True
     # import ipdb;ipdb.set_trace()
     if args.inpaint:
-        guidances = get_guidances(inpaint=True)
+        guidances = get_guidances(t2m=text2mot, inpaint=True)
     else:
-        guidances = get_guidances()
+        guidances = get_guidances(t2m=text2mot, inpaint=False)
     # import ipdb;ipdb.set_trace()
     parser = argparse.ArgumentParser()
     if datasets == 'bodilex':

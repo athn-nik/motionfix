@@ -151,7 +151,7 @@ def text_to_bp(text, return_original=False):
             else:
                 bp_final = str(bp_str.strip())
 
-            assert bp_final in smpl_bps_ids
+            assert bp_final in smpl_bps_ids:
             bp_list[smpl_bps_ids[bp_final]] += 1
         bp_list = [1 if x>1 else x for x in bp_list ]
 

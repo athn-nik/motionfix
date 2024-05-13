@@ -136,9 +136,9 @@ def hml3d_sample(newcfg: DictConfig) -> None:
     # init_diff_from = 'noise'
     # TODO pUT THIS BACK    
     # fd_name = get_folder_name(cfg)
-    fd_name = f'steps_{cfg.num_sampling_steps}'
+    fd_name = f'steps_{num_infer_steps}'
     log_name = '__'.join(str(exp_folder).split('/')[-2:])
-    log_name = f'samples_{log_name}_steps-{cfg.num_sampling_steps}_{cfg.init_from}_{cfg.ckpt_name}'
+    log_name = f'samples_{log_name}_steps-{num_infer_steps}_{cfg.init_from}_{cfg.ckpt_name}'
     output_path = exp_folder / f'{fd_name}_hml3d_{cfg.init_from}_{cfg.ckpt_name}'
 
     output_path.mkdir(exist_ok=True, parents=True)
