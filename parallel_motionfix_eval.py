@@ -34,7 +34,7 @@ def get_guidances(s=1, e=5, no=5, t2m=False, inpaint=False):
 
 def main_loop(command, exp_paths,
               guidance_vals,
-              init_from, data, inpaint=False):
+              init_from, data, ckpt_to_eval, inpaint=False):
 
     cmd_no=0
     cmd_sample = command
@@ -45,7 +45,7 @@ def main_loop(command, exp_paths,
                             data))
     print("Number of different experiments is:", len(exp_grid))
     print('---------------------------------------------------')
-    ckt_name = 'last'
+    ckt_name = ckpt_to_eval
     if data[0] != 'hml3d':
         arg1 = 'guidance_scale_text_n_motion'
         arg0 = 'guidance_scale_motion'
@@ -100,6 +100,8 @@ if __name__ == "__main__":
                         help='bid money for cluster')
     parser.add_argument('--inpaint', action='store_true',
                     help='Increase output verbosity')
+    parser.add_argument('--ckpt', required=False, default='last', type=str,
+                    help='The checkpoint used to evaluate with.')
     parser.add_argument(
             "--runs",
             nargs="*",  # expects arguments
@@ -110,6 +112,7 @@ if __name__ == "__main__":
     bid_for_exp = args.bid
     subdirs = args.runs
     mode = args.mode
+    ckpt_name = args.ckpt
     exp_paths = subdirs
     datasets = args.ds
     print('The current folders are---->\n', '\n'.join(subdirs))
@@ -143,4 +146,4 @@ if __name__ == "__main__":
                 '--extras']
     init_from = ['noise']
     data = [datasets]
-    main_loop(cmd_train, exp_paths, guidances, init_from, data, inpaint=args.inpaint)
+    main_loop(cmd_train, exp_paths, guidances, init_from, data, ckpt_name, inpaint=args.inpaint)
