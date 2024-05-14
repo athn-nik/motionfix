@@ -191,6 +191,84 @@ class CustomBatchSamplerV3(Sampler):
     def __len__(self):
         return (self.epoch_size + self.batch_size - 1) // self.batch_size
 
+
+import numpy as np
+from torch.utils.data import Sampler, ConcatDataset
+
+class CustomBatchSamplerV4(Sampler):
+    def __init__(self, concat_dataset, batch_size, mix_percentages):
+        """
+        Initializes the batch sampler with a dataset, batch size, and mix percentages.
+
+        Args:
+            concat_dataset (ConcatDataset): Concatenated dataset containing all sub-datasets.
+            batch_size (int): Number of items in each batch.
+            mix_percentages (dict): Dictionary mapping dataset names to their sampling percentages.
+        """
+        self.concat_dataset = concat_dataset
+        self.batch_size = batch_size
+        self.percs = mix_percentages
+        self.dataset_names = [d.name for d in concat_dataset.datasets]
+        self.sizes = [len(d) for d in concat_dataset.datasets]
+        self.min_size = min(self.sizes)
+        self.epoch_size = len(concat_dataset.datasets) * self.min_size  # Epoch size as #datasets * min(dataset size)
+        self.dataset_indices = self._calculate_dataset_indices()
+        import ipdb;ipdb.set_trace()
+    def _calculate_dataset_indices(self):
+        """
+        Create a list of indices for each dataset according to the specified percentages.
+        """
+        dataset_start_idx = 0
+        dataset_indices = []
+
+        for dataset, dataset_size in zip(self.concat_dataset.datasets, self.sizes):
+            indices = np.arange(dataset_start_idx, dataset_start_idx + dataset_size)
+            dataset_indices.append(indices)
+            dataset_start_idx += dataset_size
+        # import ipdb;ipdb.set_trace()
+        return dataset_indices
+
+    def __iter__(self):
+        """
+        Generate indices for each batch using pre-calculated dataset indices.
+        """
+        batch_indices = []
+        # import ipdb;ipdb.set_trace()
+        samples_per_dataset_per_batch = {
+            name: int(np.floor(self.percs[name] * self.batch_size)) 
+            for name in self.dataset_names
+        }
+
+        for _ in range((self.epoch_size + self.batch_size - 1) // self.batch_size):
+            batch = []
+            for dataset_indices, name in zip(self.dataset_indices, self.dataset_names):
+                num_samples = samples_per_dataset_per_batch[name]
+                if num_samples > 0:
+                    batch.extend(np.random.choice(dataset_indices, num_samples, replace=False))
+                
+            # Fill remaining batch size if necessary
+            if len(batch) < self.batch_size:
+                additional_samples = self.batch_size - len(batch)
+                for dataset_indices, name in zip(self.dataset_indices, self.dataset_names):
+                    if additional_samples <= 0:
+                        break
+                    additional_samples_needed = min(additional_samples, samples_per_dataset_per_batch[name])
+                    if additional_samples_needed > 0:
+                        batch.extend(np.random.choice(dataset_indices, additional_samples_needed, replace=False))
+                    additional_samples -= additional_samples_needed
+
+            if len(batch) == self.batch_size:
+                np.random.shuffle(batch)  # Shuffle to ensure mixing
+                batch_indices.append(batch)
+        # import ipdb;ipdb.set_trace()
+        for batch in batch_indices:
+            yield batch
+
+    def __len__(self):
+        return (self.epoch_size + self.batch_size - 1) // self.batch_size
+
+
+
 def mix_datasets_anysize(data_list):
     import torch
     # Size of each dataset in the list

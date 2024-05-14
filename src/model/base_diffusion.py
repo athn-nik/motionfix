@@ -1225,17 +1225,17 @@ class MD(BaseModel):
         if 'hml3d' in batch['dataset_name']:
             idx_t2m = [i for i, x in enumerate( batch['dataset_name']) 
                        if x == 'hml3d']
-        print('-------SincSynth------')
-        print(batch['dataset_name'].count('sinc_synth') / len(batch['dataset_name']))
-        print('-------H3D------')
-        print(batch['dataset_name'].count('hml3d') / len(batch['dataset_name']))
-        print('-------AMT------')
-        print(batch['dataset_name'].count('bodilex') / len(batch['dataset_name']))
+        # print('-------SincSynth------')
+        # print(batch['dataset_name'].count('sinc_synth') / len(batch['dataset_name']))
+        # print('-------H3D------')
+        # print(batch['dataset_name'].count('hml3d') / len(batch['dataset_name']))
+        #print('-------AMT------')
+        # print(batch['dataset_name'].count('bodilex') / len(batch['dataset_name']))
         # unique_datasets = list(set(batch['dataset_name']))  # Extract unique names
         # dataset_to_idx = {name: i for i, name in enumerate(unique_datasets)}
         # # Map each batch item to its dataset index
         # dset_idxs = torch.tensor([dataset_to_idx[name] for name in dataset_names])
-        return None
+        # return None
         for k, v in input_batch.items():
             if self.input_deltas:
                 batch[f'{k}_motion'] = v[1:]

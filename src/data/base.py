@@ -50,11 +50,11 @@ class BASEDataModule(pl.LightningDataModule):
 
     def train_dataloader(self):
         if self.batch_sampler is not None:
-            from src.data.sampling.custom_batch_sampler import PercBatchSampler, CustomBatchSampler, CustomBatchSamplerV2, CustomBatchSamplerV3
+            from src.data.sampling.custom_batch_sampler import PercBatchSampler, CustomBatchSampler, CustomBatchSamplerV2, CustomBatchSamplerV4
             from src.data.sampling.custom_batch_sampler import mix_datasets_anysize
             # ratio_batch_sampler = CustomBatchSamplerV2(concat_dataset=self.dataset['train'],
             #                                          batch_size=self.batch_size)
-            ratio_batch_sampler = CustomBatchSamplerV3(concat_dataset=self.dataset['train'],
+            ratio_batch_sampler = CustomBatchSamplerV4(concat_dataset=self.dataset['train'],
                                                      batch_size=self.batch_size,
                                                      mix_percentages=self.ds_perc)
 
