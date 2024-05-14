@@ -104,7 +104,7 @@ class CustomBatchSamplerV2(Sampler):
         self.weights = self._calculate_weights()
         print(mix_percentages)
         self.epoch_size = len(concat_dataset.datasets) * min(self.sizes)  # Samples per epoch
-        import ipdb;ipdb.set_trace()
+        # import ipdb;ipdb.set_trace()
     def _calculate_weights(self):
         inv_prob = np.array([1.0 / size for size in self.sizes])
         inv_prob /= np.sum(inv_prob)  # Normalize probabilities
@@ -114,7 +114,7 @@ class CustomBatchSamplerV2(Sampler):
         weights = np.array(weights)
         weights /= np.sum(weights)  # Ensure weights sum to exactly 1
         print(len(weights))
-        import ipdb;ipdb.set_trace()
+        # import ipdb;ipdb.set_trace()
         return weights
 
     def __iter__(self):
@@ -213,7 +213,7 @@ class CustomBatchSamplerV4(Sampler):
         self.min_size = min(self.sizes)
         self.epoch_size = len(concat_dataset.datasets) * self.min_size  # Epoch size as #datasets * min(dataset size)
         self.dataset_indices = self._calculate_dataset_indices()
-        import ipdb;ipdb.set_trace()
+        # import ipdb;ipdb.set_trace()
     def _calculate_dataset_indices(self):
         """
         Create a list of indices for each dataset according to the specified percentages.
