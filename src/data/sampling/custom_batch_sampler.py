@@ -96,13 +96,15 @@ import numpy as np
 from torch.utils.data import ConcatDataset, DataLoader, Sampler
 
 class CustomBatchSamplerV2(Sampler):
-    def __init__(self, concat_dataset, batch_size):
+    def __init__(self, concat_dataset, batch_size, mix_percentages):
         self.concat_dataset = concat_dataset
         self.batch_size = batch_size
+        self.percs = mix_percentages
         self.sizes = [len(d) for d in concat_dataset.datasets]
         self.weights = self._calculate_weights()
+        print(mix_percentages)
         self.epoch_size = len(concat_dataset.datasets) * min(self.sizes)  # Samples per epoch
-
+        import ipdb;ipdb.set_trace()
     def _calculate_weights(self):
         inv_prob = np.array([1.0 / size for size in self.sizes])
         inv_prob /= np.sum(inv_prob)  # Normalize probabilities
@@ -111,6 +113,8 @@ class CustomBatchSamplerV2(Sampler):
             weights.extend([weight] * size)
         weights = np.array(weights)
         weights /= np.sum(weights)  # Ensure weights sum to exactly 1
+        print(len(weights))
+        import ipdb;ipdb.set_trace()
         return weights
 
     def __iter__(self):
@@ -125,6 +129,67 @@ class CustomBatchSamplerV2(Sampler):
     def __len__(self):
         return (self.epoch_size + self.batch_size - 1) // self.batch_size
 
+import numpy as np
+from torch.utils.data import Sampler, ConcatDataset
+
+class CustomBatchSamplerV3(Sampler):
+    def __init__(self, concat_dataset, batch_size, mix_percentages):
+        """
+        Initializes the batch sampler with a dataset, batch size, and mix percentages.
+
+        Args:
+            concat_dataset (ConcatDataset): Concatenated dataset containing all sub-datasets.
+            batch_size (int): Number of items in each batch.
+            mix_percentages (dict): Dictionary mapping dataset names to their sampling percentages.
+        """
+        self.concat_dataset = concat_dataset
+        self.batch_size = batch_size
+        self.percs = mix_percentages
+        self.dataset_names = [d.name for d in concat_dataset.datasets]
+        self.sizes = [len(d) for d in concat_dataset.datasets]
+        self.min_size = min(self.sizes)
+        self.epoch_size = len(concat_dataset.datasets) * self.min_size  # Epoch size as #datasets * min(dataset size)
+        self.dataset_indices = self._calculate_dataset_indices()
+
+    def _calculate_dataset_indices(self):
+        """
+        Create a list of indices for each dataset according to the specified percentages.
+        """
+        dataset_start_idx = 0
+        dataset_indices = []
+
+        for dataset, dataset_size in zip(self.concat_dataset.datasets, self.sizes):
+            dataset_percentage = self.percs[dataset.name]
+            num_samples = int(np.floor(dataset_percentage / 100 * self.epoch_size))
+
+            indices = np.random.choice(range(dataset_start_idx, dataset_start_idx + dataset_size), 
+                                       num_samples, replace=True)
+            dataset_indices.append(indices)
+            dataset_start_idx += dataset_size
+        
+        return dataset_indices
+
+    def __iter__(self):
+        """
+        Generate indices for each batch using pre-calculated dataset indices.
+        """
+        batch_indices = []
+
+        # Create full epoch indices by flattening the list of indices arrays
+        combined_indices = np.concatenate(self.dataset_indices)
+        np.random.shuffle(combined_indices)  # Shuffle to ensure mixing
+
+        for i in range(0, len(combined_indices), self.batch_size):
+            batch = combined_indices[i:i + self.batch_size]
+            if len(batch) < self.batch_size:
+                continue  # Skip the last batch if it's not full
+            batch_indices.append(batch)
+
+        for batch in batch_indices:
+            yield batch
+
+    def __len__(self):
+        return (self.epoch_size + self.batch_size - 1) // self.batch_size
 
 def mix_datasets_anysize(data_list):
     import torch

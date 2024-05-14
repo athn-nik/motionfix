@@ -130,12 +130,14 @@ class MldDenoiser(nn.Module):
             emb_latent = torch.cat((time_emb, text_emb_latent), 0)
 
             if motion_embeds is not None:
+                zeroes_mask = (motion_embeds == 0).all(dim=-1)
                 if motion_embeds.shape[-1] != self.latent_dim:
                     if self.repos:
                         motion_embeds_proj = self.pose_proj_in_source(motion_embeds)
+                        motion_embeds_proj[zeroes_mask] = 0
                     else:
                         motion_embeds_proj = self.pose_proj_in(motion_embeds)
-
+                        motion_embeds_proj[zeroes_mask] = 0
                 else:
                     motion_embeds_proj = motion_embeds
  
