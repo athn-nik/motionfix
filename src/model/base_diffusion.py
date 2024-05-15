@@ -482,63 +482,6 @@ class MD(BaseModel):
         #     }
         return diff_outs
 
-    def filter_conditions(self, max_text_len, max_motion_len,
-                          batch_size, 
-                          perc_only_text=0.05,  perc_only_motion=0.05,
-                          perc_text_n_motion=0.85, perc_uncond=0.05,
-                          randomize=False):
-
-        # Define the dimensions of the tensor
-        M = batch_size # Number of rows (adjust as needed)
-        N = max_text_len + max_motion_len  # Total number of columns
-
-        # Calculate the number of rows for each category
-        
-        # rows_ones = int(M * perc_text_n_motion)
-        rows_uncond = int(round(M * perc_uncond))
-        rows_text_only = int(round(M * perc_only_text))
-        rows_motion_only = int(round(M * perc_only_motion))
-        rows_both = M - rows_text_only - rows_uncond - rows_motion_only
-        all_masks = []
-        if rows_both:
-            # Create rows with all ones
-            both_rows = torch.ones((rows_both, N), dtype=torch.float)
-            all_masks.append(both_rows)
-        if rows_uncond:
-            # Create rows with all zeros
-            uncond_rows = torch.zeros((rows_uncond, N), dtype=torch.float)
-            all_masks.append(uncond_rows)
-
-        if rows_text_only:
-            # Create rows with k zeros and w ones
-            single_row_text = torch.cat((torch.ones(max_text_len,
-                                              dtype=torch.float),
-                                         torch.zeros(max_motion_len,
-                                               dtype=torch.float),
-                                         ))
-            text_only_row = torch.cat([single_row_text[None]] * rows_text_only,
-                                      dim=0)
-            all_masks.append(text_only_row)
-
-        if rows_motion_only:
-            single_row_mot = torch.cat((torch.zeros(max_text_len, 
-                                                    dtype=torch.float),
-                                        torch.ones(max_motion_len,
-                                                   dtype=torch.float)))
-            motion_only_row = torch.cat([single_row_mot[None]] * rows_motion_only,
-                                        dim=0)
-            all_masks.append(motion_only_row)
-
-        # Combine the rows
-        final_mask = torch.cat(all_masks, dim=0)
-
-        if randomize:
-            # Shuffle the tensor if needed
-            final_mask = final_mask[torch.randperm(final_mask.size(0))]
-
-        return final_mask.bool().to(self.device)
-
-
     def train_diffusion_forward(self, batch, mask_source_motion,
                                 mask_target_motion):
 
@@ -609,16 +552,6 @@ class MD(BaseModel):
                 "" if np.random.rand(1) < self.diff_params.prob_uncondp else i
                 for i in text_list
             ]
-            # aug_mask = self.filter_conditions(max_text_len=cond_emb_text.shape[1],
-            #                                  max_motion_len=0,
-            #                                  batch_size=batch_size,
-            #                                  perc_only_text=perc_drop_motion,
-            #                                  perc_only_motion=0.0,
-            #                                  perc_text_n_motion=0.0,
-            #                                  perc_uncond=perc_uncondp,
-            #                                  randomize=False)
-            #if max_text_len > 1:
-            #    aug_mask *= text_mask
         cond_emb_text, text_mask = self.text_encoder(text_list)
         max_text_len = cond_emb_text.shape[1]
 
@@ -1259,17 +1192,15 @@ class MD(BaseModel):
 
                 # Determine the maximum length from length_source_tensor
                 max_source_len = torch.max(length_source_tensor)
-
                 # Efficient slicing: cut off all sequences to the max length in one operation
-                batch['source_motion'] = batch['source_motion'][:max_source_len]
-
+                # batch['source_motion'] = batch['source_motion'][:max_source_len]
                 # Create a mask for indices that need to be zeroed out (assuming idx_t2m is some list of indices)
                 idx_t2m_mask = torch.zeros_like(length_source_tensor, 
                                                 dtype=torch.bool)
                 idx_t2m_mask[idx_t2m] = True
-
+                tgt_lens_to_pad = torch.tensor(batch['length_target'], device=self.device)
                 # Apply the mask to modify 'length_source_tensor' efficiently
-                length_source_tensor[idx_t2m_mask] = max_source_len
+                length_source_tensor[idx_t2m_mask] = tgt_lens_to_pad[idx_t2m_mask]
 
                 # Zero out the specific indices in 'source_motion'
                 # Ensure 'source_motion' can handle boolean indexing along the second dimension
