@@ -7,6 +7,8 @@ hydra:
 
 folder: ???
 
+prob_way: '3way' # 2way
+
 savedir: null
 mean: false
 fact: 1
