@@ -11,7 +11,7 @@ activation: "gelu"
 render_vids_every_n_epochs: 100
 num_vids_to_render: 2
 lr_scheduler: null # cosine # null # reduceonplateau, steplr
-zero_len_source: true
+zero_len_source: false
 # normalization
 statistics_path: ${statistics_path}
 norm_type: standardize # min_max standardize
@@ -28,7 +28,7 @@ diff_params:
   noise_schedule: 'squaredcos_cap_v2' # Optional: ['linear', 'scaled_linear', 'squaredcos_cap_v2']
   predict_type: 'sample' # noise
 
-motion_condition: null
+motion_condition: source
 source_encoder: null # trans_enc 
 condition: text
 smpl_path: ${data.smplh_path}
