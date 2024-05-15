@@ -8,6 +8,8 @@ hydra:
 folder: ???
 mode: sample # denoise / sample / sthing else
 
+prob_way: '3way' # 2way 
+
 savedir: null
 mean: false
 fact: 1

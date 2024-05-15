@@ -286,7 +286,9 @@ def render_vids(newcfg: DictConfig) -> None:
                                                 gd_text=guid_text,
                                                 num_diff_steps=num_infer_steps,
                                                 inpaint_dict=inpaint_dict,
-                                                use_linear=use_linear_guid)
+                                                use_linear=use_linear_guid, 
+                                                prob_way=cfg.prob_way 
+                                                )
                 gen_mo = model.diffout2motion(diffout)
                 from src.tools.transforms3d import transform_body_pose
                 for i in range(gen_mo.shape[0]):

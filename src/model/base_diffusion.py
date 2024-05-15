@@ -219,7 +219,8 @@ class MD(BaseModel):
                            return_init_noise=False,
                            steps_num=None,
                            inpaint_dict=None,
-                           use_linear=False):
+                           use_linear=False,
+                           prob_way='3way'):
         # guidance_scale_text: 7.5 #
         #  guidance_scale_motion: 1.5
         # init latents
@@ -352,7 +353,8 @@ class MD(BaseModel):
                                 guidance_motion=gd_motion,
                                 guidance_text_n_motion=gd_text,
                                 inpaint_dict=inpaint_dict,
-                                max_steps=max_steps_diff)
+                                max_steps=max_steps_diff,
+                                prob_way=prob_way)
         else:
             model_kwargs = dict(# noised_motion=latent_model_input,
                     # timestep=t,
@@ -895,7 +897,8 @@ class MD(BaseModel):
                         condition_mode='full_cond',
                         num_diff_steps=None, 
                         inpaint_dict=None,
-                        use_linear=False
+                        use_linear=False,
+                        prob_way='3way'
                         ):
         # uncond_tokens = [""] * len(texts_cond)
         # if self.condition == 'text':
@@ -978,7 +981,8 @@ class MD(BaseModel):
                                                 mode=condition_mode,
                                                 steps_num=num_diff_steps,
                                                 inpaint_dict=inpaint_dict,
-                                                use_linear=use_linear)
+                                                use_linear=use_linear,
+                                                prob_way=prob_way)
                 return init_noise, diff_out.permute(1, 0, 2)
 
             else:

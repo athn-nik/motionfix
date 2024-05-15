@@ -104,7 +104,8 @@ class MldDenoiser(nn.Module):
 
         # time_embedding | text_embedding | frames_source | frames_target
         # 1 * lat_d | max_text * lat_d | max_frames * lat_d | max_frames * lat_d
-
+        
+        
         # 1. time_embeddingno
         # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
         timesteps = timestep.expand(noised_motion.shape[1]).clone()
@@ -244,6 +245,7 @@ class MldDenoiser(nn.Module):
                               lengths=None,
                               inpaint_dict=None,
                               max_steps=None,
+                              prob_way='3way',
                               **kwargs):
         # if motion embeds is None
         # TODO put here that you have tow
@@ -323,7 +325,11 @@ class MldDenoiser(nn.Module):
                 uncond_eps = uncond_eps*(~mask_src_parts) + source_mot*mask_src_parts
                 cond_eps_text = cond_eps_text*(~mask_src_parts) + source_mot*mask_src_parts
                 cond_eps_text_n_motion = cond_eps_text_n_motion*(~mask_src_parts) + source_mot*mask_src_parts
-            third_eps = uncond_eps + guidance_motion * (cond_eps_motion - uncond_eps) + \
-                        guidance_text_n_motion * (cond_eps_text_n_motion - cond_eps_motion)
+            if prob_way=='3way':
+                third_eps = uncond_eps + guidance_motion * (cond_eps_motion - uncond_eps) + \
+                            guidance_text_n_motion * (cond_eps_text_n_motion - cond_eps_motion)
+            if prob_way=='2way':
+                third_eps = uncond_eps + guidance_text_n_motion * (cond_eps_text_n_motion - uncond_eps)
+
             eps = torch.cat([third_eps, third_eps, third_eps], dim=0)
         return eps
