@@ -42,12 +42,6 @@ load_feats:
 - "z_orient_delta"
 - "body_pose"
 - "body_joints_local_wo_z_rot"
-# - "body_transl"
-# - "body_transl_delta"
-# - "body_transl_delta_pelv_xy_wo_z" 
-# - "body_orient"
-# - "body_transl"
-# - "body_joints"
 
 # Other
 progress_bar: true
