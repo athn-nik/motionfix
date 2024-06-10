@@ -34,7 +34,8 @@ def get_guidances(s=1, e=5, no=5, t2m=False, inpaint=False):
 
 def main_loop(command, exp_paths,
               guidance_vals,
-              init_from, data, ckpt_to_eval, inpaint=False):
+              init_from, data, ckpt_to_eval, inpaint=False,
+              sample_way='3way'):
 
     cmd_no=0
     cmd_sample = command
@@ -71,16 +72,19 @@ def main_loop(command, exp_paths,
                                      f"{arg1}={gd[1]}",
                                      f"{arg0}={gd[0]}",
                                      f"data={data_type}",
-                                     "inpaint=true"])
+                                     "inpaint=true",
+                                     f"prob_way={sample_way}"])
             else:
                 list_of_args = ' '.join([f"init_from={in_lat}",
                                      f"ckpt_name={ckt_name}",
                                      f"{arg1}={gd[1]}",
                                      f"{arg0}={gd[0]}",
-                                     f"data={data_type}"])
-        
+                                     f"data={data_type}",
+                                     f"prob_way={sample_way}"])
+         
         cur_cmd.extend([list_of_args])
-        
+        print(cur_cmd)
+        exit()
         run(cur_cmd)
         time.sleep(0.01)
         cmd_no += 1
@@ -101,6 +105,8 @@ if __name__ == "__main__":
                     help='Increase output verbosity')
     parser.add_argument('--ckpt', required=False, default='last', type=str,
                     help='The checkpoint used to evaluate with.')
+    parser.add_argument('--samplway', required=False, default='3way', type=str,
+                    help='The checkpoint used to evaluate with.')
     parser.add_argument(
             "--runs",
             nargs="*",  # expects arguments
@@ -114,6 +120,7 @@ if __name__ == "__main__":
     ckpt_name = args.ckpt
     exp_paths = subdirs
     datasets = args.ds
+    samplway = args.samplway
     print('The current folders are---->\n', '\n'.join(subdirs))
     print('---------------------------------------------------')
     assert mode in ['viz_t2m', 'sample_t2m', 'viz', 'sample', 'eval']
@@ -152,4 +159,4 @@ if __name__ == "__main__":
                 '--extras']
     init_from = ['noise']
     data = [datasets]
-    main_loop(cmd_train, exp_paths, guidances, init_from, data, ckpt_name, inpaint=args.inpaint)
+    main_loop(cmd_train, exp_paths, guidances, init_from, data, ckpt_name, inpaint=args.inpaint, sample_way=samplway)

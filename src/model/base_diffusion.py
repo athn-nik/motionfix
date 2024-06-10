@@ -61,6 +61,8 @@ class MD(BaseModel):
                  pad_inputs = False,
                  source_encoder: str = 'trans_enc',
                  zero_len_source: bool = True,
+                 copy_target: bool = False,
+                 old_way: bool = False,
                  **kwargs):
 
         super().__init__(statistics_path, nfeats, norm_type, input_feats,
@@ -87,6 +89,8 @@ class MD(BaseModel):
         else:
             self.using_deltas_transl = False
         self.zero_len_source = zero_len_source
+        self.copy_target = copy_target
+        self.old_way = old_way
         self.smpl_path = smpl_path
         self.condition = condition
         self.motion_condition = motion_condition
@@ -282,7 +286,7 @@ class MD(BaseModel):
             #                         use_text_mask],
             #                         dim=0)
             text_masks = text_masks_from_enc.clone()
-            if self.zero_len_source:
+            if self.zero_len_source or self.old_way:
                 nomotion_mask = torch.zeros(bsz, max_motion_len, 
                             dtype=torch.bool).to(self.device)
             else:
@@ -546,7 +550,8 @@ class MD(BaseModel):
                 text_list[idx] = ""
             cond_emb_motion = cond_emb_motion.permute(1, 0, 2) * mask_both
             cond_emb_motion = cond_emb_motion.permute(1, 0, 2)
-            mask_source_motion = (mask_source_motion * mask_both.squeeze(-1)).bool()
+            if not self.old_way:
+                mask_source_motion = (mask_source_motion * mask_both.squeeze(-1)).bool()
         else:
             text_list = [
                 "" if np.random.rand(1) < self.diff_params.prob_uncondp else i
@@ -1183,34 +1188,50 @@ class MD(BaseModel):
                 batch[f'{k}_motion'] = torch.nn.functional.pad(v, (0, 0, 0, 0, 0,
                                                                300 - v.size(0)),
                                                            value=0)
+        #if self.old_way:
+        #    max_source_len = max(batch['length_source'])
+        #    sliced_tensors = []
+        #    for i in range(batch['source_motion'].shape[1]):
+        #        sliced_tensors.append(batch['source_motion'][:max_source_len, i][:, None])
+        #        batch['source_motion'] = torch.cat(sliced_tensors, dim=1)
         if 'length_source' in batch: #hml_3d only case
             if 0 in batch['length_source']:
+                if self.old_way:
+                    max_source_len = max(batch['length_source'])
+                    sliced_tensors = []
+                    for i in range(batch['source_motion'].shape[1]):
+                        sliced_tensors.append(batch['source_motion'][:max_source_len, i][:, None])
+                    batch['source_motion'] = torch.cat(sliced_tensors, dim=1)
                 # Assuming batch['source_motion'] is already a CUDA tensor
                 # Convert batch['length_source'] from list to a CUDA tensor for efficient operations
-                length_source_tensor = torch.tensor(batch['length_source'], 
+                else:
+                    length_source_tensor = torch.tensor(batch['length_source'], 
                                                     device=self.device)
 
-                # Determine the maximum length from length_source_tensor
-                max_source_len = torch.max(length_source_tensor)
-                # Efficient slicing: cut off all sequences to the max length in one operation
-                # batch['source_motion'] = batch['source_motion'][:max_source_len]
-                # Create a mask for indices that need to be zeroed out (assuming idx_t2m is some list of indices)
-                idx_t2m_mask = torch.zeros_like(length_source_tensor, 
+                    # Determine the maximum length from length_source_tensor
+                    max_source_len = torch.max(length_source_tensor)
+                    # Efficient slicing: cut off all sequences to the max length in one operation
+                    # batch['source_motion'] = batch['source_motion'][:max_source_len]
+                    # Create a mask for indices that need to be zeroed out (assuming idx_t2m is some list of indices)
+                    idx_t2m_mask = torch.zeros_like(length_source_tensor, 
                                                 dtype=torch.bool)
-                idx_t2m_mask[idx_t2m] = True
-                tgt_lens_to_pad = torch.tensor(batch['length_target'], device=self.device)
-                # Apply the mask to modify 'length_source_tensor' efficiently
-                length_source_tensor[idx_t2m_mask] = tgt_lens_to_pad[idx_t2m_mask]
+                    idx_t2m_mask[idx_t2m] = True
+                    tgt_lens_to_pad = torch.tensor(batch['length_target'], device=self.device)
+                    # Apply the mask to modify 'length_source_tensor' efficiently
+                    length_source_tensor[idx_t2m_mask] = tgt_lens_to_pad[idx_t2m_mask]
 
                 # Zero out the specific indices in 'source_motion'
                 # Ensure 'source_motion' can handle boolean indexing along the second dimension
-                batch['source_motion'][:, idx_t2m_mask] = 0
+                    if self.copy_target:
+                        batch['source_motion'][:, idx_t2m_mask] = batch['target_motion'][:, idx_t2m_mask].clone()
+                    else:
+                        batch['source_motion'][:, idx_t2m_mask] = 0
 
-                # Convert length_source_tensor back to a list and store it back in batch if necessary
-                # Note: Conversion to list happens on the CPU, so move tensor to CPU before converting
-                batch['length_source'] = length_source_tensor.tolist()
-                if self.zero_len_source:
-                    batch['length_source'] = [0 if ii in idx_t2m else ll 
+                    # Convert length_source_tensor back to a list and store it back in batch if necessary
+                    # Note: Conversion to list happens on the CPU, so move tensor to CPU before converting
+                    batch['length_source'] = length_source_tensor.tolist()
+                    if self.zero_len_source:
+                        batch['length_source'] = [0 if ii in idx_t2m else ll 
                                               for ii, ll in enumerate(batch['length_source']) 
                                              ]
         if self.motion_condition is not None:

@@ -118,9 +118,9 @@ def render_vids(newcfg: DictConfig) -> None:
     # fd_name = get_folder_name(cfg)
     fd_name = f'steps_{num_infer_steps}'
     if cfg.inpaint:
-        output_path = exp_folder / f'{gd_str}{fd_name}_{cfg.data.dataname}_{cfg.init_from}_{cfg.ckpt_name}_inpaint_bsl'
+        output_path = exp_folder / f'{cfg.prob_way}_{gd_str}{fd_name}_{cfg.data.dataname}_{cfg.init_from}_{cfg.ckpt_name}_inpaint_bsl'
     else:
-        output_path = exp_folder / f'{gd_str}{fd_name}_{cfg.data.dataname}_{cfg.init_from}_{cfg.ckpt_name}'
+        output_path = exp_folder / f'{cfg.prob_way}_{gd_str}{fd_name}_{cfg.data.dataname}_{cfg.init_from}_{cfg.ckpt_name}'
 
     output_path.mkdir(exist_ok=True, parents=True)
     logger.info(f"-------Output path:{output_path}------")
@@ -233,11 +233,17 @@ def render_vids(newcfg: DictConfig) -> None:
                                         for kd in keyids]
                     else:
                         parts_to_keep = text_diff
-                    jts_ids = get_mask_from_texts(parts_to_keep)
+                    
+                    try:
+                        jts_ids = get_mask_from_texts(parts_to_keep)
+                    except:
+                        import ipdb;ipdb.set_trace()
                     # True for involved body_parts aka joint groups
                     # Tensor #Texts x features [207]
                     mask_features = get_mask_from_bps(jts_ids, device=model.device, 
                                                     feat_dim=sum(model.input_feats_dims)) 
+                    if cfg.data.dataname != 'sinc_synth':
+                        mask_features = ~mask_features
                     ##################################################
                     inpaint_dict = {'mask': mask_features,
                                     'start_motion': input_batch['source_motion'].clone() }
