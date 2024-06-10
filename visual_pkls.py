@@ -107,13 +107,13 @@ def load_convert(path, lofs, gt_path, gt_dict, tgt2tgt=False):
         dict_to_save['stamps_b'] = st_tgt
         dict_to_save['motion_a'] = k_src
         dict_to_save['stamps_a'] = st_src
-    # import ipdb; ipdb.set_trace()
+    import ipdb; ipdb.set_trace()
     if tgt2tgt:
         extra_str = 't2t'
     else:
         extra_str = 's2t'
     print(f'The path that you can grab a json from and run the renderings is in\n{path_for_renders}/selected_{extra_str}.json')
-    # import ipdb; ipdb.set_trace()
+    import ipdb; ipdb.set_trace()
     write_json(dict_to_save, f'{path_for_renders}/selected_{extra_str}.json')
     return dict_to_save
 
@@ -131,7 +131,8 @@ def extract_gt_pairs(dict_to_loop, gt_path, return_dict=False):
         if os.path.exists(path_to_d):
             print("GT Data file already exists!")
             dictio = read_json(path_to_d)
-            return dictio
+            if return_dict:
+                return dictio
     else:
         if IS_LOCAL_DEBUG:
             path_to_d = 'fast-cluster/logs/blender_motionfix/info/bodilex.json'
@@ -141,7 +142,8 @@ def extract_gt_pairs(dict_to_loop, gt_path, return_dict=False):
         if os.path.exists(path_to_d):
             print("GT Data file already exists!")
             dictio = read_json(path_to_d)
-            return dictio
+            if return_dict:
+                return dictio
 
     sta_src = []
     sta_tgt = []
@@ -188,10 +190,10 @@ def extract_gt_pairs(dict_to_loop, gt_path, return_dict=False):
         sta_tgt.append(t_tgt_d)
         assert os.path.exists(f'{gt_path}/{key_src}.pth.tar')
         assert os.path.exists(f'{gt_path}/{key_tgt}.pth.tar')
-        key_src_lst.append(f'{gt_path}/{key_src}.pth.tar')
-        key_tgt_lst.append(f'{gt_path}/{key_tgt}.pth.tar')
-        dictio[k] = {'motion_a': f'{gt_path}/{key_src}.pth.tar',
-                     'motion_b': f'{gt_path}/{key_tgt}.pth.tar',
+        key_src_lst.append(f'{gt_path}/{key_src}')
+        key_tgt_lst.append(f'{gt_path}/{key_tgt}')
+        dictio[k] = {'motion_a': f'{gt_path}/{key_src}',
+                     'motion_b': f'{gt_path}/{key_tgt}',
                      'sta_a': t_src_d,
                      'sta_b': t_tgt_d}
 
@@ -199,22 +201,27 @@ def extract_gt_pairs(dict_to_loop, gt_path, return_dict=False):
     if 'sinc_synth' in gt_path:
         path_to_d = '/fast/nathanasiou/logs/blender_motionfix/info/sinc_synth.json'
         write_json(dictio, path_to_d)
-        return dictio
     else:
         path_to_d = '/fast/nathanasiou/logs/blender_motionfix/info/bodilex.json'
         write_json(dictio, path_to_d)
-        return dictio
+    import ipdb; ipdb.set_trace()
     if return_dict:
         return dictio
     return key_src_lst, key_tgt_lst, sta_src, sta_tgt
 
-def main_loop(path, gt_path, gt_dict, mode):
+def main_loop(path, gt_path, gt_dict, mode, set_to_pick):
     from pathlib import Path
     if path is not None: # just the GT
-        list_of_cands = get_file_list(path, '*candkeyids.json')
-        cand_keys = []
-        for candfile in list_of_cands:
-            cand_keys.extend(read_json(candfile))
+        if set_to_pick == 'best':
+            list_of_cands = get_file_list(path, '*candkeyids.json')
+            cand_keys = []
+            for candfile in list_of_cands:
+                cand_keys.extend(read_json(candfile))
+        else:
+            cand_keys = []
+            splits = read_json('data/bodilex/splits.json')
+            cand_keys = splits['train'] +splits['val']
+        # import ipdb;ipdb.set_trace()
         cand_keys = list(set(cand_keys))
     else:
         cand_keys = None
@@ -242,6 +249,8 @@ if __name__ == "__main__":
                         help='dataset')
     parser.add_argument('--mode', required=True, type=str,
                         help='dataset')
+    parser.add_argument('--set', required=False, default='best', type=str,
+                        help='dataset')
     args = parser.parse_args()
     path = args.path
     mode = args.mode
@@ -254,7 +263,7 @@ if __name__ == "__main__":
         gt_path = path_sinc
     else:
         raise ValueError('Dataset not supported')
-    main_loop(path, gt_path, gt_dict, mode)
+    main_loop(path, gt_path, gt_dict, mode, args.set)
 #  python visual_pkls.py --path experiments/clean-motionfix/bodilex/bs64_100ts_clip77/steps_1000_bodilex_noise_last/ld_txt-1.0_ld_mot-1.5 --ds bodilex
 
 # 'all_candkeyids.json'

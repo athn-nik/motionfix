@@ -12,6 +12,7 @@ render_vids_every_n_epochs: 100
 num_vids_to_render: 2
 lr_scheduler: null # cosine # null # reduceonplateau, steplr
 zero_len_source: false
+old_way: false
 # normalization
 statistics_path: ${statistics_path}
 norm_type: standardize # min_max standardize
@@ -32,7 +33,7 @@ motion_condition: source
 source_encoder: null # trans_enc 
 condition: text
 smpl_path: ${data.smplh_path}
-
+copy_target: false
 nfeats: 135
 dim_per_feat: [135]
 # data related
