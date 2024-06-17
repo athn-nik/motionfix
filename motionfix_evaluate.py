@@ -88,7 +88,7 @@ def render_vids(newcfg: DictConfig) -> None:
         num_infer_steps = cfg.model.diff_params.num_train_timesteps
     init_diff_from = cfg.init_from
     if init_diff_from == 'source':
-        num_infer_steps //= 3
+        num_infer_steps //= 1
     if cfg.linear_gd:
         use_linear_guid = True
         gd_str = 'lingd_'

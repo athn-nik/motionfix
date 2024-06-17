@@ -83,8 +83,8 @@ def main_loop(command, exp_paths,
                                      f"prob_way={sample_way}"])
          
         cur_cmd.extend([list_of_args])
-        print(cur_cmd)
-        exit()
+        #print(cur_cmd)
+        #exit()
         run(cur_cmd)
         time.sleep(0.01)
         cmd_no += 1

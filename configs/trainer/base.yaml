@@ -1,6 +1,6 @@
 strategy: null # 'ddp' for multi gpu 
 benchmark: True
-max_epochs: 1501
+max_epochs: 1001
 accelerator: gpu
 log_every_n_steps: 40 # 100
 deterministic: False

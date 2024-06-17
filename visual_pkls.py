@@ -107,13 +107,13 @@ def load_convert(path, lofs, gt_path, gt_dict, tgt2tgt=False):
         dict_to_save['stamps_b'] = st_tgt
         dict_to_save['motion_a'] = k_src
         dict_to_save['stamps_a'] = st_src
-    import ipdb; ipdb.set_trace()
+    # import ipdb; ipdb.set_trace()
     if tgt2tgt:
         extra_str = 't2t'
     else:
         extra_str = 's2t'
     print(f'The path that you can grab a json from and run the renderings is in\n{path_for_renders}/selected_{extra_str}.json')
-    import ipdb; ipdb.set_trace()
+    #import ipdb; ipdb.set_trace()
     write_json(dict_to_save, f'{path_for_renders}/selected_{extra_str}.json')
     return dict_to_save
 
