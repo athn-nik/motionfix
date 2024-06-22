@@ -11,6 +11,7 @@ activation: "gelu"
 render_vids_every_n_epochs: 100
 num_vids_to_render: 2
 lr_scheduler: null # cosine # null # reduceonplateau, steplr
+
 zero_len_source: false
 old_way: false
 # normalization
@@ -49,10 +50,7 @@ input_feats:
 - "body_pose"
 - "body_joints_local_wo_z_rot"
  
-loss_on_positions: false
-loss_on_verts: false
 pad_inputs: false
-scale_loss_on_positions: 500
 
 loss_func_pos: mse # l1 mse
 loss_func_feats: mse # l1 mse

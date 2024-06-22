@@ -18,6 +18,7 @@ deps/*
 lightning_logs
 sinc-env
 fast-cluster
+eval-deps
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

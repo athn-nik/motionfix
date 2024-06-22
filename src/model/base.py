@@ -30,10 +30,11 @@ from src.model.utils.smpl_fast import smpl_forward_fast
 from src.utils.file_io import hack_path
 
 class BaseModel(LightningModule):
-    def __init__(self, statistics_path: str, nfeats: int, norm_type: str,
-                 input_feats: List[str], dim_per_feat: List[int],
+    def __init__(self, statistics_path: str, nfeats: int, 
+                 norm_type: str,
+                 input_feats: List[str], 
+                 dim_per_feat: List[int],
                  smpl_path: str, num_vids_to_render: str,
-                 loss_on_positions: bool,
                  renderer, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.save_hyperparameters(logger=False, 
@@ -70,13 +71,6 @@ class BaseModel(LightningModule):
         self.num_vids_to_render = num_vids_to_render
         smpl_path = hack_path(smpl_path, keyword='data')
 
-        if loss_on_positions:
-            self.body_model = smplx.SMPLHLayer(f'{smpl_path}/smplh',
-                                               model_type='smplh',
-                                               gender='neutral',
-                                               ext='npz').to(self.device).eval();
-            setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
-            freeze(self.body_model)
         from aitviewer.models.smpl import SMPLLayer
         if renderer is not None:
             self.smpl_ait = SMPLLayer(model_type='smplh',
@@ -157,7 +151,6 @@ class BaseModel(LightningModule):
         return train_loss
     
     def validation_step(self, batch, batch_idx):
-        
         val_loss, step_val_loss_dict = self.allsplit_step("val",
                                                           batch, batch_idx)
         if self.loss_dict['val'] is None:
@@ -170,7 +163,7 @@ class BaseModel(LightningModule):
         # for name, param in model.named_parameters():
         #    if param.grad is None:
         #         print(name)
-        return val_loss        
+        return val_loss
 
     def test_step(self, batch, batch_idx):
         return self.allsplit_step("test", batch, batch_idx)
@@ -191,7 +184,6 @@ class BaseModel(LightningModule):
                 loss_type, name = loss.split("_")
             log_name = f"{loss_type}/{name}/{split}"
         return log_name
-
 
     def norm_and_cat(self, batch, features_types):
         """
@@ -391,6 +383,10 @@ class BaseModel(LightningModule):
         video_names = []
         # RENDER
         curep = str(self.trainer.current_epoch)
+        if split == 'val':
+            from tmr_evaluator.motion2motion_retr import retrieval
+            x = 1
+
         # do_render = curep%self.render_vids_every_n_epochs
         if self.renderer is not None:
             if self.global_rank == 0 and self.trainer.current_epoch != 0:
@@ -447,11 +443,6 @@ class BaseModel(LightningModule):
                                 if self.logger is not None:
                                     self.logger.experiment.log(log_render_dic)
 
-        if split == 'val':
-            for k, v in self.set_buf.items():
-                if v:
-                    self.set_buf[k].clear()
-    
         #######################################################################
         #     if self.global_rank == 0 and self.trainer.current_epoch != 0:
         #         if split == 'train':
