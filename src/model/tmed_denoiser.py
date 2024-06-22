@@ -8,7 +8,7 @@ from src.model.utils.all_positional_encodings import build_position_encoding
 from src.data.tools.tensors import lengths_to_mask
 from src.model.utils.timestep_embed import TimestepEmbedderMDM
 
-class MldDenoiser(nn.Module):
+class TMED_denoiser(nn.Module):
 
     def __init__(self,
                  nfeats: int = 263,
@@ -19,34 +19,20 @@ class MldDenoiser(nn.Module):
                  num_layers: int = 9,
                  num_heads: int = 4,
                  dropout: float = 0.1,
-                 normalize_before: bool = False,
                  activation: str = "gelu",
-                 flip_sin_to_cos: bool = True,
-                 arch: str = "trans_enc",
-                 freq_shift: int = 0,
                  text_encoded_dim: int = 768,
-                 use_deltas: bool = False,
                  pred_delta_motion: bool = False,
-                 repos: bool = False,
                  use_sep: bool = True,
                  **kwargs) -> None:
 
         super().__init__()
-        self.use_deltas = use_deltas
         self.latent_dim = latent_dim
         self.pred_delta_motion = pred_delta_motion
         self.text_encoded_dim = text_encoded_dim
         self.condition = condition
-        self.arch = arch
         self.feat_comb_coeff = nn.Parameter(torch.tensor([1.0]))
-        # if self.diffusion_only:
-            # assert self.arch == "trans_enc", "only implement encoder for diffusion-only"
-        self.repos = repos
-        if repos:            
-            self.pose_proj_in_source = nn.Linear(nfeats, self.latent_dim)
-            self.pose_proj_in_target = nn.Linear(nfeats, self.latent_dim)
-        else:
-            self.pose_proj_in = nn.Linear(nfeats, self.latent_dim)
+        self.pose_proj_in_source = nn.Linear(nfeats, self.latent_dim)
+        self.pose_proj_in_target = nn.Linear(nfeats, self.latent_dim)
         self.pose_proj_out = nn.Linear(self.latent_dim, nfeats)
         self.first_pose_proj = nn.Linear(self.latent_dim, nfeats)
         self.motion_condition = motion_condition
@@ -55,10 +41,6 @@ class MldDenoiser(nn.Module):
         if self.condition in ["text", "text_uncond"]:
             # text condition
             # project time from text_encoded_dim to latent_dim
-            self.time_proj = Timesteps(text_encoded_dim, flip_sin_to_cos,
-                                       freq_shift)
-            self.time_embedding = TimestepEmbedding(text_encoded_dim,
-                                                    self.latent_dim)
             self.embed_timestep = TimestepEmbedderMDM(self.latent_dim)
 
             # FIXME me TODO this            
@@ -135,12 +117,8 @@ class MldDenoiser(nn.Module):
             if motion_embeds is not None:
                 zeroes_mask = (motion_embeds == 0).all(dim=-1)
                 if motion_embeds.shape[-1] != self.latent_dim:
-                    if self.repos:
-                        motion_embeds_proj = self.pose_proj_in_source(motion_embeds)
-                        motion_embeds_proj[zeroes_mask] = 0
-                    else:
-                        motion_embeds_proj = self.pose_proj_in(motion_embeds)
-                        motion_embeds_proj[zeroes_mask] = 0
+                    motion_embeds_proj = self.pose_proj_in_source(motion_embeds)
+                    motion_embeds_proj[zeroes_mask] = 0
                 else:
                     motion_embeds_proj = motion_embeds
  
@@ -148,10 +126,7 @@ class MldDenoiser(nn.Module):
             raise TypeError(f"condition type {self.condition} not supported")
         # 4. transformer
         # if self.diffusion_only:
-        if self.repos:
-            proj_noised_motion = self.pose_proj_in_target(noised_motion)
-        else:
-            proj_noised_motion = self.pose_proj_in(noised_motion)
+        proj_noised_motion = self.pose_proj_in_target(noised_motion)
 
         if motion_embeds is None:
             xseq = torch.cat((emb_latent, proj_noised_motion), axis=0)
@@ -160,21 +135,12 @@ class MldDenoiser(nn.Module):
 
                 sep_token_batch = torch.tile(self.sep_token, (bs,)).reshape(bs,
                                                                          -1)
-                if self.repos:
-                    xseq = torch.cat((emb_latent, motion_embeds_proj,
-                                  sep_token_batch[None],
-                                  proj_noised_motion), axis=0)
-                else:
-                    xseq = torch.cat((emb_latent, proj_noised_motion,
-                                  sep_token_batch[None],
-                                  motion_embeds_proj), axis=0)
+                xseq = torch.cat((emb_latent, motion_embeds_proj,
+                                sep_token_batch[None],
+                                proj_noised_motion), axis=0)
             else:
-                if self.repos:
-                    xseq = torch.cat((emb_latent, motion_embeds_proj,
+                xseq = torch.cat((emb_latent, motion_embeds_proj,
                                   proj_noised_motion), axis=0)
-                else:
-                    xseq = torch.cat((emb_latent, proj_noised_motion,
-                                  motion_embeds_proj), axis=0)
         # if self.ablation_skip_connection:
         #     xseq = self.query_pos(xseq)
         #     tokens = self.encoder(xseq)
@@ -198,34 +164,19 @@ class MldDenoiser(nn.Module):
                 sep_token_mask = torch.ones((bs, self.sep_token.shape[0]),
                                         dtype=bool,
                                         device=xseq.device)
-            if self.repos:
-                if self.use_sep:
-                    aug_mask = torch.cat((time_token_mask,
-                                    condition_mask[:, :text_emb_latent.shape[0]],
-                                    condition_mask[:, text_emb_latent.shape[0]:],
-                                    sep_token_mask,
-                                    motion_in_mask,
-                                    ), 1)
-                else:
-                    aug_mask = torch.cat((time_token_mask,
-                                    condition_mask[:, :text_emb_latent.shape[0]],
-                                    condition_mask[:, text_emb_latent.shape[0]:],
-                                    motion_in_mask,
-                                    ), 1)
+            if self.use_sep:
+                aug_mask = torch.cat((time_token_mask,
+                                condition_mask[:, :text_emb_latent.shape[0]],
+                                condition_mask[:, text_emb_latent.shape[0]:],
+                                sep_token_mask,
+                                motion_in_mask,
+                                ), 1)
             else:
-                if self.use_sep:
-                    aug_mask = torch.cat((time_token_mask,
-                                    condition_mask[:, :text_emb_latent.shape[0]],
-                                    motion_in_mask,
-                                    sep_token_mask,
-                                    condition_mask[:, text_emb_latent.shape[0]:]
-                                        ), 1)
-                else:
-                    aug_mask = torch.cat((time_token_mask,
-                                    condition_mask[:, :text_emb_latent.shape[0]],
-                                    motion_in_mask,
-                                    condition_mask[:, text_emb_latent.shape[0]:]
-                                        ), 1)
+                aug_mask = torch.cat((time_token_mask,
+                                condition_mask[:, :text_emb_latent.shape[0]],
+                                condition_mask[:, text_emb_latent.shape[0]:],
+                                motion_in_mask,
+                                ), 1)
         tokens = self.encoder(xseq, src_key_padding_mask=~aug_mask)
 
         # if self.diffusion_only:
@@ -235,11 +186,7 @@ class MldDenoiser(nn.Module):
                 useful_tokens = motion_embeds_proj.shape[0]+1
             else:
                 useful_tokens = motion_embeds_proj.shape[0]
-            if self.repos:
-
-                denoised_motion_proj = denoised_motion_proj[useful_tokens:]
-            else:
-                denoised_motion_proj = denoised_motion_proj[:-useful_tokens]
+            denoised_motion_proj = denoised_motion_proj[useful_tokens:]
         else:
             denoised_motion_proj = tokens[emb_latent.shape[0]:]
 

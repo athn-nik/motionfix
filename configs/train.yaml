@@ -23,7 +23,7 @@ run_id: ${generate_id:}
 # For finetuning
 resume: null
 resume_ckpt_name: null
-renderer: null # ait # null
+renderer: ait # ait # null
 
 # log gradients/weights
 watch_model: false

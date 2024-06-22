@@ -53,7 +53,7 @@ def _train(cfg: DictConfig):
 
 def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     import os
-    import torch 
+    import torch
     import socket
     os.environ['HYDRA_FULL_ERROR'] = '1'
     #if socket.gethostname() == 'ps018':
