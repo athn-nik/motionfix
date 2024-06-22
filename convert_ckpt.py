@@ -27,7 +27,7 @@ def filter_checkpoint(checkpoint_path, minimal_checkpoint_path):
 
 
     # Save the minimal checkpoint
-    torch.save(model_state_dict, minimal_checkpoint_path)
+    torch.save(model_state_dict, f'{minimal_checkpoint_path}/min_checkpoint.ckpt')
 
     print(f"Minimal checkpoint saved to {minimal_checkpoint_path}")
 
