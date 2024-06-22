@@ -22,7 +22,7 @@ def filter_checkpoint(checkpoint_path, minimal_checkpoint_path):
     for key in keys_to_remove:
         del model_state_dict[key]
 
-    checkpoint = {k.replace('denoiser.', ''): v for k, v in checkpoint.items()}
+    checkpoint = {k.replace('denoiser.', ''): v for k, v in model_state_dict.items()}
 
 
     # Save the minimal checkpoint
