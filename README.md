@@ -23,10 +23,8 @@
  <div align="center">
   </div>
 </p>
-<!-- <p float="center">
-  <div align="center">
-  <img src="assets/sinc_tsr.gif" />
-  </div> -->
+<p float="center">
+  <img src="assets/action2.gif" width="55%" />
 </p>
 
 <!-- | Paper Video                                                                                                | Qualitative Results                                                                                                |
