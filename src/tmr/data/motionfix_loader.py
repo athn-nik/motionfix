@@ -31,9 +31,11 @@ class MotionFixLoader(Dataset):
         self.datapath = 'datasets/bodilex/amass_bodilex_v13.pth.tar'
         self.collate_fn = lambda b: collate_batch_last_padding(b, load_feats)
         self.rot_repr = rot_repr
-        curdir = Path(hydra.utils.get_original_cwd())
-        self.smpl_p = Path(curdir / 'datasets/body_models')
+        # curdir = Path(hydra.utils.get_original_cwd())
+        # self.smpl_p = Path(curdir / 'datasets/body_models')
         # calculate splits
+        curdir = Path('/is/cluster/fast/nathanasiou/logs/tmr/tmr_humanml3d_amass_feats/')
+
         self.normalizer = Normalizer(curdir/'stats/humanml3d/amass_feats')
         from src.launch.prepare import get_local_debug
         # self.body_model = smplx.SMPLHLayer(f'{self.smpl_p}/smplh',
@@ -81,7 +83,7 @@ class MotionFixLoader(Dataset):
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
         data_ids = list(data_dict.keys())
         from src.utils.file_io import read_json
-        splits = read_json(f'{os.path.dirname(Path(curdir / self.datapath))}/splits.json')
+        splits = read_json(f'{os.path.dirname(Path(ds_db_path))}/splits.json')
         test_ids = []
         for ss in sets:
             test_ids += splits[ss]
@@ -118,7 +120,7 @@ class MotionFixLoader(Dataset):
         return rots_motion_aa_can, translation_can
 
     def load_keyid(self, keyid):
-        from src.data.features import _get_body_orient, _get_body_pose, _get_body_transl_delta_pelv
+        from src.data.features import _get_body_orient, _get_body_pose, _get_body_transl_delta_pelv_infer
         source_m = self.motions[keyid]['motion_source']
         target_m = self.motions[keyid]['motion_target']
         text = self.motions[keyid]['text']
@@ -126,14 +128,14 @@ class MotionFixLoader(Dataset):
         # Otherwise take a random one        
         pose6d_src = _get_body_pose(source_m['rots'])
         orient6d_src = _get_body_orient(source_m['rots'][..., :3])
-        trans_delta_src = _get_body_transl_delta_pelv(orient6d_src,
+        trans_delta_src = _get_body_transl_delta_pelv_infer(orient6d_src,
                                                   source_m['trans'])
         features_source = torch.cat([trans_delta_src, pose6d_src,
                                      orient6d_src], dim=-1)
 
         pose6d_tgt = _get_body_pose(target_m['rots'])
         orient6d_tgt = _get_body_orient(target_m['rots'][..., :3])
-        trans_delta_tgt = _get_body_transl_delta_pelv(orient6d_tgt,
+        trans_delta_tgt = _get_body_transl_delta_pelv_infer(orient6d_tgt,
                                                   target_m['trans'])
         features_target = torch.cat([trans_delta_tgt, pose6d_tgt,
                                      orient6d_tgt], dim=-1)
@@ -150,7 +152,7 @@ class MotionFixLoader(Dataset):
         return output
 
     def load_keyid_raw(self, keyid):
-        from src.data.features import _get_body_orient, _get_body_pose, _get_body_transl_delta_pelv
+        from src.data.features import _get_body_orient, _get_body_pose, _get_body_transl
         source_m = self.motions[keyid]['motion_source']
         target_m = self.motions[keyid]['motion_target']
         text = self.motions[keyid]['text']

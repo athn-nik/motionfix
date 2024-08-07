@@ -5,7 +5,6 @@ import hydra
 import joblib
 from omegaconf import DictConfig
 from omegaconf import OmegaConf
-from sympy import O
 from src import data
 from src.render.mesh_viz import render_motion
 from torch import Tensor

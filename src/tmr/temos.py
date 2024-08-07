@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch import Tensor
 from pytorch_lightning import LightningModule
 
-from src.model.losses import KLLoss
+from src.tmr.losses import KLLoss
 
 
 def length_to_mask(length: List[int], device: torch.device = None) -> Tensor:

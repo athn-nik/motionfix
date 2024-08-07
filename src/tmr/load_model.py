@@ -64,18 +64,45 @@ def load_model(run_dir, **params):
 
 
 def load_model_from_cfg(cfg, ckpt_name="last", device="cpu", eval_mode=True):
-    import src.prepare  # noqa
     import torch
 
     run_dir = cfg.run_dir
-    model = hydra.utils.instantiate(cfg.model)
+
+    from omegaconf import DictConfig, OmegaConf
+
+    def replace_model_with_tmr(d):
+        if isinstance(d, DictConfig):
+            new_dict = {}
+            for k, v in d.items():
+                new_key = k.replace('.model.', '.tmr.')
+                new_value = replace_model_with_tmr(v)
+                new_dict[new_key] = new_value
+            return OmegaConf.create(new_dict)
+        elif isinstance(d, dict):
+            new_dict = {}
+            for k, v in d.items():
+                new_key = k.replace('.model.', '.tmr.')
+                new_value = replace_model_with_tmr(v)
+                new_dict[new_key] = new_value
+            return new_dict
+        elif isinstance(d, list):
+            return [replace_model_with_tmr(item) for item in d]
+        elif isinstance(d, str):
+            return d.replace('.model.', '.tmr.')
+        else:
+            return d
+    model_conf = replace_model_with_tmr(cfg.model)
+    # import ipdb;ipdb.set_trace()
+
+    # model_conf = OmegaConf.to_yaml(model_conf_d)
+    model = hydra.utils.instantiate(model_conf)
 
     # Loading modules one by one
     # motion_encoder / text_encoder / text_decoder
     pt_path = os.path.join(run_dir, f"{ckpt_name}_weights")
 
     if not os.path.exists(pt_path):
-        logger.info("The extracted model is not found. Split into submodules..")
+        print("The extracted model is not found. Split into submodules..")
         extract_ckpt(run_dir, ckpt_name)
 
     for fname in os.listdir(pt_path):
@@ -90,14 +117,14 @@ def load_model_from_cfg(cfg, ckpt_name="last", device="cpu", eval_mode=True):
         module_path = os.path.join(pt_path, fname)
         state_dict = torch.load(module_path)
         module.load_state_dict(state_dict)
-        logger.info(f"    {module_name} loaded")
+        print(f"    {module_name} loaded")
 
-    logger.info("Loading previous checkpoint done")
+    print("Loading previous checkpoint done")
     model = model.to(device)
-    logger.info(f"Put the model on {device}")
+    print(f"Put the model on {device}")
     if eval_mode:
         model = model.eval()
-        logger.info("Put the model in eval mode")
+        print("Put the model in eval mode")
     return model
 
 

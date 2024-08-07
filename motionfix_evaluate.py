@@ -243,7 +243,7 @@ def render_vids(newcfg: DictConfig) -> None:
                     mask_features = get_mask_from_bps(jts_ids, device=model.device, 
                                                     feat_dim=sum(model.input_feats_dims)) 
                     if cfg.data.dataname != 'sinc_synth':
-                        mask_features = ~mask_features
+                        mask_features = mask_features
                     ##################################################
                     inpaint_dict = {'mask': mask_features,
                                     'start_motion': input_batch['source_motion'].clone() }
