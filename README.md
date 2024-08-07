@@ -24,7 +24,7 @@
   </div>
 </p>
 <p float="center">
-  <img src="assets/action2.gif" width="55%" />
+  <img src="assets/raise_arm_higher.gif" width="55%" />
 </p>
 
 <!-- | Paper Video                                                                                                | Qualitative Results                                                                                                |
@@ -207,55 +207,25 @@ python train.py experiment=some_name run_id=mld-synth0.5-4gpu model=mld data.syn
   ```
 </details>
 
-<h2 align="center"> Evaluation</h2>
-
-<details>
-  <summary>Details</summary>
-
-After training, to sample and evaluate a model which has been stored in a folder `/path/to/experiment`
-``` bash
-python sample.py folder=/path/to/experiment/ ckpt_name=699 set=small
-
-python eval.py folder=/path/to/experiment/ ckpt_name=699 set=small
-```
-
-- You can change the `jointstype` for the sampling script to output and save rotations and translation by setting `joinstype=rots`.
-- By setting the `set=full` you will obtain the results on the full BABEL validation set.
-
-You can calculate the TEMOS score using: 
-
-``` bash
-python sample_eval_latent.py folder=/is/cluster/fast/nathanasiou/logs/space/single-text-baselines/rs_only/babel-amass/ ckpt_name=699 set=small
-```
-
-or for model trained using MLD:
-```
-python mld_temos.py folder=/is/cluster/fast/nathanasiou/logs/sinc/sinc-arxiv/mld-wo-synth/babel-amass ckpt_name=399 set=small
-```
-</details>
-
- 
 ## Citation
 
 ```bibtex
-@inproceedings{SINC:ICCV:2022,
-  title={{SINC}: Spatial Composition of {3D} Human Motions for Simultaneous Action Generation},
-  author={Athanasiou, Nikos and Petrovich, Mathis and Black, Michael J. and Varol, G\"{u}l },
-  booktitle = {ICCV},
-  year = {2023}
+@inproceedings{athanasiou2024motionfix,
+  title = {{MotionFix}: Text-Driven 3D Human Motion Editing},
+  author = {Athanasiou, Nikos and Ceske, Alpar and Diomataris, Markos and Black, Michael J. and Varol, G{\"u}l},
+  booktitle = {SIGGRAPH Asia 2024 Conference Papers},
+  year = {2024}
 }
-
 ```
+
 ## License
 This code is available for **non-commercial scientific research purposes** as defined in the [LICENSE file](LICENSE). By downloading and using this code you agree to the terms in the [LICENSE](LICENSE). Third-party datasets and software are subject to their respective licenses.
 
-## References
-Many part of this code were based on the official implementation of [TEMOS](https://github.com/Mathux/TEMOS).
 
 ## Contact
 
-This code repository was implemented by [Nikos Athanasiou](https://is.mpg.de/~nathanasiou) and [Mathis Petrovich](https://mathis.petrovich.fr/).
+This code repository was implemented by [Nikos Athanasiou](https://is.mpg.de/~nathanasiou).
 
-Give a ⭐ if you like.
+Give a ⭐ if you like it.
 
 For commercial licensing (and all related questions for business applications), please contact ps-licensing@tue.mpg.de.
