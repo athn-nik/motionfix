@@ -3,28 +3,30 @@
 
 <p align="center">
 
-  <h1 align="center">MotionFix: Motion Editing using Language Instructions
+  <h1 align="center">MotionFix: Text-Driven 3D Human Motion Editing
     <br>
-    <a href='https://arxiv.org/abs/2304.10417'>
+    <a href='https://www.arxiv.org/abs/2408.00712'>
     <img src='https://img.shields.io/badge/arxiv-report-red' alt='ArXiv PDF'>
     </a>
-    <a href='https://sinc.is.tue.mpg.de/' style='padding-left: 0.5rem;'>
+    <a href='https://motionfix.is.tue.mpg.de/' style='padding-left: 0.5rem;'>
     <img src='https://img.shields.io/badge/Project-Page-blue?style=flat&logo=Google%20chrome&logoColor=blue' alt='Project Page'>
   </h1>
   <p align="center">
     <a href="https://ps.is.mpg.de/person/nathanasiou"><strong>Nikos Athanasiou</strong></a>
     |
+    <a href="https://ps.is.mpg.de/person/acseke"><strong>Alpár Cseke</strong></a>
+    |
+    <a href="https://ps.is.mpg.de/person/mdiomataris"><strong>Markos Diomataris</strong></a>
+    |
     <a href="https://ps.is.tuebingen.mpg.de/person/black"><strong>Michael J. Black</strong></a>
     |
     <a href="https://imagine.enpc.fr/~varolg"><strong>G&#252;l Varol</strong></a>
   </p>
-  <h2 align="center">TOG '24</h2>
- <div align="center">Official PyTorch implementation of the paper "XXX" </div>
+  <h2 align="center">Siggraph Asia 2024, Tokyo, Japan</h2>
  <div align="center">
-  </div>
-</p>
-<p float="center">
   <img src="assets/raise_arm_higher.gif" width="55%" />
+  </div>
+ <div align="center">Official PyTorch implementation of the paper "MotionFix: Text-Driven 3D Human Motion Editing". This repository includes instructions for the released dataset and implementation of TMED, the model used in the paper along with the main experiments.</div>
 </p>
 
 <!-- | Paper Video                                                                                                | Qualitative Results                                                                                                |
