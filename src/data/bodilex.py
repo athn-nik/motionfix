@@ -638,7 +638,7 @@ class BodilexDataModule(BASEDataModule):
         # create datasets
         slice_train = int(proportion * len(splits['train']))
         slice_val = int(proportion * len(splits['val']))
-        slice_test = int(proportion * len(splits['test']))
+        slice_test = int(0.3 * len(splits['test']))
 
         # log.info(f'Using {100*round(slice_train/len(splits['train']),
         #          2)}% of the data.')
@@ -663,8 +663,9 @@ class BodilexDataModule(BASEDataModule):
                         self.rot_repr,
                         self.load_feats,
                         ), 
-           BodilexDataset([v for k, v in data_dict.items() 
-                           if id_split_dict[k] == 2],
+           BodilexDataset(random.sample([v for k, v in data_dict.items() 
+                               if id_split_dict[k] == 2], 
+                              k=slice_test),
                         self.preproc.n_body_joints,
                         self.preproc.stats_file,
                         self.preproc.norm_type,

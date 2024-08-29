@@ -44,9 +44,6 @@ def print_latex_metrics_m2m(metrics):
 
     str_ = "& " + " & ".join([ff(metrics[key]) for key in keys]) + r" \\"
     dico = {key: ff(metrics[key]) for key in keys}
-    print(dico)
-    print("Number of samples: {}".format(int(metrics["m2m/len"])))
-    print(str_)
     return str_
 
 def all_contrastive_metrics_mot2mot(

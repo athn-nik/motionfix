@@ -26,6 +26,7 @@ class MotionFixLoader(Dataset):
                  smplh_path: str = "",
                  rot_repr: str = "6d",
                  sets: List[str] = ['test'],
+                 keys_to_load: List[str] = None,
                  **kwargs):
         # v11 is the next one 
         self.datapath = 'data/bodilex/amass_bodilex_v14_test.pth.tar'
@@ -82,7 +83,13 @@ class MotionFixLoader(Dataset):
 
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
         data_ids = list(data_dict.keys())
-        self.motions = data_dict
+        if keys_to_load is not None:
+            final_data_dict = {k: v for k, v in data_dict.items()
+                               if k in keys_to_load}
+        else:
+            final_data_dict = data_dict
+
+        self.motions = final_data_dict
         # from src.utils.file_io import read_json
         # splits = read_json(f'{os.path.dirname(Path(ds_db_path))}/splits.json')
         # test_ids = []

@@ -417,6 +417,7 @@ def retrieval(samples_to_eval) -> None:
     gen_samples, gen_samples_raw = collect_gen_samples(samples_to_eval,
                                         normalizer, 
                                         model.device)
+    exist_gen_keys = list(gen_samples.keys())
     if sets == 'all':
         sets_to_load = ['val', 'test']
         extra_str = '_val_test'
@@ -436,7 +437,8 @@ def retrieval(samples_to_eval) -> None:
             # if newcfg.dataset == 'sinc_synth':
             #     dataset = SincSynthLoader()
             # else:
-            dataset = MotionFixLoader(sets=sets_to_load)
+            dataset = MotionFixLoader(sets=sets_to_load, 
+                                      keys_to_load=exist_gen_keys)
             # rms = ['002274', '002273', '002223', '002226', '002265', '002264']
             # for k in rms:
             #     dataset.motions.pop(k)
@@ -528,9 +530,7 @@ def retrieval(samples_to_eval) -> None:
                         for key in keyids_ord["batches"][0]
                         }
 
-            str_for_tab = ''
             for var, lst_of_sim_matrs in result_packed_to_d.items():
-                logger.info(f'Case: {var} --> {mat2name[var]}')
                 metr_name = mat2name[var]
                 if var == 'sim_matrix_s_t':
                     keyids_for_sel = keyids_ord['batches']['s_t']
@@ -545,12 +545,10 @@ def retrieval(samples_to_eval) -> None:
                 cols_for_metr[metr_name] = [item for sublist in cols_for_metr_unmerged for item in sublist]
                 str_for_tab += print_latex_metrics_m2m(metrics_dico[metr_name])
                 metric_name = f"{protocol_name}_{metr_name}.yaml"
-                print(f"\n|-----------|\n")
             cand_keyids_batches = cols_for_metr['target_generated']
             # if motion_gen_path is not None:
             #     write_json(cand_keyids_guo, Path(motion_gen_path) / f'guo_candkeyids{extra_str}.json')
             line_for_batches = str_for_tab.replace("\\\&", "&")
-            print(f"\n|-----------||-----------||-----------||-----------|\n")
 
         else:
             protocol_name = protocol
@@ -559,7 +557,6 @@ def retrieval(samples_to_eval) -> None:
             cols_for_metr = {}
             str_for_tab = ''
             for var, sim_matrix in result.items():
-                logger.info(f'Case: {var} --> {mat2name[var]}')
                 metr_name = mat2name[var]
                 if var == 'sim_matrix_s_t':
                     keyids_for_sel = keyids_ord['all']['s_t']
@@ -572,12 +569,8 @@ def retrieval(samples_to_eval) -> None:
                 cols_for_metr[metr_name] = list(np.array(keyids_for_sel
                                                          )[idxs_good])
                 str_for_tab += print_latex_metrics_m2m(metrics[metr_name])
-
-                metric_name = f"{protocol_name}_{metr_name}.yaml"
-                print(f"\n|-----------|\n")
             cand_keyids_all = cols_for_metr['target_generated']
             line_for_all = str_for_tab.replace("\\\&", "&")
-            print(f"\n|-----------||-----------||-----------||-----------|\n")
             # TODO do this at some point!
             # run = wandb.init()
             # my_table = wandb.Table(columns=["a", "b"],
