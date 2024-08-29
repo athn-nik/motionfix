@@ -48,7 +48,8 @@ class MotionFixLoader(Dataset):
         if get_local_debug():
             ds_db_path = Path('/home/nathanasiou/Desktop/local-debug/data/amass_bodilex_v14_test.pth.tar')
         else:
-            ds_db_path = Path(curdir / self.datapath)
+            curdir_code = Path(hydra.utils.get_original_cwd())
+            ds_db_path = Path(curdir_code / self.datapath)
 
         dataset_dict_raw = joblib.load(ds_db_path)
         # dataset_dict_raw = cast_dict_to_tensors(dataset_dict_raw)
