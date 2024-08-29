@@ -404,7 +404,7 @@ def retrieval(samples_to_eval) -> None:
 
     pl.seed_everything(cfg.seed)
 
-    logger.info("Loading the model")
+    logger.info("Loading the evaluation TMR model")
     model = load_model_from_cfg(cfg, ckpt_name, eval_mode=True, device=device)
 
     datasets = {}
@@ -429,7 +429,7 @@ def retrieval(samples_to_eval) -> None:
         extra_str = ''
 
     for protocol in protocols:
-        logger.info(f"|------Protocol {protocol.upper()}-----|")
+        # logger.info(f"|------Protocol {protocol.upper()}-----|")
         # Load the dataset if not already
         if protocol not in datasets:
             from src.tmr.data.motionfix_loader import MotionFixLoader
@@ -577,8 +577,6 @@ def retrieval(samples_to_eval) -> None:
             #                        data=[["1a", "1b"], ["2a", "2b"]])
             # run.log({"table_key": my_table})
 
-        logger.info(f"-----------")
-    
     dict_batches = line2dict(line_for_batches)
     dict_full = line2dict(line_for_all)
     return dict_batches, dict_full

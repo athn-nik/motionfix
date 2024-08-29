@@ -117,14 +117,11 @@ def load_model_from_cfg(cfg, ckpt_name="last", device="cpu", eval_mode=True):
         module_path = os.path.join(pt_path, fname)
         state_dict = torch.load(module_path)
         module.load_state_dict(state_dict)
-        print(f"    {module_name} loaded")
 
     print("Loading previous checkpoint done")
     model = model.to(device)
-    print(f"Put the model on {device}")
     if eval_mode:
         model = model.eval()
-        print("Put the model in eval mode")
     return model
 
 
