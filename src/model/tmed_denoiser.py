@@ -261,8 +261,8 @@ class TMED_denoiser(nn.Module):
                 mask_src_parts = inpaint_dict['mask'].unsqueeze(1).repeat(1,
                                                                       mot_len,
                                                                       1)
-                uncond_eps = uncond_eps*(~mask_src_parts) + source_mot*mask_src_parts
-                cond_eps_text = cond_eps_text*(~mask_src_parts) + source_mot*mask_src_parts
+                uncond_eps = uncond_eps*(mask_src_parts) + source_mot*(~mask_src_parts)
+                cond_eps_text = cond_eps_text*(mask_src_parts) + source_mot*(~mask_src_parts)
             half_eps = uncond_eps + guidance_text_n_motion * (cond_eps_text - uncond_eps) 
             eps = torch.cat([half_eps, half_eps], dim=0)
         else:

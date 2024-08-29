@@ -33,10 +33,7 @@ def prepare_test_batch(model, batch):
 
     input_batch = model.norm_and_cat(batch, model.input_feats)
     for k, v in input_batch.items():
-        if model.input_deltas:
-            batch[f'{k}_motion'] = v[1:]
-        else:
-            batch[f'{k}_motion'] = v
+        batch[f'{k}_motion'] = v
             # batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
 
     return batch
@@ -249,7 +246,7 @@ def render_vids(newcfg: DictConfig) -> None:
                                     'start_motion': input_batch['source_motion'].clone() }
                 else:
                     inpaint_dict = None
-
+                # continue
                 text_diff = [el.lower() for el in batch['text']]
                 
                 if model.motion_condition == 'source' or init_diff_from!='noise':
