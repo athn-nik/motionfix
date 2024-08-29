@@ -28,13 +28,13 @@ class MotionFixLoader(Dataset):
                  sets: List[str] = ['test'],
                  **kwargs):
         # v11 is the next one 
-        self.datapath = 'datasets/bodilex/amass_bodilex_v13.pth.tar'
+        self.datapath = 'data/bodilex/amass_bodilex_v14_test.pth.tar'
         self.collate_fn = lambda b: collate_batch_last_padding(b, load_feats)
         self.rot_repr = rot_repr
         # curdir = Path(hydra.utils.get_original_cwd())
         # self.smpl_p = Path(curdir / 'datasets/body_models')
         # calculate splits
-        curdir = Path('/is/cluster/fast/nathanasiou/logs/tmr/tmr_humanml3d_amass_feats/')
+        curdir = Path(hydra.utils.get_original_cwd()) / 'eval-deps/tmr_humanml3d_amass_feats/'
 
         self.normalizer = Normalizer(curdir/'stats/humanml3d/amass_feats')
         from src.launch.prepare import get_local_debug
@@ -45,7 +45,7 @@ class MotionFixLoader(Dataset):
         # setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
         # freeze(self.body_model)
         if get_local_debug():
-            ds_db_path = Path('/home/nathanasiou/Desktop/local-debug/data/amass_bodilex_v13.pth.tar')
+            ds_db_path = Path('/home/nathanasiou/Desktop/local-debug/data/amass_bodilex_v14_test.pth.tar')
         else:
             ds_db_path = Path(curdir / self.datapath)
 
@@ -82,15 +82,16 @@ class MotionFixLoader(Dataset):
 
         data_dict = cast_dict_to_tensors(dataset_dict_raw)
         data_ids = list(data_dict.keys())
-        from src.utils.file_io import read_json
-        splits = read_json(f'{os.path.dirname(Path(ds_db_path))}/splits.json')
-        test_ids = []
-        for ss in sets:
-            test_ids += splits[ss]
-        self.motions = {}
-        for test_id in test_ids:
-            if test_id in data_dict:
-                self.motions[test_id] = data_dict[test_id]
+        self.motions = data_dict
+        # from src.utils.file_io import read_json
+        # splits = read_json(f'{os.path.dirname(Path(ds_db_path))}/splits.json')
+        # test_ids = []
+        # for ss in sets:
+        #     test_ids += splits[ss]
+        # self.motions = {}
+        # for test_id in test_ids:
+        #     if test_id in data_dict:
+        #         self.motions[test_id] = data_dict[test_id]
         self.keyids = list(self.motions.keys())
 
     def __len__(self):

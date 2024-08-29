@@ -66,7 +66,6 @@ class MD(BaseModel):
                          dim_per_feat, smpl_path, num_vids_to_render,
                          renderer=renderer)
 
-
         if set(["body_transl_delta_pelv_xy", "body_orient_delta",
                 "body_pose_delta"]).issubset(self.input_feats):
             self.using_deltas = True
@@ -129,30 +128,10 @@ class MD(BaseModel):
                                      noise_schedule=self.diff_params.noise_schedule,
                                      predict_xstart=False if self.diff_params.predict_type == 'noise' else True) # noise vs sample
 
-        # self.diffusion = GaussianDiffusion(
-        #       betas=betas,
-        #       model_mean_type=ModelMeanType.EPSILON,
-        #       model_var_type=ModelVarType.FIXED_SMALL,
-        #       loss_type=LossType.MSE
-        #         )
-        # self.infer_scheduler = instantiate(infer_scheduler)
-        # self.train_scheduler = instantiate(train_scheduler)
-        # distribution of timesteps
         shape = 2.0
         scale = 1.0
         self.tsteps_distr = dist.Gamma(torch.tensor(shape),
                                        torch.tensor(scale))
-        # Keep track of the losses
-        # if train_scheduler.prediction_type == 'sample':
-        #     self.predict_noise = False
-        # else:
-        #     self.predict_noise = True
-        # self._losses = ModuleDict({split: instantiate(losses)
-        #     for split in ["losses_train", "losses_test", "losses_val"]
-        # })
-        # self.losses = {key: self._losses["losses_" + key] for key in ["train",
-        #                                                               "val",
-        #                                                               "test"]}
         self.loss_params = losses
         # loss params terrible
         if loss_func_pos == 'l1':
@@ -209,7 +188,8 @@ class MD(BaseModel):
                            steps_num=None,
                            inpaint_dict=None,
                            use_linear=False,
-                           prob_way='3way'):
+                           prob_way='3way',
+                           show_progress=True):
         # guidance_scale_text: 7.5 #
         #  guidance_scale_motion: 1.5
         # init latents
@@ -315,7 +295,7 @@ class MD(BaseModel):
                                              z.shape, z, 
                                              clip_denoised=False, 
                                              model_kwargs=model_kwargs,
-                                             progress=True,
+                                             progress=show_progress,
                                              device=initial_latents.device,)
         if motion_embeds is not None:
             _, _, samples = samples.chunk(3, dim=0)  # Remove null class samples
@@ -555,7 +535,8 @@ class MD(BaseModel):
                         num_diff_steps=None, 
                         inpaint_dict=None,
                         use_linear=False,
-                        prob_way='3way'
+                        prob_way='3way',
+                        show_progress=True
                         ):
         # uncond_tokens = [""] * len(texts_cond)
         # if self.condition == 'text':
@@ -639,7 +620,8 @@ class MD(BaseModel):
                                                 steps_num=num_diff_steps,
                                                 inpaint_dict=inpaint_dict,
                                                 use_linear=use_linear,
-                                                prob_way=prob_way)
+                                                prob_way=prob_way,
+                                                show_progress=show_progress)
                 return init_noise, diff_out.permute(1, 0, 2)
 
             else:
@@ -657,7 +639,8 @@ class MD(BaseModel):
                                                 mode=condition_mode,
                                                 steps_num=num_diff_steps,
                                                 inpaint_dict=inpaint_dict,
-                                                use_linear=use_linear)
+                                                use_linear=use_linear,
+                                                show_progress=show_progress)
 
             return diff_out.permute(1, 0, 2)
 
@@ -864,6 +847,7 @@ class MD(BaseModel):
 
     def allsplit_step(self, split: str, batch, batch_idx):
         from src.data.tools.tensors import lengths_to_mask
+        
         input_batch = self.norm_and_cat(batch, self.input_feats)
         if 'hml3d' in batch['dataset_name']:
             idx_t2m = [i for i, x in enumerate( batch['dataset_name']) 
@@ -994,29 +978,32 @@ class MD(BaseModel):
         import random
         if split == 'val' and self.global_rank == 0:
             from tqdm import tqdm
-            gd_text = [1.5] # 3.0, 7.0]
-            gd_motion = [1.5] #, 3.0, 7.0]
-            guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
+            # gd_text = [1.5] # 3.0, 7.0]
+            # gd_motion = [5.0] #, 3.0, 7.0]
+            # guidances_mix = [(x, y) for x in gd_text for y in gd_motion]
+            guidances_mix = [(2.0, 5.0), (2.0, 4.0)]
             infer_steps = self.diffusion_process.num_timesteps
+            # self.diffusion_process.num_timesteps = 3
 
             if batch_idx == 0:
-                gen_mots = {f'{s_t}txt_{s_m}mot': [] 
+                self.validation_step_outputs = {f'{s_t}txt_{s_m}mot': {}
                             for s_t, s_m in guidances_mix}
-
-
             # prepare the motions
             # compute the metrics
 
-            for guid_text, guid_motion in tqdm(guidances_mix):
+            for guid_text, guid_motion in guidances_mix:
                 diffout = self.generate_motion(gt_texts, batch['source_motion'],
                                                mask_source, mask_target,
                                                self.diffusion_process,
                                                gd_motion=guid_motion,
                                                gd_text=guid_text,
-                                               num_diff_steps=infer_steps)
+                                               num_diff_steps=infer_steps,
+                                               show_progress=False)
                 gen_mo = self.diffout2motion(diffout)
-                gen_mots[f'{guid_text}txt_{guid_motion}mot'].append(gen_mo)
-            self.validation_step_outputs.append(gen_mots)
-            return {'val_motions': gen_mots}
+                # gen_mots[f'{guid_text}txt_{guid_motion}mot'].append(gen_mo)
+                for ii, kval in enumerate(gt_keyids):
+                    self.validation_step_outputs[f'{guid_text}txt_{guid_motion}mot'][kval] = gen_mo.detach().cpu()[ii]
+
+            return {'val_motions': gen_mo}
 
         return total_loss

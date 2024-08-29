@@ -636,14 +636,17 @@ class BodilexDataModule(BASEDataModule):
         # setup collate function meta parameters
         # self.collate_fn = lambda b: collapPte_batch(b, self.cfg.load_feats)
         # create datasets
-        slice_to = int(proportion * len(data_dict.items()))
-        
-        log.info(f'Using {100*round(slice_to/len(data_dict.items()),2)}% of the data.')
-        log.info(f'Using {slice_to}/{len(data_dict.items())} of the data.')
+        slice_train = int(proportion * len(splits['train']))
+        slice_val = int(proportion * len(splits['val']))
+        slice_test = int(proportion * len(splits['test']))
+
+        # log.info(f'Using {100*round(slice_train/len(splits['train']),
+        #          2)}% of the data.')
+        # log.info(f'Using {slice_train}/{len(splits['train'])} of the data.')
 
         self.dataset['train'], self.dataset['val'], self.dataset['test'] = (
            BodilexDataset([v for k, v in data_dict.items()
-                           if id_split_dict[k] == 0][:slice_to],
+                           if id_split_dict[k] == 0][:slice_train],
                         self.preproc.n_body_joints,
                         self.preproc.stats_file,
                         self.preproc.norm_type,
@@ -652,7 +655,7 @@ class BodilexDataModule(BASEDataModule):
                         self.load_feats,
                         text_aug_db), 
            BodilexDataset([v for k, v in data_dict.items() 
-                           if id_split_dict[k] == 1],
+                           if id_split_dict[k] == 1][:slice_val],
                         self.preproc.n_body_joints,
                         self.preproc.stats_file,
                         self.preproc.norm_type,

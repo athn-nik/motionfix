@@ -104,7 +104,6 @@ class BaseModel(LightningModule):
         norms = grad_norm(self, norm_type=2)
         self.log_dict(norms)
 
-    
     def load_norm_statistics(self, path, device):
         # workaround for cluster local/sync
         path = hack_path(path)
@@ -384,8 +383,17 @@ class BaseModel(LightningModule):
         # RENDER
         curep = str(self.trainer.current_epoch)
         if split == 'val':
+            dict_to_log_metrs = {}
             from tmr_evaluator.motion2motion_retr import retrieval
-            x = 1
+            eval_res = {}
+            for guid_comb, samples_gen in self.validation_step_outputs.items():
+                metr_batch, metr_full = retrieval(samples_gen)
+                eval_res[guid_comb] = metr_batch
+                dict_to_log_metrs = {
+                    f'metrics_{guid_comb}/{k}': float(v) 
+                    for k, v in eval_res[guid_comb].items()
+                }
+                self.log_dict(dict_to_log_metrs)
 
         # do_render = curep%self.render_vids_every_n_epochs
         if self.renderer is not None:

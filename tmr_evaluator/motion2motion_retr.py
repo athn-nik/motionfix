@@ -87,25 +87,19 @@ def lengths_to_mask(lengths: List[int], device: torch.device) -> Tensor:
                                               max_len) < lengths.unsqueeze(1)
     return mask
 
-def collect_gen_samples(motion_gen_path, normalizer, device):
+def collect_gen_samples(gener_motions, normalizer, device):
     cur_samples = {}
     cur_samples_raw = {}
     # it becomes from 
     # translation | root_orient | rots --> trans | rots | root_orient 
-    logger.info("Collecting Generated Samples")
-    from src.data.features import _get_body_transl_delta_pelv
-    import glob
 
-    sample_files = glob.glob(f'{motion_gen_path}/*.npy')
-    for fname in tqdm(sample_files):
-        keyid = str(Path(fname).name).replace('.npy', '')
-        gen_motion_b = np.load(fname,
-                               allow_pickle=True).item()['pose']
-        gen_motion_b = torch.from_numpy(gen_motion_b)
-        trans = gen_motion_b[..., :3]
-        global_orient_6d = gen_motion_b[..., 3:9]
-        body_pose_6d = gen_motion_b[..., 9:]
-        trans_delta = _get_body_transl_delta_pelv(global_orient_6d,
+    from src.data.features import _get_body_transl_delta_pelv_infer
+    import glob
+    for keyid, motion_feats in gener_motions.items():
+        trans = motion_feats[..., :3]
+        global_orient_6d = motion_feats[..., 3:9]
+        body_pose_6d = motion_feats[..., 9:]
+        trans_delta = _get_body_transl_delta_pelv_infer(global_orient_6d,
                                                   trans)
         gen_motion_b_fixed = torch.cat([trans_delta, body_pose_6d,
                                         global_orient_6d], dim=-1)
@@ -384,14 +378,13 @@ def shorten_metric_line(line_to_shorten):
     # Join the list back into a string
     return '&'.join(numbers)
 
-def retrieval(path_for_samples) -> None:
+def retrieval(samples_to_eval) -> None:
     protocol = ['normal', 'batches']
     device = 'cuda'
     run_dir = 'eval-deps/tmr_humanml3d_amass_feats'
     ckpt_name = 'last'
     batch_size = 256
  
-    motion_gen_path = path_for_samples
     protocols = protocol
     dataset = 'bodilex' # motionfix
     sets = 'test' # val all
@@ -399,8 +392,9 @@ def retrieval(path_for_samples) -> None:
     # os.makedirs(save_dir, exist_ok=True)
 
     # Load last config
+    curdir = Path(hydra.utils.get_original_cwd())
 
-    cfg = read_config(run_dir)
+    cfg = read_config(curdir / run_dir)
 
     import pytorch_lightning as pl
     import numpy as np
@@ -417,18 +411,12 @@ def retrieval(path_for_samples) -> None:
     results = {}
     keyids_ord = {}
     bs_m2m = 32 # for the batch size metric
-    if motion_gen_path is not None:
-        curdir = Path(hydra.utils.get_original_cwd())
-        # calculate splits
-        from src.tmr.data.motionfix_loader import Normalizer
-        normalizer = Normalizer(curdir/'stats/humanml3d/amass_feats')
-        gen_samples, gen_samples_raw = collect_gen_samples(motion_gen_path,
-                                          normalizer, 
-                                          model.device)
-    else: 
-        gen_samples = None
-        gen_samples_raw = None
-
+    # calculate splits
+    from src.tmr.data.motionfix_loader import Normalizer
+    normalizer = Normalizer(curdir/run_dir/'stats/humanml3d/amass_feats')
+    gen_samples, gen_samples_raw = collect_gen_samples(samples_to_eval,
+                                        normalizer, 
+                                        model.device)
     if sets == 'all':
         sets_to_load = ['val', 'test']
         extra_str = '_val_test'
@@ -458,11 +446,7 @@ def retrieval(path_for_samples) -> None:
             datasets.update(
                 {key: dataset for key in ["normal", "batches"]}
             )
-        if gen_samples is not None:
-            gen_samples = {k:v for k, v in gen_samples.items() if k in dataset.motions.keys()}
-        else:
-            if motion_gen_path is not None:
-                exit('Expected samples to be provided in the path.')
+        gen_samples = {k:v for k, v in gen_samples.items() if k in dataset.motions.keys()}
         dataset = datasets[protocol]
 
         # Compute sim_matrix for each protocol
@@ -590,12 +574,8 @@ def retrieval(path_for_samples) -> None:
                 str_for_tab += print_latex_metrics_m2m(metrics[metr_name])
 
                 metric_name = f"{protocol_name}_{metr_name}.yaml"
-                path = os.path.join(save_dir, metric_name)
-                save_metric(path, metrics[metr_name])
                 print(f"\n|-----------|\n")
             cand_keyids_all = cols_for_metr['target_generated']
-            if motion_gen_path is not None:
-                write_json(cand_keyids_all, Path(motion_gen_path) / f'all_candkeyids{extra_str}.json')
             line_for_all = str_for_tab.replace("\\\&", "&")
             print(f"\n|-----------||-----------||-----------||-----------|\n")
             # TODO do this at some point!
@@ -603,36 +583,12 @@ def retrieval(path_for_samples) -> None:
             # my_table = wandb.Table(columns=["a", "b"],
             #                        data=[["1a", "1b"], ["2a", "2b"]])
             # run.log({"table_key": my_table})
-        if motion_gen_path is not None:
-            short_expname = motion_gen_path.replace('/is/cluster/fast/nathanasiou/logs/motionfix-sigg/', '')
-        else:
-            short_expname = 'GroundTruth Results'
 
-        logger.info(f"Testing done, metrics saved in:\n{path}")
         logger.info(f"-----------")
     
     dict_batches = line2dict(line_for_batches)
     dict_full = line2dict(line_for_all)
-
-    short_batches_line = shorten_metric_line(line_for_batches)
-    short_all_line = shorten_metric_line(line_for_all)
-
-    if motion_gen_path is not None:
-        write_json(dict_batches, Path(motion_gen_path) / f'batches_res{extra_str}.json')
-        write_json(dict_full, Path(motion_gen_path) / f'all_res{extra_str}.json')
-        with open(Path(motion_gen_path) / f'for_latex{extra_str}.txt', 'w') as f:
-            f.write(f'=============Full Metrics=============\n')
-            f.write(f'{line_for_all}\n')
-            f.write(f'{line_for_batches}\n')
-            f.write(f'=============Shorter Metrics=============\n')
-            f.write(f'{short_all_line}\n')
-            f.write(f'{short_batches_line}\n')
-
-    print(f'----Experiment Folder----\n\n{short_expname}')
-    print(f'----Batches of {bs_m2m}----\n\n{line_for_batches}')
-    print(f'----Full Set----\n\n{line_for_all}')
-    print(f'----Batches of {bs_m2m}----\n\n{short_batches_line}')
-    print(f'----Full Set----\n\n{short_all_line}')
+    return dict_batches, dict_full
 
 if __name__ == "__main__":
     retrieval()
