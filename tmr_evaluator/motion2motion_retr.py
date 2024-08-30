@@ -579,7 +579,12 @@ def retrieval(samples_to_eval) -> None:
 
     dict_batches = line2dict(line_for_batches)
     dict_full = line2dict(line_for_all)
-    return dict_batches, dict_full
+    names_to_keep = ["R@1_s2t", "R@2_s2t", "R@3_s2t", 
+                    "R@1", "R@2", "R@3"]
+    metrs_full = {key: dict_full[key] for key in names_to_keep if key in dict_full}
+    metrs_batches = {key: dict_batches[key] for key in names_to_keep if key in dict_batches}
+
+    return metrs_batches, metrs_full
 
 if __name__ == "__main__":
     retrieval()
