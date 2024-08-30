@@ -33,7 +33,7 @@ SUBMISSION_TEMPLATE = f'Description=DESCRIPTION\n' \
                        'error = CNR_LOG_ID/$(Cluster).$(Process).err\n' \
                        'output = CNR_LOG_ID/$(Cluster).$(Process).out\n' \
                        'log = CNR_LOG_ID/$(Cluster).$(Process).log\n' \
-                       'request_memory = 128000\n' \
+                       'request_memory = 200000\n' \
                        'request_cpus=CPUS\n' \
                        'request_gpus=NO_GPUS\n' \
                        '+BypassLXCfs="true"\n' \
