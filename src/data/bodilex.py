@@ -638,7 +638,7 @@ class BodilexDataModule(BASEDataModule):
         # create datasets
         slice_train = int(proportion * len(splits['train']))
         slice_val = int(proportion * len(splits['val']))
-        slice_test = int(0.3 * len(splits['test']))
+        slice_test = int(0.5 * len(splits['test']))
 
         # log.info(f'Using {100*round(slice_train/len(splits['train']),
         #          2)}% of the data.')
