@@ -529,6 +529,7 @@ def retrieval(samples_to_eval) -> None:
             keyids_ord['batches'] = {key: [d[key] for d in keyids_ord["batches"]]
                         for key in keyids_ord["batches"][0]
                         }
+            str_for_tab = ''
 
             for var, lst_of_sim_matrs in result_packed_to_d.items():
                 metr_name = mat2name[var]
