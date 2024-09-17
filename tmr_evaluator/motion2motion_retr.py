@@ -454,18 +454,9 @@ def retrieval(samples_to_eval) -> None:
         # Load the dataset if not already
         if protocol not in datasets:
             from src.tmr.data.motionfix_loader import MotionFixLoader
-            # from src.data.sincsynth_loader import SincSynthLoader
-            # if newcfg.dataset == 'sinc_synth':
-            #     dataset = SincSynthLoader()
-            # else:
             dataset = MotionFixLoader(sets=sets_to_load, 
                                       keys_to_load=exist_gen_keys)
-            # rms = ['002274', '002273', '002223', '002226', '002265', '002264']
-            # for k in rms:
-            #     dataset.motions.pop(k)
-            #     dataset.keyids.remove(k)
 
-            # TODO Load the motion editing test set
             datasets.update(
                 {key: dataset for key in ["normal", "batches"]}
             )

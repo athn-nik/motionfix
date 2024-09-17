@@ -195,7 +195,6 @@ def retrieval(path_for_samples) -> None:
         logger.info(f"|------Protocol {protocol.upper()}-----|")
         # Load the dataset if not already
         if protocol not in datasets:
-            from src.tmr.data.hml3d_loader import Hml3DLoader
             dataset = instantiate(cfg.data, split="test")
             # TODO Load the motion editing test set
             datasets.update(
