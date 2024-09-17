@@ -17,7 +17,6 @@ from src.model.utils.tools import pack_to_render
 logger = logging.getLogger(__name__)
 import numpy as np
 
-IS_LOCAL_DEBUG = src.launch.prepare.get_local_debug()
 
 @hydra.main(config_path="configs", config_name="motionfix_eval")
 def _render_vids(cfg: DictConfig) -> None:
@@ -106,7 +105,7 @@ def render_vids(newcfg: DictConfig) -> None:
     # cfg.model.diff_params.guidance_scale_motion = newcfg.guidance_scale_motion
     # cfg.model.diff_params.guidance_scale_text = newcfg.guidance_scale_text
     if cfg.inpaint:
-        assert cfg.data.dataname in ['sinc_synth', 'bodilex']
+        assert cfg.data.dataname in ['sinc_synth', 'motionfix']
         from src.utils.file_io import read_json
         annots_sinc = read_json('data/sinc_synth/for_website_v4.json')
 
@@ -152,9 +151,6 @@ def render_vids(newcfg: DictConfig) -> None:
     logger.info('------Diffusion Parameters------\n\n'\
                 f'{model.diff_params}')
 
-    if IS_LOCAL_DEBUG:
-        base_p_lcl = '/home/nathanasiou/Desktop/local-debug/data/amass_bodilex_' 
-        cfg.data.datapath = f'{base_p_lcl}v13.pth.tar'
 
     data_module = instantiate(cfg.data, amt_only=True,
                               load_splits=['test', 'val'])

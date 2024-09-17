@@ -1,5 +1,5 @@
-dataname: bodilex
-_target_: src.data.bodilex.BodilexDataModule
+dataname: motionfix
+_target_: src.data.motionfix.MotionFixDataModule
 debug: ${debug}
 
 datapath: ${path.data}/motionfix-dataset/motionfix.pth.tar # amass_bodilex.pth.tar

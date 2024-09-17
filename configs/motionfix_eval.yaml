@@ -33,7 +33,7 @@ linear_gd: false
 
 defaults:
   - _self_
-  - data: bodilex
+  - data: motionfix
   - /path@path
   - override hydra/job_logging: rich # custom
   - override hydra/hydra_logging: rich # custom

@@ -157,7 +157,7 @@ def retrieval(path_for_samples) -> None:
  
     motion_gen_path = path_for_samples
     protocols = protocol
-    dataset = 'bodilex' # motionfix
+    dataset = 'motionfix' # motionfix
     sets = 'test' # val all
     motion_gen_path = newcfg.samples_path
 

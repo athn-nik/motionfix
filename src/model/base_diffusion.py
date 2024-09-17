@@ -852,17 +852,7 @@ class MD(BaseModel):
         if 'hml3d' in batch['dataset_name']:
             idx_t2m = [i for i, x in enumerate( batch['dataset_name']) 
                        if x == 'hml3d']
-        # print('-------SincSynth------')
-        # print(batch['dataset_name'].count('sinc_synth') / len(batch['dataset_name']))
-        # print('-------H3D------')
-        # print(batch['dataset_name'].count('hml3d') / len(batch['dataset_name']))
-        #print('-------AMT------')
-        # print(batch['dataset_name'].count('bodilex') / len(batch['dataset_name']))
-        # unique_datasets = list(set(batch['dataset_name']))  # Extract unique names
-        # dataset_to_idx = {name: i for i, name in enumerate(unique_datasets)}
-        # # Map each batch item to its dataset index
-        # dset_idxs = torch.tensor([dataset_to_idx[name] for name in dataset_names])
-        # return None
+
         for k, v in input_batch.items():
             batch[f'{k}_motion'] = v
             # batch[f'length_{k}'] = [v.shape[0]] * v.shape[1]
@@ -870,12 +860,7 @@ class MD(BaseModel):
                 batch[f'{k}_motion'] = torch.nn.functional.pad(v, (0, 0, 0, 0, 0,
                                                                300 - v.size(0)),
                                                            value=0)
-        #if self.old_way:
-        #    max_source_len = max(batch['length_source'])
-        #    sliced_tensors = []
-        #    for i in range(batch['source_motion'].shape[1]):
-        #        sliced_tensors.append(batch['source_motion'][:max_source_len, i][:, None])
-        #        batch['source_motion'] = torch.cat(sliced_tensors, dim=1)
+
         if 'length_source' in batch: #hml_3d only case
             if 0 in batch['length_source']:
                 if self.old_way:

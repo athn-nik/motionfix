@@ -42,8 +42,8 @@ def concat_string_list(l, d1, d2, d3):
         if 'hml3d' in l:
             l.remove('hml3d')
     if d2 == 0:
-        if 'bodilex' in l:
-            l.remove('bodilex')
+        if 'motionfix' in l:
+            l.remove('motionfix')
     if d3 == 0:
         if 'sinc_synth' in l:
             l.remove('sinc_synth')

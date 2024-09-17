@@ -6,14 +6,13 @@ from tqdm import tqdm
 from pathlib import Path
 import numpy as np
 
-logger = logging.getLogger(__name__)
 
 def collect_gen_samples(motion_gen_path, normalizer, device):
     cur_samples = {}
     cur_samples_raw = {}
     # it becomes from
     # translation | root_orient | rots --> trans | rots | root_orient
-    logger.info("Collecting Generated Samples")
+    print("Collecting Generated Samples")
     from src.data.features import _get_body_transl_delta_pelv_infer
     import glob
 
@@ -45,10 +44,11 @@ def compute_metrics(newcfg: DictConfig) -> None:
     from tmr_evaluator.motion2motion_retr import retrieval
     from pathlib import Path
     samples_folder = newcfg.folder
-    samples_for_eval = collect_gen_samples(samples_folder)
-    metrs_batches, metrs_full = retrieval(samples_for_eval)
-    print(metrs_batches, metrs_full)
-    
+    metrs_batches, metrs_full = retrieval(samples_folder)
+    print("\n===== Metrics for Retrieval on Batches of 32 =====")
+    print(metrs_batches)
+    print("\n===== Metrics for Retrieval on the full test set =====")
+    print( metrs_full)
 
 if __name__ == '__main__':
     _compute_metrics()

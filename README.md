@@ -41,63 +41,31 @@ First, check [our License](https://motionfix.is.tue.mpg.de/license.html).
 You can download our data already processed and ready to use from [this link](https://drive.google.com/drive/folders/1DM7oIJwxwoljVxAfhfktocTptwVX5sqR?usp=sharing).
 
 ## Evaluation of Model
+To get a checkpoint of our model and run inference, you can download it 
+from [this link](https://drive.google.com/drive/folders/1M_i_zUSlktdEKf-xBF9g6y7N-lfDtuPD?usp=sharing).
+Then, you can use this checkpoint to extract samples and compute metrics as described below.
 
 ### Step 1: Extract the samples
 
 ```bash
-python motionfix_evaluate.py folder=experiments/kinedit/bodilex_hml3d/1e-4_300ts_wo_sched/ init_from=noise ckpt_name=last guidance_scale_text_n_motion=2.0 guidance_scale_motion=1.0 data=motiofix
+python motionfix_evaluate.py folder=/path/to/exp/ guidance_scale_text_n_motion=2.0 guidance_scale_motion=1.0 data=motionfix
 ```
-
-- inpaint: if you should use inpaint or not
-- ds: bodilex / sinc_synth
-- runs: path to the foler `exp_name`
-- mode: eval (don't ask why).
 
 ### Step 2: Compute the metrics
 
 ```bash
-python parallel_evaluation.py --ds bodilex --extras 'samples_path=experiments/kinedit/bodilex/lr1-4_300ts_bs128_wo_sched/steps_300_bodilex_noise_last' --set val
+    python compute_metrics.py folder=/path/to/exp/samples/npys
 ```
 
-_Quotes_ : `'` quotes are needed!
-
-- set: val/test/all --> defaults is `test`
-- ds: bodilex/sinc_synth
-- extras: the path to the experiment you are evaluating for.
-
-## Extracting Visuals
-
-``` bash
-python visual_pkls.py --path path/to/ --ds bodilex --mode s2t
-```
-* start: path to samples should look like
-    - `exp_name/steps_XX_DS_noise_last/ld_txt-YY_ld_mot-WW`
-* ds: bodilex / sinc_synth
-* mode: source2target or target2target (based on T2T score what to extract for renders)
-
-``` bash
-python render_motions_bodilex.py --path_to_json /path/a.json 
---start 0 --upto 4 --batch_size 2  
---outdir debug-colors2 
---mode sequence --ca red --cb green
-```
-* path_to_json: path returned from previous script
-* start: start point of the list
-* upto: endpoint
-* outdir: where to put the output file
-* mode: sequence (image) /  video
-* ca: color of source motion
-* cb color of generated/target motion
+Metrics will be printed in stdout.
 
 <h2 align="center">Environment & Basic Setup</h2>
 
-<details>
-  <summary>Details</summary>
-SINC has been implemented and tested on Ubuntu 20.04 with python >= 3.10.
+MotionFix has been implemented and tested on Ubuntu 20.04 with python >= 3.10.
 
 Clone the repo:
 ```bash
-git clone https://github.com/athn-nik/sinc.git
+git clone https://github.com/athn-nik/motionfix.git
 ```
 
 After it do this to install DistillBERT:
@@ -105,7 +73,7 @@ After it do this to install DistillBERT:
 ```shell
 cd deps/
 git lfs install
-git clone https://huggingface.co/distilbert-base-uncased
+git clone https://huggingface.co/openai/clip-vit-large-patch14
 cd ..
 ```
 
@@ -115,57 +83,44 @@ Install the requirements using `virtualenv` :
 source scripts/install.sh
 ```
 You can do something equivalent with `conda` as well.
-</details>
-
-
-
-[comment]: <> (## Running the Demo)
-
-[comment]: <> (We have prepared a nice demo code to run SINC on arbitrary videos. )
-
-
 
 <h2 align="center">Data & Training</h2>
 
- <details>
-  <summary>Details</summary>
-
-<div align="center"><em>There is no need to do this step if you have followed the instructions and have done it for TEACH. Just use the ones from TEACH.</em></div>
 
 <div align="center"><h3>Step 1: Data Setup</h3></center></div>
 
-Download the data from [AMASS website](https://amass.is.tue.mpg.de). Then, run this command to extract the amass sequences that are annotated in babel:
-
-```shell
-python scripts/process_amass.py --input-path /path/to/data --output-path path/of/choice/default_is_/babel/babel-smplh-30fps-male --use-betas --gender male
-```
-
-Download the data from [TEACH website](https://teach.is.tue.mpg.de), after signing in. The data SINC was trained was a processed version of BABEL. Hence, we provide them directly to your via our website, where you will also find more relevant details. 
-Finally, download the male SMPLH male body model from the [SMPLX website](https://smpl-x.is.tue.mpg.de/). Specifically the AMASS version of the SMPLH model. Then, follow the instructions [here](https://github.com/vchoutas/smplx/blob/main/tools/README.md#smpl-h-version-used-in-amass) to extract the smplh model in pickle format.
-
-The run this script and change your paths accordingly inside it extract the different babel splits from amass:
-
-```shell
-python scripts/amass_splits_babel.py
-```
-
 Then create a directory named `data` and put the babel data and the processed amass data in.
-You should end up with a data folder with the structure like this:
+You should end up with a data folder with the structure like this (`tree dirname`):
 
 ```
 data
-|-- amass
-|  `-- your-processed-amass-data 
-|
-|-- babel
-|   `-- babel-teach
-|       `...
-|   `-- babel-smplh-30fps-male 
-|       `...
-|
-|-- smpl_models
-|   `-- smplh
-|       `--SMPLH_MALE.pkl
+|---- motionfix
+|     ├── motionfix.pth.tar 
+|     ├── motionfix_val.pth.tar
+|     ├── motionfix_test.pth.tar
+|---- body_models
+|     ├── smplh
+|         ├──SMPLH_MALE.npz
+|         ├──...
+|     ├── smpl
+|          ├──SMPLH_MALE.pkl
+|          ├──...
+eval-deps
+|---- config.json
+|---- last_weights
+│     ├── motion_decoder.pt
+│     ├── motion_encoder.pt
+│     └── text_encoder.pt
+├──-- logs
+│     ├── checkpoints
+│     │   ├── last.ckpt
+│     ├── hparams.yaml
+│     └── metrics.csv
+└── stats
+    └── humanml3d
+        └── amass_feats
+            ├── mean.pt
+            └── std.pt
 ```
 
 Be careful not to push any data! 
@@ -177,44 +132,30 @@ You can do the same for your experiments:
 
 `ln -s /path/to/logs experiments`
 
-Then you can use this directory for your experiments.
+This the best way to have a consistent structure and namings, while keeping the data stored 
+in a different location, which does not interfere with the code (IMO).
 
-<div align="center"><h3>Step 2 (a): Training</h3></center></div>
+
+<div align="center"><h3>Step 2: Training</h3></center></div>
 
 To start training after activating your environment. Do:
 
 ```shell
-python train.py experiment=baseline logger=none
+python train.py experiment=... logger=... run_id=... exp_dir=...
 ```
+- `logger=wandb` or none.
+- `experiment` name of the experiment folder e.g., `ablation-data`.
+- `run_id` subname of the experiment e.g., `10percent_data`
+- `exp_dir` the folder where you want the experiments to be saved (defaults is `./experiments`).
+
+Such a training will create a folder `exp_dir/experiment/run_id` where all the experiments logs are saved.
 
 Explore `configs/train.yaml` to change some basic things like where you want
 your output stored, which data you want to choose if you want to do a small
 experiment on a subset of the data etc.
-You can disable the text augmentations and using `single_text_desc: false` in the
-model configuration file. You can check the `train.yaml` for the main configuration
+You can check the `train.yaml` for the main configuration
 and this file will point you to the rest of the configs (eg. `model` refers to a config found in
 the folder `configs/model` etc.).
-
-<div align="center"><h3>Step 2 (b): Training MLD</h3></center></div>
-
-Prior to running this code for MLD please create and activate an environment according to their [repo](https://github.com/ChenFengYe/motion-latent-diffusion). Please do the `1. Conda Environment` and `2. Dependencies` out of the steps in their repo.
-
-```shell
-python train.py experiment=some_name run_id=mld-synth0.5-4gpu model=mld data.synthetic=true data.proportion_synthetic=0.5 data.dtype=seg+seq+spatial_pairs machine.batch_size=16 model.optim.lr=1e-4 logger=wandb sampler.max_len=150
-```
-
-</details>
-<h2 align="center"> AMASS Compositions </h2>
-
-<details>
-  <summary>Details</summary>
-  Given that you have downloaded and processed the data, you can create spatial compositions
-  from gropundtruth motions of BABEL subset from AMASS using a standalone script:
-
-  ```shell
-  python compose_motions.py
-  ```
-</details>
 
 ## Citation
 

@@ -90,14 +90,7 @@ def train(cfg: DictConfig, ckpt_ft: Optional[str] = None) -> None:
     else: 
         renderer=None
     ######## DATA LOADING #########
-    if IS_LOCAL_DEBUG:
-        if cfg.data.dataname == 'bodilex':
-            base_p_lcl = '/home/nathanasiou/Desktop/local-debug/data/amass_bodilex_' 
-            cfg.data.datapath = f'{base_p_lcl}v14.pth.tar'
 
-    # cf.data.datapathsbodilex: ${path.data}/bodilex/amass_bodilex_v11.pth.tar
-    # "sinc_synth": ${path.data}/sinc_synth/sinc_synth_edits_v4.pth.tar
-    # "hml3d": ${path.data}/humanml3d_processed
 
     logger.info(f'Loading data module: {cfg.data.dataname}')
     data_module = instantiate(cfg.data)

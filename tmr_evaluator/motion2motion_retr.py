@@ -92,21 +92,42 @@ def collect_gen_samples(gener_motions, normalizer, device):
     cur_samples_raw = {}
     # it becomes from 
     # translation | root_orient | rots --> trans | rots | root_orient 
-
     from src.data.features import _get_body_transl_delta_pelv_infer
-    import glob
-    for keyid, motion_feats in gener_motions.items():
-        trans = motion_feats[..., :3]
-        global_orient_6d = motion_feats[..., 3:9]
-        body_pose_6d = motion_feats[..., 9:]
-        trans_delta = _get_body_transl_delta_pelv_infer(global_orient_6d,
-                                                  trans)
-        gen_motion_b_fixed = torch.cat([trans_delta, body_pose_6d,
-                                        global_orient_6d], dim=-1)
-        gen_motion_b_fixed = normalizer(gen_motion_b_fixed)
-        cur_samples[keyid] = gen_motion_b_fixed.to(device)
-        cur_samples_raw[keyid] = torch.cat([trans, global_orient_6d, 
-                                            body_pose_6d], dim=-1).to(device)
+
+    if isinstance(gener_motions, str):
+        # you have a path and not the motions themselves
+        import glob
+        sample_files = glob.glob(f'{gener_motions}/*.npy')
+        for fname in tqdm(sample_files):
+            keyid = str(Path(fname).name).replace('.npy', '')
+            gen_motion_b = np.load(fname,
+                                allow_pickle=True).item()['pose']
+            gen_motion_b = torch.from_numpy(gen_motion_b)
+            trans = gen_motion_b[..., :3]
+            global_orient_6d = gen_motion_b[..., 3:9]
+            body_pose_6d = gen_motion_b[..., 9:]
+            trans_delta = _get_body_transl_delta_pelv_infer(global_orient_6d,
+                                                    trans)
+            gen_motion_b_fixed = torch.cat([trans_delta, body_pose_6d,
+                                            global_orient_6d], dim=-1)
+            gen_motion_b_fixed = normalizer(gen_motion_b_fixed)
+            cur_samples[keyid] = gen_motion_b_fixed.to(device)
+            cur_samples_raw[keyid] = torch.cat([trans, global_orient_6d,
+                                                body_pose_6d], dim=-1).to(device)
+    else:
+        for keyid, motion_feats in gener_motions.items():
+            trans = motion_feats[..., :3]
+            global_orient_6d = motion_feats[..., 3:9]
+            body_pose_6d = motion_feats[..., 9:]
+            trans_delta = _get_body_transl_delta_pelv_infer(global_orient_6d,
+                                                    trans)
+            gen_motion_b_fixed = torch.cat([trans_delta, body_pose_6d,
+                                            global_orient_6d], dim=-1)
+            gen_motion_b_fixed = normalizer(gen_motion_b_fixed)
+            cur_samples[keyid] = gen_motion_b_fixed.to(device)
+            cur_samples_raw[keyid] = torch.cat([trans, global_orient_6d, 
+                                                body_pose_6d], dim=-1).to(device)
+
     return cur_samples, cur_samples_raw
 
 def compute_sim_matrix(model, dataset, keyids, gen_samples,
@@ -386,7 +407,7 @@ def retrieval(samples_to_eval) -> None:
     batch_size = 256
  
     protocols = protocol
-    dataset = 'bodilex' # motionfix
+    dataset = 'motionfix' # motionfix
     sets = 'test' # val all
     # save_dir = os.path.join(run_dir, "motionfix/contrastive_metrics")
     # os.makedirs(save_dir, exist_ok=True)

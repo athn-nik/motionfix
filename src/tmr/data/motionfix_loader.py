@@ -14,13 +14,6 @@ from src.tools.transforms3d import transform_body_pose, canonicalize_rotations
 from einops import rearrange
 
 class MotionFixLoader(Dataset):
-# 'src.data.bodilex.BodilexDataModule',
-#  'datapath = data/amass_bodilex_v5.pth.tar',
-#  'smplh_path': 'data/body_models',
-#  'load_splits': ['train', 'val', 'test'],
-#   'preproc': {'stats_file': '/home/nathanasiou/Desktop/conditional_action_gen/modilex/deps/stats/statistics_bodilex.npy'
-#               ,
-#             'load_feats': ['body_transl_delta_pelv', 'body_orient', 'body_pose'],
     def __init__(self,
                  datapath: str = "",
                  smplh_path: str = "",
