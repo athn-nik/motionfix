@@ -33,6 +33,13 @@
 |------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
 | [![PaperVideo](https://img.youtube.com/vi/vidid/0.jpg)](https://www.youtube.com/) | -->
 
+## Getting MotionFix Dataset
+
+You can try extracting the dataset from AMASS, given our annotations which can be downloaded from here. 
+Check and our explore our data in [our exploration webpage](https://motionfix.is.tue.mpg.de/explore.php).
+First, check [our License](https://motionfix.is.tue.mpg.de/license.html).
+You can download our data already processed and ready to use from [this link](https://drive.google.com/drive/folders/1DM7oIJwxwoljVxAfhfktocTptwVX5sqR?usp=sharing).
+
 ## Evaluation of Model
 
 ### Step 1: Extract the samples
