@@ -4,12 +4,12 @@ hydra:
   job:
     chdir: true
     env_set:
-      WANDB_API_KEY: '90e13be46265667b13415a5e6d248ae91ab399fc'
-      # WANDB_API_KEY: 'a74cec970de0ce9765b956c027db139f6f52d024'
+      # if you want to use wandb you should assign this key
+      WANDB_API_KEY: 'XXXXXXX'
       PYOPENGL_PLATFORM: 'egl'
       HYDRA_FULL_ERROR: 1
       WANDB__SERVICE_WAIT: 300
-
+  
 debug: false
 
 # Global configurations shared between different modules
