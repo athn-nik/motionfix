@@ -1,10 +1,20 @@
+from omegaconf import DictConfig
+import logging
+import hydra
+import torch
+from tqdm import tqdm
+from pathlib import Path
+import numpy as np
+
+logger = logging.getLogger(__name__)
+
 def collect_gen_samples(motion_gen_path, normalizer, device):
     cur_samples = {}
     cur_samples_raw = {}
     # it becomes from
     # translation | root_orient | rots --> trans | rots | root_orient
     logger.info("Collecting Generated Samples")
-    from prepare.compute_amass import _get_body_transl_delta_pelv
+    from src.data.features import _get_body_transl_delta_pelv_infer
     import glob
 
     sample_files = glob.glob(f'{motion_gen_path}/*.npy')
@@ -16,7 +26,7 @@ def collect_gen_samples(motion_gen_path, normalizer, device):
         trans = gen_motion_b[..., :3]
         global_orient_6d = gen_motion_b[..., 3:9]
         body_pose_6d = gen_motion_b[..., 9:]
-        trans_delta = _get_body_transl_delta_pelv(global_orient_6d,
+        trans_delta = _get_body_transl_delta_pelv_infer(global_orient_6d,
                                                   trans)
         gen_motion_b_fixed = torch.cat([trans_delta, body_pose_6d,
                                         global_orient_6d], dim=-1)
@@ -35,7 +45,7 @@ def compute_metrics(newcfg: DictConfig) -> None:
     from tmr_evaluator.motion2motion_retr import retrieval
     from pathlib import Path
     samples_folder = newcfg.folder
-    samples_for_eval = collect_samples(samples_folder)
+    samples_for_eval = collect_gen_samples(samples_folder)
     metrs_batches, metrs_full = retrieval(samples_for_eval)
     print(metrs_batches, metrs_full)
     
