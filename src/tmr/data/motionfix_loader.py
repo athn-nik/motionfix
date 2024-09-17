@@ -29,7 +29,7 @@ class MotionFixLoader(Dataset):
                  keys_to_load: List[str] = None,
                  **kwargs):
         # v11 is the next one 
-        self.datapath = 'data/bodilex/amass_bodilex_v14_test.pth.tar'
+        self.datapath = 'data/motionfix/motionfix_test.pth.tar'
         self.collate_fn = lambda b: collate_batch_last_padding(b, load_feats)
         self.rot_repr = rot_repr
         # curdir = Path(hydra.utils.get_original_cwd())
@@ -45,11 +45,8 @@ class MotionFixLoader(Dataset):
         #                                    ext='npz').eval();
         # setattr(smplx.SMPLHLayer, 'smpl_forward_fast', smpl_forward_fast)
         # freeze(self.body_model)
-        if get_local_debug():
-            ds_db_path = Path('/home/nathanasiou/Desktop/local-debug/data/amass_bodilex_v14_test.pth.tar')
-        else:
-            curdir_code = Path(hydra.utils.get_original_cwd())
-            ds_db_path = Path(curdir_code / self.datapath)
+        curdir_code = Path(hydra.utils.get_original_cwd())
+        ds_db_path = Path(curdir_code / self.datapath)
 
         dataset_dict_raw = joblib.load(ds_db_path)
         # dataset_dict_raw = cast_dict_to_tensors(dataset_dict_raw)

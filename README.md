@@ -38,7 +38,7 @@
 ### Step 1: Extract the samples
 
 ```bash
-python parallel_motionfix_eval.py --mode eval --runs experiments/clean-motionfix/bodilex_hml3d/50-50_bs128_300ts_clip77_with_zeros_source/ --ds bodilex --inpaint
+python motionfix_evaluate.py folder=experiments/kinedit/bodilex_hml3d/1e-4_300ts_wo_sched/ init_from=noise ckpt_name=last guidance_scale_text_n_motion=2.0 guidance_scale_motion=1.0 data=motiofix
 ```
 
 - inpaint: if you should use inpaint or not
