@@ -22,7 +22,7 @@
     |
     <a href="https://imagine.enpc.fr/~varolg"><strong>G&#252;l Varol</strong></a>
   </p>
-  <h2 align="center">Siggraph Asia 2024, Tokyo, Japan</h2>
+  <h2 align="center">SIGGRAPH ASIA 2024, Tokyo, Japan</h2>
  <div align="center">
   <img src="assets/raise_arm_higher.gif" width="55%" />
   </div>
@@ -35,29 +35,10 @@
 
 ## Getting MotionFix Dataset
 
-You can try extracting the dataset from AMASS, given our annotations which can be downloaded from here. 
+You can try extracting the dataset from AMASS, given our annotations which can be downloaded from [here](https://drive.google.com/file/d/1Yk68qfDdn1kPCkhj27lv-J78Z-3KJ9L_/view?usp=sharing). 
 Check and our explore our data in [our exploration webpage](https://motionfix.is.tue.mpg.de/explore.php).
 First, check [our License](https://motionfix.is.tue.mpg.de/license.html).
-You can download our data already processed and ready to use from [this link](https://drive.google.com/drive/folders/1DM7oIJwxwoljVxAfhfktocTptwVX5sqR?usp=sharing).
-
-## Evaluation of Model
-To get a checkpoint of our model and run inference, you can download it 
-from [this link](https://drive.google.com/drive/folders/1M_i_zUSlktdEKf-xBF9g6y7N-lfDtuPD?usp=sharing).
-Then, you can use this checkpoint to extract samples and compute metrics as described below.
-
-### Step 1: Extract the samples
-
-```bash
-python motionfix_evaluate.py folder=/path/to/exp/ guidance_scale_text_n_motion=2.0 guidance_scale_motion=1.0 data=motionfix
-```
-
-### Step 2: Compute the metrics
-
-```bash
-    python compute_metrics.py folder=/path/to/exp/samples/npys
-```
-
-Metrics will be printed in stdout.
+Then, you can download our data already processed and ready to use from [this link](https://drive.google.com/drive/folders/1DM7oIJwxwoljVxAfhfktocTptwVX5sqR?usp=sharing).
 
 <h2 align="center">Environment & Basic Setup</h2>
 
@@ -86,8 +67,26 @@ You can do something equivalent with `conda` as well.
 
 <h2 align="center">Data & Training</h2>
 
+## Evaluation of Model
+To get a checkpoint of our model and run inference, you can download it 
+from [this link](https://drive.google.com/drive/folders/1M_i_zUSlktdEKf-xBF9g6y7N-lfDtuPD?usp=sharing).
+Then, you can use this checkpoint to extract samples and compute metrics as described below.
 
-<div align="center"><h3>Step 1: Data Setup</h3></center></div>
+### Step 1: Extract the samples
+
+```bash
+python motionfix_evaluate.py folder=/path/to/exp/ guidance_scale_text_n_motion=2.0 guidance_scale_motion=1.0 data=motionfix
+```
+
+### Step 2: Compute the metrics
+
+```bash
+    python compute_metrics.py folder=/path/to/exp/samples/npys
+```
+
+Metrics will be printed in stdout.
+
+<div align="center"><h3>Data Setup</h3></center></div>
 
 Then create a directory named `data` and put the babel data and the processed amass data in.
 You should end up with a data folder with the structure like this (`tree dirname`):
