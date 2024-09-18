@@ -65,6 +65,9 @@ source scripts/install.sh
 ```
 You can do something equivalent with `conda` as well.
 
+After that get the data and models needed.
+
+
 <h2 align="center">Data & Training</h2>
 
 ## Evaluation of Model

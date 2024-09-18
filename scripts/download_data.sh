@@ -1,6 +1,6 @@
 pip install gdown
-mkdir data-test
-mkdir data-test/body_models
+mkdir data
+mkdir data/body_models
 # dataset
 gdown --folder "https://drive.google.com/drive/folders/1DM7oIJwxwoljVxAfhfktocTptwVX5sqR?usp=sharing"
 mv motionfix-dataset data/ 
@@ -9,5 +9,9 @@ gdown --folder "https://drive.google.com/drive/folders/15LHeriOCjmh4Cp5H9M94xoFG
 mv tmr-evaluator eval-deps
 # smpl models
 gdown --folder "https://drive.google.com/drive/folders/1s3re2I1OzBimQIpudUEFB1hClFWOPJjC?usp=drive_link"
-mv smplh data-test/body_models
+mv smplh data/body_models
+# tmed checkpoints
+gdown --folder "https://drive.google.com/drive/folders/1M_i_zUSlktdEKf-xBF9g6y7N-lfDtuPD?usp=sharing"
+mkdir experiments
+mv tmed experiments/
 
