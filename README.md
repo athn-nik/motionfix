@@ -66,7 +66,10 @@ source scripts/install.sh
 You can do something equivalent with `conda` as well.
 
 After that get the data and models needed.
-
+```bash
+# pip
+source scripts/download_data.sh
+```
 
 <h2 align="center">Data & Training</h2>
 
