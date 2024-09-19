@@ -179,6 +179,6 @@ This code is available for **non-commercial scientific research purposes** as de
 
 ## Contact
 
-This code repository was implemented by [Nikos Athanasiou](https://is.mpg.de/~nathanasiou).
+This code repository was implemented by [Nikos Athanasiou](https://is.mpg.de/~nathanasiou). It incorporates a version of [TMR](https://github.com/Mathux/TMR) for evaluation.
 
 Give a ⭐ if you like it.
