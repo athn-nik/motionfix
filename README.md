@@ -182,5 +182,3 @@ This code is available for **non-commercial scientific research purposes** as de
 This code repository was implemented by [Nikos Athanasiou](https://is.mpg.de/~nathanasiou).
 
 Give a ⭐ if you like it.
-
-For commercial licensing (and all related questions for business applications), please contact ps-licensing@tue.mpg.de.
