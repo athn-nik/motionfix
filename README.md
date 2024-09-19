@@ -174,7 +174,7 @@ the folder `configs/model` etc.).
 ```
 
 ## License
-This code is available for **non-commercial scientific research purposes** as defined in the [LICENSE file](LICENSE). By downloading and using this code you agree to the terms in the [LICENSE](LICENSE). Third-party datasets and software are subject to their respective licenses.
+This code is available for **non-commercial scientific research purposes** as defined in the [LICENSE file](LICENSE). By downloading and using this code you agree to its terms. For MotionFix dataset check its [license](https://motionfix.is.tue.mpg.de/license.html). Third-party datasets and software are subject to their respective licenses.
 
 
 ## Contact
