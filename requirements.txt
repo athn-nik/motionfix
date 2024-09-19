@@ -121,7 +121,6 @@ PyQt5-sip==12.12.2
 pyrender==0.1.45
 pyrr==0.10.3
 python-dateutil==2.8.2
-pytorch-lightning==2.2.3
 pytz==2021.3
 PyWavelets==1.4.1
 PyYAML==6.0
@@ -157,10 +156,6 @@ thinc==8.1.9
 tifffile==2023.9.18
 tokenizers==0.11.6
 toml==0.10.2
-torch==2.1.2+cu118
-torchaudio==2.1.2+cu118
-torchmetrics==1.0.3
-torchvision==0.16.2+cu118
 tqdm==4.63.0
 traitlets==5.1.1
 transformers==4.17.0

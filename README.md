@@ -87,7 +87,7 @@ python motionfix_evaluate.py folder=/path/to/exp/ guidance_scale_text_n_motion=2
 ### Step 2: Compute the metrics
 
 ```bash
-    python compute_metrics.py folder=/path/to/exp/samples/npys
+python compute_metrics.py folder=/path/to/exp/samples/npys
 ```
 
 Metrics will be printed in stdout.
