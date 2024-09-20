@@ -22,13 +22,13 @@ class MotionFixLoader(Dataset):
                  keys_to_load: List[str] = None,
                  **kwargs):
         # v11 is the next one 
-        self.datapath = 'data/motionfix/motionfix_test.pth.tar'
+        self.datapath = 'data/motionfix-dataset/motionfix_test.pth.tar'
         self.collate_fn = lambda b: collate_batch_last_padding(b, load_feats)
         self.rot_repr = rot_repr
         # curdir = Path(hydra.utils.get_original_cwd())
         # self.smpl_p = Path(curdir / 'datasets/body_models')
         # calculate splits
-        curdir = Path(hydra.utils.get_original_cwd()) / 'eval-deps/tmr_humanml3d_amass_feats/'
+        curdir = Path(hydra.utils.get_original_cwd()) / 'eval-deps/'
 
         self.normalizer = Normalizer(curdir/'stats/humanml3d/amass_feats')
         from src.launch.prepare import get_local_debug
