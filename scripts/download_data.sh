@@ -14,4 +14,5 @@ mv smplh data/body_models
 gdown --folder "https://drive.google.com/drive/folders/1M_i_zUSlktdEKf-xBF9g6y7N-lfDtuPD?usp=sharing"
 mkdir experiments
 mv tmed experiments/
-
+mkdir experiments/tmed/checkpoints
+mv experiments/tmed/last.ckpt experiments/tmed/checkpoints/
