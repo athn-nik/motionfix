@@ -402,7 +402,7 @@ def shorten_metric_line(line_to_shorten):
 def retrieval(samples_to_eval) -> None:
     protocol = ['normal', 'batches']
     device = 'cuda'
-    run_dir = 'eval-deps/tmr_humanml3d_amass_feats'
+    run_dir = 'eval-deps'
     ckpt_name = 'last'
     batch_size = 256
  
