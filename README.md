@@ -81,15 +81,18 @@ Then, you can use this checkpoint to extract samples and compute metrics as desc
 ### Step 1: Extract the samples
 
 ```bash
-python motionfix_evaluate.py folder=/path/to/exp/ guidance_scale_text_n_motion=2.0 guidance_scale_motion=1.0 data=motionfix
+python motionfix_evaluate.py folder=/path/to/exp/ guidance_scale_text_n_motion=2.0 guidance_scale_motion=2.0 data=motionfix
 ```
+This will generate samples from the diffusion model for the MotionFix test set. By default the `/path/to/exp` should be `experiments/tmed`, but your path should be adjusted
+according to where you have your experiments. The samples are generated in a path that looks like `3way_steps_300_motionfix_noise_last/ld_txt-2.0_ld_mot-2.0`. The first part indicateds
+the parameters of sampling (number of steps, dataset name, initialization of diffusion, checkpoint which we sample from) and the second part the diffusion values for the two conditions.
 
 ### Step 2: Compute the metrics
 
 ```bash
 python compute_metrics.py folder=/path/to/exp/samples/npys
 ```
-
+That `/path/to/exp/samples/npys` should be something like  `experiments/tmed/3way_steps_300_motionfix_noise_last/ld_txt-2.0_ld_mot-2.0`, if you followed the previous step successfully.
 Metrics will be printed in stdout.
 
 <div align="center"><h3>Data Setup</h3></center></div>
