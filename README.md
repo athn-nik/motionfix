@@ -24,7 +24,7 @@
     |
     <a href="https://ps.is.tuebingen.mpg.de/person/black"><strong>Michael J. Black</strong></a>
     |
-    <a href="https://imagine.enpc.fr/~varolg"><strong>G&#252;l Varol</strong></a>
+    <a href="https://gulvarol.github.io/"><strong>G&#252;l Varol</strong></a>
   </p>
   <h2 align="center">SIGGRAPH ASIA 2024, Tokyo, Japan</h2>
  <div align="center">
@@ -37,7 +37,7 @@
 |------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
 | [![PaperVideo](https://img.youtube.com/vi/vidid/0.jpg)](https://www.youtube.com/) | -->
 ## Updates 
- - [Oct. 30th '24] Release of a script to visualize motions (a demo will follow-up until December). For a quick workaround to visualize see [https://github.com/athn-nik/motionfix/issues/2](here).
+ - [Oct. 30th '24] Release of a script to visualize motions (a demo will follow-up until December). For a quick workaround to visualize see [here](https://github.com/athn-nik/motionfix/issues/2).
  - [Sep. 20th '24] Release of the dataset and the exploration website.
  - [Aug. 30th '24] First release of the code.
 
