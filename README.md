@@ -10,7 +10,11 @@
     </a>
     <a href='https://motionfix.is.tue.mpg.de/' style='padding-left: 0.5rem;'>
     <img src='https://img.shields.io/badge/Project-Page-blue?style=flat&logo=Google%20chrome&logoColor=blue' alt='Project Page'>
-  </h1>
+    </a>  
+    <a href='https://motionfix.is.tue.mpg.de/explore.php' style='padding-left: 0.5rem;'>
+    <img src='https://img.shields.io/badge/Dataset-Exporation?style=flat&logo=searxng&logoColor=blue' alt='Dataset Exploration'>
+    </a>
+   </h1>
   <p align="center">
     <a href="https://ps.is.mpg.de/person/nathanasiou"><strong>Nikos Athanasiou</strong></a>
     |
@@ -32,6 +36,10 @@
 <!-- | Paper Video                                                                                                | Qualitative Results                                                                                                |
 |------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
 | [![PaperVideo](https://img.youtube.com/vi/vidid/0.jpg)](https://www.youtube.com/) | -->
+## Updates 
+ - [Oct. 30th '24] Release of a script to visualize motions (a demo will follow-up until December). For a quick workaround to visualize see [https://github.com/athn-nik/motionfix/issues/2](here).
+ - [Sep. 20th '24] Release of the dataset and the exploration website.
+ - [Aug. 30th '24] First release of the code.
 
 ## Getting MotionFix Dataset
 
