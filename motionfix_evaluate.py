@@ -58,6 +58,14 @@ def get_folder_name(config):
 
     return f'{ckpt_n}{init_from}{sched_name}_steps{infer_steps}'
 
+def prepare_test_batch(model, batch):
+     import torch
+     batch = { k: v.to(model.device) if torch.is_tensor(v) else v
+                 for k, v in batch.items() }
+     input_batch = model.norm_and_cat(batch, model.input_feats)
+     for k, v in input_batch.items():
+         batch[f'{k}_motion'] = v
+     return batch
 
 def render_vids(newcfg: DictConfig) -> None:
     from pathlib import Path
@@ -199,6 +207,10 @@ def render_vids(newcfg: DictConfig) -> None:
     logger.info(f'Evaluation Set length:{len(test_dataset)}')
     if cfg.inpaint:
         model.motion_condition = None
+    if cfg.save_gt:
+        save_data_sample = True
+    else:
+        save_data_sample = False
     with torch.no_grad():
         for guid_text, guid_motion in guidances_mix:
             cur_guid_comb = f'ld_txt-{guid_text}_ld_mot-{guid_motion}'
@@ -210,8 +222,11 @@ def render_vids(newcfg: DictConfig) -> None:
                 text_diff = batch['text']
                 target_lens = batch['length_target']
                 keyids = batch['id']
+                source_lens = batch['length_source']
                 no_of_motions = len(keyids)
-
+                if save_data_sample:
+                    dataset_motions = prepare_test_batch(model, batch)
+                    src_mot_cond, tgt_mot = model.batch2motion(dataset_motions, pack_to_dict=False)
                 input_batch = prepare_test_batch(model, batch)
                 if cfg.inpaint:
                     ############### BODY PART BASELINE ###############
@@ -285,6 +300,17 @@ def render_vids(newcfg: DictConfig) -> None:
                                                    :target_lens[i]].cpu().numpy() 
                                     }
                     np.save(cur_outpath / f"{str(batch['id'][i]).zfill(6)}.npy",
+                            dict_to_save)
+                    if save_data_sample:
+                        dict_to_save = {'pose': src_mot_cond[i,
+                                                   :source_lens[i]].cpu().numpy()
+                                    }
+                        np.save(cur_outpath / f"{str(batch['id'][i]).zfill(6)}_source.npy",
+                            dict_to_save)
+                        dict_to_save = {'pose': tgt_mot[i,
+                                                   :target_lens[i]].cpu().numpy()
+                                    }
+                        np.save(cur_outpath / f"{str(batch['id'][i]).zfill(6)}_target.npy",
                             dict_to_save)
                     # np.load(output_path / f"{str(batch['id'][i]).zfill(6)}.npy")
                 # output_path = Path('/home/nathanasiou/Desktop/conditional_action_gen/modilex')

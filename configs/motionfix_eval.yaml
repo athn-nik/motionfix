@@ -30,6 +30,8 @@ init_from: 'noise' # noise
 condition_mode: 'full_cond' # 'mot_cond' 'text_cond'
 inpaint: false
 linear_gd: false
+save_gt: false
+
 
 defaults:
   - _self_
