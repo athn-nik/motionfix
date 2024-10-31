@@ -37,9 +37,17 @@
 |------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
 | [![PaperVideo](https://img.youtube.com/vi/vidid/0.jpg)](https://www.youtube.com/) | -->
 ## Updates 
- - [Oct. 30th '24] Release of a script to visualize motions (a demo will follow-up until December). For a quick workaround to visualize see [here](https://github.com/athn-nik/motionfix/issues/2).
- - [Sep. 20th '24] Release of the dataset and the exploration website.
- - [Aug. 30th '24] First release of the code.
+ - 🗞️[Oct. 31th '24] Release of a script to visualize motions and to save the groundtruth motions. Look at [our website](https://motionfix.is.tue.mpg.de/explore.php) to see the visualized pairs of the dataset. For a quick workaround to visualize one or more motions give a try to:
+   
+   `python visualize_sample.py --path experiments/tmed/3way_steps_300_motionfix_noise_last/ld_txt-2.0_ld_mot-2.0/000136.npy`.
+
+   If you want to save the source and the target motions while saving the samples you can do so by setting the `save_gt` flag, i.e., to generate samples do:
+
+   `python motionfix_evaluate.py folder=experiments/tmed/ guidance_scale_text_n_motion=2.0 guidance_scale_motion=2.0 data=motionfix save_gt=true`.
+   
+ - 🗞️[Oct. 30th '24] Release of a script to visualize motions (a demo will follow-up until December). For a quick workaround to visualize see [here](https://github.com/athn-nik/motionfix/issues/2).
+ - 🗞️[Sep. 20th '24] Release of the dataset and the exploration website.
+ - 🗞️[Aug. 30th '24] First release of the code.
 
 ## Getting MotionFix Dataset
 
