@@ -1,6 +1,3 @@
-
- 
-
 <p align="center">
 
   <h1 align="center">MotionFix: Text-Driven 3D Human Motion Editing
@@ -14,7 +11,9 @@
     <a href='https://motionfix.is.tue.mpg.de/explore.php' style='padding-left: 0.5rem;'>
     <img src='https://img.shields.io/badge/Dataset-Exporation?style=flat&logo=searxng&logoColor=blue' alt='Dataset Exploration'>
     </a>
+    <h2 align="center">SIGGRAPH ASIA 2024, Tokyo, Japan</h2>
    </h1>
+
   <p align="center">
     <a href="https://ps.is.mpg.de/person/nathanasiou"><strong>Nikos Athanasiou</strong></a>
     |
@@ -26,17 +25,18 @@
     |
     <a href="https://gulvarol.github.io/"><strong>G&#252;l Varol</strong></a>
   </p>
-  <h2 align="center">SIGGRAPH ASIA 2024, Tokyo, Japan</h2>
- <div align="center">
-  <img src="assets/raise_arm_higher.gif" width="55%" />
-  </div>
- <div align="center">Official PyTorch implementation of the paper "MotionFix: Text-Driven 3D Human Motion Editing". This repository includes instructions for the released dataset and implementation of TMED, the model used in the paper along with the main experiments.</div>
-</p>
 
-<!-- | Paper Video                                                                                                | Qualitative Results                                                                                                |
-|------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
-| [![PaperVideo](https://img.youtube.com/vi/vidid/0.jpg)](https://www.youtube.com/) | -->
+
+<div align="center">
+ 
+| Paper Video                                                                                                  | Dataset Exploration                                                                                             |
+|-------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| <a href="https://www.youtube.com/watch?v=cFa6V6Ua-TY"><img src="assets/raise_arm_higher.gif" width="350" height="250"></a> | <a href="https://motionfix.is.tue.mpg.de/explore.php"><img src="https://github.com/atnikos/motionfix/blob/main/assets/motionfix_exploration_v2.gif?raw=true" width="350" height="250"></a> |
+
+</div>
+
 ## Updates 
+ - 🗞️[Nov. 7th '24] Updated and released our video on youtube, and added a preview for our data exploration website.
  - 🗞️[Oct. 31th '24] Release of a script to visualize motions and to save the groundtruth motions. Look at [our website](https://motionfix.is.tue.mpg.de/explore.php) to see the visualized pairs of the dataset. For a quick workaround to visualize one or more motions give a try to:
    
    `python visualize_sample.py --path experiments/tmed/3way_steps_300_motionfix_noise_last/ld_txt-2.0_ld_mot-2.0/000136.npy`.
@@ -183,13 +183,16 @@ the folder `configs/model` etc.).
 
 ## Citation
 
+ <div align="center">Official PyTorch implementation of the paper "MotionFix: Text-Driven 3D Human Motion Editing". This repository includes instructions for the released dataset and implementation of TMED, the model used in the paper along with the main experiments.</div>
+You can cite this paper using:
+
 ```bibtex
 @inproceedings{athanasiou2024motionfix,
   title = {{MotionFix}: Text-Driven 3D Human Motion Editing},
   author = {Athanasiou, Nikos and Ceske, Alpar and Diomataris, Markos and Black, Michael J. and Varol, G{\"u}l},
   booktitle = {SIGGRAPH Asia 2024 Conference Papers},
   year = {2024}
-}
+  }
 ```
 
 ## License
